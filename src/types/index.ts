@@ -21,6 +21,16 @@ export interface UserSummary {
   role: string;
 }
 
+export interface SubtaskSummary {
+  id: string;
+  taskId: string;
+  title: string;
+  completed: boolean;
+  order: number;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+}
+
 export interface TaskSummary {
   id: string;
   userId: string;
@@ -32,13 +42,61 @@ export interface TaskSummary {
   } | null;
   title: string;
   description?: string | null;
+  category?: string;
   priority: Priority;
   status: TaskStatus;
+  startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  estimatedMinutes?: number;
+  actualMinutes?: number;
+  recurrence?: string;
+  subtasks?: SubtaskSummary[];
   tags: string[];
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+export interface CalendarEventSummary {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  category: "PERSONAL" | "EDUCATION" | "WORK" | "PROJECT" | string;
+  startDate: Date | string;
+  endDate: Date | string;
+  allDay: boolean;
+  location?: string | null;
+  projectId?: string | null;
+  isRecurring: boolean;
+  recurrence?: string | null;
+  reminderMin?: number | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface ReminderSummary {
+  id: string;
+  userId: string;
+  title: string;
+  dueDateTime: Date | string;
+  isCompleted: boolean;
+  category: string;
+  isRecurring: boolean;
+  recurrence?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface FocusSessionSummary {
+  id: string;
+  userId: string;
+  taskId?: string | null;
+  subject: string;
+  durationMinutes: number;
+  completedAt: Date | string;
+  notes?: string | null;
+  mode: "POMODORO" | "DEEP_WORK" | "SHORT_BREAK" | "LONG_BREAK" | string;
 }
 
 export interface HabitSummary {

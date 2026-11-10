@@ -129,6 +129,21 @@ export function CommandPalette({
               className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2"
             >
               <Command.Item
+                onSelect={() => navigateTo("/focus")}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium">Open Focus & Pomodoro Lab</span>
+                </div>
+                <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
+                  Navigate <ArrowRight className="w-3 h-3" />
+                </span>
+              </Command.Item>
+
+              <Command.Item
                 onSelect={handleStartFocus}
                 className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
               >
