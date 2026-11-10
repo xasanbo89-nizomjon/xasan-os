@@ -64,6 +64,52 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Authentication & Security Settings (Phase 2) */}
+        <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-[#F3F7F4] flex items-center gap-2">
+              <Shield className="w-4 h-4 text-[#10B981]" />
+              Authentication & Security Architecture (PRD Phase 2)
+            </h3>
+            <span className="text-xs font-mono text-[#10B981] flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" />
+              Active & Protected
+            </span>
+          </div>
+
+          <div className="space-y-3 text-xs text-[#98A69D]">
+            <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-semibold text-[#F3F7F4]">Firebase Authentication:</span>
+                <p className="text-[11px] mt-0.5">Google OAuth and Email/Password with client SDK & server token verification</p>
+              </div>
+              <span className="font-mono text-[#10B981] px-2 py-1 bg-[#142019] rounded border border-[#25352C]">
+                CONFIGURED
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-semibold text-[#F3F7F4]">Next.js Route Protection:</span>
+                <p className="text-[11px] mt-0.5">Edge middleware redirecting unauthenticated requests to /login and locked sessions to /lock</p>
+              </div>
+              <span className="font-mono text-[#10B981] px-2 py-1 bg-[#142019] rounded border border-[#25352C]">
+                ENFORCED (middleware.ts)
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-semibold text-[#F3F7F4]">Passcode & Biometrics:</span>
+                <p className="text-[11px] mt-0.5">4/6-Digit keypad with TouchID/FaceID simulation & 3-attempt 30s lockout</p>
+              </div>
+              <span className="font-mono text-[#10B981] px-2 py-1 bg-[#142019] rounded border border-[#25352C]">
+                READY (/lock)
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Database & Architecture Settings */}
         <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
           <div className="flex items-center justify-between mb-4">

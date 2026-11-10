@@ -37,13 +37,20 @@ enum TransactionType {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  displayName String
-  avatarUrl   String?
-  role        String   @default("OWNER")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String    @id @default(uuid())
+  firebaseUid       String?   @unique
+  email             String    @unique
+  displayName       String
+  avatarUrl         String?
+  role              String    @default("OWNER")
+  isPinEnabled      Boolean   @default(false)
+  pinHash           String?
+  pinLength         Int       @default(4)
+  pinFailedAttempts Int       @default(0)
+  pinLockedUntil    DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Data isolation relations
   tasks        Task[]
@@ -53,8 +60,27 @@ model User {
   transactions Transaction[]
   notes        KnowledgeNote[]
   goals        Goal[]
+  sessions     Session[]
 
   @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  device       String   @default("Desktop Workstation")
+  browser      String   @default("Chrome")
+  os           String   @default("Windows 11")
+  ipAddress    String   @default("127.0.0.1")
+  isCurrent    Boolean  @default(false)
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
 }
 
 model Task {
@@ -82,21 +108,21 @@ model Task {
 }
 
 model Habit {
-  id               String   @id @default(uuid())
-  userId           String
-  name             String
-  description      String?
-  frequency        String   @default("DAILY")
-  targetDaysPerWeek Int     @default(7)
-  targetCount      Int      @default(1)
-  unit             String   @default("times")
-  category         String   @default("DISCIPLINE")
-  color            String   @default("#10B981")
-  streak           Int      @default(0)
-  bestStreak       Int      @default(0)
-  archived         Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                String   @id @default(uuid())
+  userId            String
+  name              String
+  description       String?
+  frequency         String   @default("DAILY")
+  targetDaysPerWeek Int      @default(7)
+  targetCount       Int      @default(1)
+  unit              String   @default("times")
+  category          String   @default("DISCIPLINE")
+  color             String   @default("#10B981")
+  streak            Int      @default(0)
+  bestStreak        Int      @default(0)
+  archived          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relations
   user User       @relation(fields: [userId], references: [id], onDelete: Cascade)

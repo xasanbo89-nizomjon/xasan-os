@@ -2,19 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
   Bell,
   Menu,
-  Command,
-  CheckCircle2,
-  AlertTriangle,
   Clock,
   Sparkles,
+  Lock,
+  LogOut,
+  User,
+  Settings,
   ChevronDown,
 } from "lucide-react";
 import { Breadcrumbs } from "./breadcrumbs";
+import { logoutAction } from "@/server/actions/auth";
 
 interface NavbarProps {
   onOpenCommandPalette: () => void;
@@ -27,9 +30,10 @@ export function Navbar({
   onOpenQuickCreate,
   onToggleMobileSidebar,
 }: NavbarProps) {
+  const router = useRouter();
   const [time, setTime] = useState<string>("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   // Live system clock
   useEffect(() => {
@@ -47,6 +51,18 @@ export function Navbar({
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleLogout = async () => {
+    setProfileMenuOpen(false);
+    await logoutAction();
+    router.push("/login");
+    router.refresh();
+  };
+
+  const handleLockApp = () => {
+    setProfileMenuOpen(false);
+    router.push("/lock");
+  };
 
   return (
     <header className="h-16 bg-[#101915]/80 backdrop-blur-xl border-b border-[#25352C] sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
@@ -82,7 +98,7 @@ export function Navbar({
         </button>
       </div>
 
-      {/* Right Area: Status clock, Quick Create, Notifications & Profile */}
+      {/* Right Area: Status clock, Quick Create, Notifications, Quick Lock & Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Live System Time */}
         <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#98A69D]">
@@ -90,7 +106,7 @@ export function Navbar({
           <span>{time || "22:12:00"}</span>
         </div>
 
-        {/* Quick-Create Action Button with dropdown */}
+        {/* Quick-Create Action Button */}
         <div className="relative">
           <button
             onClick={() => onOpenQuickCreate()}
@@ -100,6 +116,15 @@ export function Navbar({
             <span className="hidden sm:inline">Create</span>
           </button>
         </div>
+
+        {/* Quick Lock Button */}
+        <button
+          onClick={handleLockApp}
+          title="Lock Application (PIN Lock)"
+          className="p-2 rounded-xl text-[#98A69D] hover:text-[#10B981] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
+        >
+          <Lock className="w-4 h-4" />
+        </button>
 
         {/* Search button on small screens */}
         <button
@@ -115,7 +140,7 @@ export function Navbar({
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             aria-label="Notifications"
-            className="relative p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors"
+            className="relative p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
@@ -168,18 +193,82 @@ export function Navbar({
           )}
         </div>
 
-        {/* User Profile Avatar / Link */}
-        <Link
-          href="/profile"
-          className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 transition-colors group"
-        >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#3B82F6] flex items-center justify-center text-xs font-bold text-[#080D0B] shadow-sm">
-            XM
-          </div>
-          <span className="hidden sm:inline text-xs font-medium text-[#F3F7F4] group-hover:text-[#10B981] transition-colors">
-            Xasan
-          </span>
-        </Link>
+        {/* User Profile Dropdown Trigger */}
+        <div className="relative">
+          <button
+            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+            className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 transition-colors group cursor-pointer"
+          >
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#3B82F6] flex items-center justify-center text-xs font-bold text-[#080D0B] shadow-sm">
+              XM
+            </div>
+            <span className="hidden sm:inline text-xs font-medium text-[#F3F7F4] group-hover:text-[#10B981] transition-colors">
+              Xasan
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#98A69D]" />
+          </button>
+
+          {/* Profile Dropdown Menu */}
+          {profileMenuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setProfileMenuOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-56 glass-dropdown rounded-2xl shadow-2xl z-40 p-2 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-2 border-b border-[#25352C] mb-1">
+                  <div className="text-xs font-bold text-[#F3F7F4]">
+                    Xasan Mukhammadiev
+                  </div>
+                  <div className="text-[10px] text-[#98A69D] truncate">
+                    xasan@os.local
+                  </div>
+                  <div className="text-[9px] font-mono text-[#10B981] mt-0.5">
+                    ROOT AUTHORITY
+                  </div>
+                </div>
+
+                <div className="space-y-0.5 text-xs">
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors"
+                  >
+                    <User className="w-4 h-4 text-[#98A69D]" />
+                    <span>Profile & Security</span>
+                  </Link>
+
+                  <Link
+                    href="/settings"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-[#98A69D]" />
+                    <span>Settings</span>
+                  </Link>
+
+                  <button
+                    onClick={handleLockApp}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors text-left cursor-pointer"
+                  >
+                    <Lock className="w-4 h-4 text-[#10B981]" />
+                    <span>Lock App (PIN)</span>
+                  </button>
+
+                  <div className="border-t border-[#25352C] my-1" />
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#EF4444] hover:bg-[#EF4444]/15 transition-colors text-left cursor-pointer font-medium"
+                  >
+                    <LogOut className="w-4 h-4 text-[#EF4444]" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
