@@ -61,6 +61,14 @@ Features the **15 core navigation modules** in a responsive, collapsible sidebar
 - **Quick-Create Modal**: Unified modal for quick capture of Tasks, Habits, Projects, Transactions, and Notes
 - **Navbar System Clock**: Real-time localized telemetry indicator
 
+## 🔒 4. Authentication & Security (Phase 2)
+
+- **Firebase Authentication**: Client SDK initialization in [`src/lib/firebase/client.ts`](src/lib/firebase/client.ts) supporting Google OAuth & Email/Password, with automatic fallback simulation mode for seamless local preview.
+- **Protected Routes & Middleware**: [`src/middleware.ts`](src/middleware.ts) inspects session tokens on all dashboard routes and redirects unauthenticated access to [`/login`](src/app/login/page.tsx).
+- **User Provisioning & Database Sync**: [`syncFirebaseUserAction`](src/server/actions/auth.ts) provisions users in PostgreSQL via Prisma upon first sign-in, maintaining complete per-user UUID data isolation.
+- **App Passcode / PIN Lock**: [`/lock`](src/app/lock/page.tsx) screen supporting 4-digit or 6-digit numeric passcodes (default `1234`), biometric simulation (TouchID / FaceID), and a 3-attempt lockout mechanism (30-second penalty countdown).
+- **Profile & Security Controls**: Enhanced [`/profile`](src/app/profile/page.tsx) with identity bio, PIN configuration, active recognized session manager, and secure logout.
+
 ---
 
 ## 🚀 Quickstart Commands
