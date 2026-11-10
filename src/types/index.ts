@@ -99,6 +99,16 @@ export interface FocusSessionSummary {
   mode: "POMODORO" | "DEEP_WORK" | "SHORT_BREAK" | "LONG_BREAK" | string;
 }
 
+export interface HabitLogSummary {
+  id: string;
+  habitId: string;
+  userId: string;
+  date: string;
+  completedAt: Date | string;
+  count: number;
+  notes?: string | null;
+}
+
 export interface HabitSummary {
   id: string;
   userId: string;
@@ -113,8 +123,80 @@ export interface HabitSummary {
   streak: number;
   bestStreak: number;
   archived: boolean;
+  reminderTime?: string | null;
   isCompletedToday?: boolean;
+  completionRate?: number;
+  missedDaysCount?: number;
+  recentLogs?: HabitLogSummary[];
   createdAt: Date | string;
+}
+
+export interface WellnessLogSummary {
+  id: string;
+  userId: string;
+  date: string;
+  sleepHours: number;
+  exerciseMinutes: number;
+  waterGlasses: number;
+  mood: string;
+  energyLevel: number;
+  notes?: string | null;
+  createdAt: Date | string;
+}
+
+export interface GoalMilestoneSummary {
+  id: string;
+  goalId: string;
+  title: string;
+  isCompleted: boolean;
+  targetDate?: Date | string | null;
+  order: number;
+  completedAt?: Date | string | null;
+  createdAt: Date | string;
+}
+
+export interface GoalSummary {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  category: "Education" | "Career" | "Finance" | "Health" | "Technology" | "Personal Development" | "Travel" | string;
+  timeframe: "SHORT_TERM" | "LONG_TERM" | "ANNUAL" | string;
+  priority: Priority;
+  progress: number;
+  targetDate?: Date | string | null;
+  completedAt?: Date | string | null;
+  isAchieved: boolean;
+  milestones?: GoalMilestoneSummary[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface VisionItemSummary {
+  id: string;
+  userId: string;
+  title: string;
+  statement: string;
+  category: string;
+  imageUrl?: string | null;
+  targetYear?: number | null;
+  isPinned: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface JournalEntrySummary {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  date: string;
+  mood: string;
+  tags: string[];
+  isPrivate: boolean;
+  isArchived: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface ProjectSummary {

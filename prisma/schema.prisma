@@ -56,10 +56,13 @@ model User {
   tasks         Task[]
   habits        Habit[]
   habitLogs     HabitLog[]
+  wellnessLogs  WellnessLog[]
   projects      Project[]
   transactions  Transaction[]
   notes         KnowledgeNote[]
   goals         Goal[]
+  visionItems   VisionItem[]
+  journalEntries JournalEntry[]
   sessions      Session[]
   events        CalendarEvent[]
   reminders     Reminder[]
@@ -204,6 +207,7 @@ model Habit {
   streak            Int      @default(0)
   bestStreak        Int      @default(0)
   archived          Boolean  @default(false)
+  reminderTime      String?  // e.g. "08:30"
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -232,6 +236,26 @@ model HabitLog {
   @@unique([habitId, date])
   @@index([userId, date])
   @@map("habit_logs")
+}
+
+model WellnessLog {
+  id              String   @id @default(uuid())
+  userId          String
+  date            String   // YYYY-MM-DD
+  sleepHours      Float?   @default(7.5)
+  exerciseMinutes Int?     @default(45)
+  waterGlasses    Int?     @default(8)
+  mood            String?  @default("Energized")
+  energyLevel     Int?     @default(4)
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("wellness_logs")
 }
 
 model Project {
@@ -307,20 +331,80 @@ model KnowledgeNote {
 }
 
 model Goal {
-  id          String    @id @default(uuid())
+  id          String          @id @default(uuid())
   userId      String
   title       String
-  description String?   @db.Text
-  category    String    @default("CAREER")
-  progress    Int       @default(0)
+  description String?         @db.Text
+  category    String          @default("CAREER") // Education, Career, Finance, Health, Technology, Personal Development, Travel
+  timeframe   String          @default("ANNUAL") // SHORT_TERM, LONG_TERM, ANNUAL
+  priority    Priority        @default(NORMAL)
+  progress    Int             @default(0)
   targetDate  DateTime?
-  isAchieved  Boolean   @default(false)
+  completedAt DateTime?
+  isAchieved  Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones GoalMilestone[]
+
+  @@index([userId, isAchieved])
+  @@index([userId, category])
+  @@map("goals")
+}
+
+model GoalMilestone {
+  id          String    @id @default(uuid())
+  goalId      String
+  title       String
+  isCompleted Boolean   @default(false)
+  targetDate  DateTime?
+  order       Int       @default(0)
+  completedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // Relations
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_milestones")
+}
+
+model VisionItem {
+  id         String   @id @default(uuid())
+  userId     String
+  title      String
+  statement  String   @db.Text
+  category   String   @default("CAREER") // EDUCATION, CAREER, FINANCE, HEALTH, TECHNOLOGY, TRAVEL
+  imageUrl   String?
+  targetYear Int?     @default(2027)
+  isPinned   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isAchieved])
-  @@map("goals")
+  @@index([userId, category])
+  @@map("vision_items")
+}
+
+model JournalEntry {
+  id         String   @id @default(uuid())
+  userId     String
+  title      String
+  content    String   @db.Text
+  date       String   // YYYY-MM-DD
+  mood       String   @default("Reflective")
+  tags       String[] @default([])
+  isPrivate  Boolean  @default(false)
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([userId, isArchived])
+  @@map("journal_entries")
 }
