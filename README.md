@@ -69,6 +69,30 @@ Features the **15 core navigation modules** in a responsive, collapsible sidebar
 - **App Passcode / PIN Lock**: [`/lock`](src/app/lock/page.tsx) screen supporting 4-digit or 6-digit numeric passcodes (default `1234`), biometric simulation (TouchID / FaceID), and a 3-attempt lockout mechanism (30-second penalty countdown).
 - **Profile & Security Controls**: Enhanced [`/profile`](src/app/profile/page.tsx) with identity bio, PIN configuration, active recognized session manager, and secure logout.
 
+## ⚡ 5. Dashboard & Core Experience (Phase 3)
+
+- **Executive Welcome Section**: Dynamic time, localized date, daily execution progress ring (`completedTasks + completedHabits`), and one-click Focus Session trigger (`50m`).
+- **7 Main Dashboard Widgets**:
+  1. **Today's Tasks**: Priority matrix (`URGENT`, `HIGH`, `NORMAL`, `LOW`), inline fast task creation, checkbox toggle.
+  2. **Upcoming Deadlines**: Chronological milestone horizons with countdown timers (*Aurelius IELTS*, *Ravon Avto*).
+  3. **Habit Matrix**: Daily discipline checklist, streak telemetry, and one-click logging.
+  4. **Study Center & IELTS Lab**: Academic Band 8.5 progression, daily prep hours, and Spaced Repetition (SRS) review counts.
+  5. **Active Developer Projects**: *Aurelius IELTS* (78%), *LinguaHub* (54%), *Ravon Avto* (92%) with progress telemetry and tech stack tags.
+  6. **Financial Summary**: Net cashflow ledger, monthly revenue vs cloud infrastructure burn ratio.
+  7. **XASAN AI Sovereign Recommendations**: Proactive cognitive nudges, study advice, and focus session triggers.
+- **Configurable Layout Engine**: Zustand store with `localStorage` persistence, supporting widget reordering (Up/Down), visibility toggle (Eye/EyeOff), and density modes (`compact`, `standard`, `expanded`).
+- **5 Dashboard View Modes**:
+  - `Overview` (`/`): The core configurable command center.
+  - `My Activity` (`/activity`): Chronological audit trail of all executed tasks, habits, and transactions.
+  - `Weekly View` (`/weekly`): 7-day deep work velocity curves and weekly habit consistency matrix.
+  - `Monthly View` (`/monthly`): Monthly OKR progression, 28-day habit heatmap, and cashflow review.
+  - `Custom Layout` (`/custom-dashboard`): Dedicated visual layout controller.
+- **Global Core Features**:
+  - **Global Search**: Cross-module live search across tasks, notes, projects, and transactions with instant results.
+  - **Enhanced Command Palette (`Ctrl/Cmd + K`)**: Instant access to view switching, deep work focus sessions, tasks, and system routes.
+  - **Floating Action Button (FAB)**: Speed-dial menu for instant creation of tasks, notes, transactions, and focus sessions.
+  - **Live Focus Session Timer**: Ambient floating deep-work block timer with pause/resume controls.
+
 ---
 
 ## 🚀 Quickstart Commands
