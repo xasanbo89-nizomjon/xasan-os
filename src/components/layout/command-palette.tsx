@@ -11,9 +11,16 @@ import {
   X,
   Keyboard,
   Layers,
+  Clock,
+  LayoutDashboard,
+  Activity,
+  CalendarRange,
+  CalendarDays,
+  Lock,
 } from "lucide-react";
 import { NAVIGATION_ITEMS } from "@/config/navigation";
 import { DynamicIcon } from "../icons";
+import { useDashboardStore, DashboardViewType } from "@/stores/dashboard-store";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -28,6 +35,7 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const { setView, startFocusSession } = useDashboardStore();
 
   // Global Ctrl+K / Cmd+K handler
   useEffect(() => {
@@ -57,6 +65,22 @@ export function CommandPalette({
     onOpenQuickCreate(actionType);
   };
 
+  const handleSwitchView = (view: DashboardViewType) => {
+    onOpenChange(false);
+    setView(view);
+    router.push("/");
+  };
+
+  const handleStartFocus = () => {
+    onOpenChange(false);
+    startFocusSession(50);
+  };
+
+  const handleLock = () => {
+    onOpenChange(false);
+    router.push("/lock");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 sm:px-6">
       {/* Backdrop */}
@@ -77,7 +101,7 @@ export function CommandPalette({
             <Search className="w-5 h-5 text-[#10B981] shrink-0" />
             <Command.Input
               autoFocus
-              placeholder="Type a command or search sections... (e.g. Tasks, IELTS, Finance)"
+              placeholder="Type a command or search sections... (e.g. Focus, Tasks, Weekly, IELTS)"
               className="w-full bg-transparent text-[#F3F7F4] placeholder-[#98A69D] text-sm focus:outline-none"
             />
             <div className="flex items-center gap-1.5 shrink-0">
@@ -105,6 +129,21 @@ export function CommandPalette({
               className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2"
             >
               <Command.Item
+                onSelect={handleStartFocus}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium">Start 50-Minute Deep Work Session</span>
+                </div>
+                <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
+                  Trigger
+                </span>
+              </Command.Item>
+
+              <Command.Item
                 onSelect={() => handleQuickAction("task")}
                 className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
               >
@@ -120,33 +159,68 @@ export function CommandPalette({
               </Command.Item>
 
               <Command.Item
-                onSelect={() => handleQuickAction("habit")}
+                onSelect={handleLock}
                 className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
-                    <Sparkles className="w-4 h-4" />
+                    <Lock className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">Log Habit / Discipline</span>
+                  <span className="font-medium">Lock Application (PIN Passcode)</span>
                 </div>
                 <span className="text-xs text-[#98A69D] flex items-center gap-1">
-                  Action <ArrowRight className="w-3 h-3" />
+                  Security <ArrowRight className="w-3 h-3" />
                 </span>
+              </Command.Item>
+            </Command.Group>
+
+            {/* Dashboard Views */}
+            <Command.Group
+              heading="Switch Dashboard Views"
+              className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2 border-t border-[#25352C]/60 mt-1"
+            >
+              <Command.Item
+                onSelect={() => handleSwitchView("overview")}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard className="w-3.5 h-3.5 text-[#10B981]" />
+                  <span>Overview (Main Widgets)</span>
+                </div>
+                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
               </Command.Item>
 
               <Command.Item
-                onSelect={() => handleQuickAction("project")}
-                className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
+                onSelect={() => handleSwitchView("activity")}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
-                    <Layers className="w-4 h-4" />
-                  </div>
-                  <span className="font-medium">Add Developer Project</span>
+                <div className="flex items-center gap-2.5">
+                  <Activity className="w-3.5 h-3.5 text-[#10B981]" />
+                  <span>My Activity Stream</span>
                 </div>
-                <span className="text-xs text-[#98A69D] flex items-center gap-1">
-                  Action <ArrowRight className="w-3 h-3" />
-                </span>
+                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+              </Command.Item>
+
+              <Command.Item
+                onSelect={() => handleSwitchView("weekly")}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CalendarRange className="w-3.5 h-3.5 text-[#10B981]" />
+                  <span>Weekly Velocity & Matrix</span>
+                </div>
+                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+              </Command.Item>
+
+              <Command.Item
+                onSelect={() => handleSwitchView("monthly")}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CalendarDays className="w-3.5 h-3.5 text-[#10B981]" />
+                  <span>Monthly OKRs & Heatmap</span>
+                </div>
+                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
               </Command.Item>
             </Command.Group>
 

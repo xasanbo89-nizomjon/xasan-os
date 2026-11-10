@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import { Navbar } from "./navbar";
 import { CommandPalette } from "./command-palette";
 import { QuickCreateDialog } from "./quick-create-dialog";
+import { FloatingActionButton } from "./floating-action-button";
+import { FocusSessionModal } from "../dashboard/focus-session-modal";
+import { GlobalSearchDialog } from "./global-search-dialog";
+import { getGlobalSearchDataAction } from "@/server/actions/os";
+import { TaskSummary, ProjectSummary, KnowledgeNoteSummary, TransactionSummary } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -17,6 +22,28 @@ export function AppShell({ children }: AppShellProps) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [quickCreateType, setQuickCreateType] = useState<string>("task");
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+
+  // Search dataset
+  const [searchData, setSearchData] = useState<{
+    tasks: TaskSummary[];
+    projects: ProjectSummary[];
+    notes: KnowledgeNoteSummary[];
+    transactions: TransactionSummary[];
+  }>({
+    tasks: [],
+    projects: [],
+    notes: [],
+    transactions: [],
+  });
+
+  useEffect(() => {
+    async function loadSearch() {
+      const data = await getGlobalSearchDataAction();
+      setSearchData(data);
+    }
+    loadSearch();
+  }, []);
 
   const handleOpenQuickCreate = (type?: string) => {
     if (type) setQuickCreateType(type);
@@ -43,6 +70,7 @@ export function AppShell({ children }: AppShellProps) {
         {/* Top Navbar */}
         <Navbar
           onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+          onOpenSearch={() => setSearchDialogOpen(true)}
           onOpenQuickCreate={handleOpenQuickCreate}
           onToggleMobileSidebar={() => setMobileOpen(!mobileOpen)}
         />
@@ -60,12 +88,28 @@ export function AppShell({ children }: AppShellProps) {
         onOpenQuickCreate={handleOpenQuickCreate}
       />
 
+      {/* Global Cross-Module Search Dialog */}
+      <GlobalSearchDialog
+        open={searchDialogOpen}
+        onOpenChange={setSearchDialogOpen}
+        tasks={searchData.tasks}
+        projects={searchData.projects}
+        notes={searchData.notes}
+        transactions={searchData.transactions}
+      />
+
       {/* Global Quick-Create Dialog */}
       <QuickCreateDialog
         open={quickCreateOpen}
         onOpenChange={setQuickCreateOpen}
         initialType={quickCreateType}
       />
+
+      {/* Floating Action Button (Quick Add) */}
+      <FloatingActionButton onOpenQuickCreate={handleOpenQuickCreate} />
+
+      {/* Floating Focus Session Timer */}
+      <FocusSessionModal />
     </div>
   );
 }

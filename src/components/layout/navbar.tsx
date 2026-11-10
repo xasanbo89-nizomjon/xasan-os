@@ -21,12 +21,14 @@ import { logoutAction } from "@/server/actions/auth";
 
 interface NavbarProps {
   onOpenCommandPalette: () => void;
+  onOpenSearch?: () => void;
   onOpenQuickCreate: (type?: string) => void;
   onToggleMobileSidebar: () => void;
 }
 
 export function Navbar({
   onOpenCommandPalette,
+  onOpenSearch,
   onOpenQuickCreate,
   onToggleMobileSidebar,
 }: NavbarProps) {
@@ -82,7 +84,7 @@ export function Navbar({
       {/* Middle Area: Global Search / Command Bar Trigger */}
       <div className="hidden md:flex flex-1 max-w-md mx-6">
         <button
-          onClick={onOpenCommandPalette}
+          onClick={onOpenSearch || onOpenCommandPalette}
           className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] text-xs hover:border-[#10B981]/50 hover:text-[#F3F7F4] transition-all duration-150 group cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2.5">
@@ -128,7 +130,7 @@ export function Navbar({
 
         {/* Search button on small screens */}
         <button
-          onClick={onOpenCommandPalette}
+          onClick={onOpenSearch || onOpenCommandPalette}
           aria-label="Search"
           className="md:hidden p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C]"
         >

@@ -260,6 +260,110 @@ export async function getDashboardData(): Promise<{
   }
 }
 
+export async function getGlobalSearchDataAction(): Promise<{
+  tasks: TaskSummary[];
+  projects: ProjectSummary[];
+  notes: KnowledgeNoteSummary[];
+  transactions: TransactionSummary[];
+}> {
+  if (!isDatabaseConfigured()) {
+    return {
+      tasks: FALLBACK_TASKS,
+      projects: FALLBACK_PROJECTS,
+      notes: FALLBACK_NOTES,
+      transactions: FALLBACK_TRANSACTIONS,
+    };
+  }
+
+  try {
+    const user = await getOrCreateCurrentUser();
+    const [tasks, projects, notes, transactions] = await Promise.all([
+      prisma.task.findMany({
+        where: { userId: user.id },
+        include: { project: { select: { id: true, name: true, color: true } } },
+        take: 30,
+      }),
+      prisma.project.findMany({
+        where: { userId: user.id },
+        take: 20,
+      }),
+      prisma.knowledgeNote.findMany({
+        where: { userId: user.id },
+        take: 20,
+      }),
+      prisma.transaction.findMany({
+        where: { userId: user.id },
+        take: 20,
+      }),
+    ]);
+
+    return {
+      tasks: tasks.map((t) => ({
+        id: t.id,
+        userId: t.userId,
+        projectId: t.projectId,
+        project: t.project,
+        title: t.title,
+        description: t.description,
+        priority: t.priority,
+        status: t.status,
+        dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+        tags: t.tags,
+        createdAt: t.createdAt.toISOString(),
+        updatedAt: t.updatedAt.toISOString(),
+      })),
+      projects: projects.map((p) => ({
+        id: p.id,
+        userId: p.userId,
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        status: p.status,
+        priority: p.priority,
+        techStack: p.techStack,
+        repositoryUrl: p.repositoryUrl,
+        liveUrl: p.liveUrl,
+        progress: p.progress,
+        createdAt: p.createdAt.toISOString(),
+        updatedAt: p.updatedAt.toISOString(),
+      })),
+      notes: notes.map((n) => ({
+        id: n.id,
+        userId: n.userId,
+        title: n.title,
+        content: n.content,
+        summary: n.summary,
+        category: n.category,
+        tags: n.tags,
+        isPinned: n.isPinned,
+        isFavorite: n.isFavorite,
+        createdAt: n.createdAt.toISOString(),
+        updatedAt: n.updatedAt.toISOString(),
+      })),
+      transactions: transactions.map((tx) => ({
+        id: tx.id,
+        userId: tx.userId,
+        title: tx.title,
+        amount: Number(tx.amount),
+        type: tx.type,
+        category: tx.category,
+        account: tx.account,
+        date: tx.date.toISOString(),
+        tags: tx.tags,
+        createdAt: tx.createdAt.toISOString(),
+      })),
+    };
+  } catch (err) {
+    console.warn("Using fallback search dataset:", err);
+    return {
+      tasks: FALLBACK_TASKS,
+      projects: FALLBACK_PROJECTS,
+      notes: FALLBACK_NOTES,
+      transactions: FALLBACK_TRANSACTIONS,
+    };
+  }
+}
+
 // Server action to create a new task
 export async function createTaskAction(formData: {
   title: string;
@@ -280,6 +384,7 @@ export async function createTaskAction(formData: {
           description: formData.description,
           priority: formData.priority,
           status: TaskStatus.PENDING,
+          tags: [],
           createdAt: new Date(),
         },
       };
