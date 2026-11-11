@@ -36,6 +36,7 @@ import {
   AiMessageSummary,
   AiProposedAction,
   AiChatMode,
+  AiToolCallInfo,
 } from "@/types";
 import {
   createAiConversationAction,
@@ -118,12 +119,106 @@ export function AiChatInterface({
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, tempUserMsg]);
+    const assistantMsgId = `ast-${Date.now()}`;
+    const initialAssistantMsg: AiMessageSummary = {
+      id: assistantMsgId,
+      conversationId: activeConversation.id,
+      role: "assistant",
+      content: "",
+      tokenCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, tempUserMsg, initialAssistantMsg]);
     setInputPrompt("");
     setSelectedContext(null);
     setIsSubmitting(true);
 
     try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: activeConversation.id,
+          message: textToSend,
+          contextAttachment: attachment,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error("Streaming endpoint unavailable, using sovereign engine");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamedContent = "";
+      const toolCalls: AiToolCallInfo[] = [];
+      let proposedAction: AiProposedAction | null = null;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.replace("data: ", ""));
+              if (data.type === "delta") {
+                streamedContent += data.text;
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMsgId
+                      ? { ...m, content: streamedContent }
+                      : m
+                  )
+                );
+              } else if (data.type === "tool_call") {
+                toolCalls.push(data.toolCall);
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMsgId
+                      ? { ...m, toolCalls: [...toolCalls] }
+                      : m
+                  )
+                );
+              } else if (data.type === "proposed_action") {
+                proposedAction = data.proposedAction;
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMsgId
+                      ? { ...m, proposedAction }
+                      : m
+                  )
+                );
+              } else if (data.type === "done") {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMsgId
+                      ? {
+                          ...m,
+                          content: data.fullContent || streamedContent,
+                          toolCalls:
+                            data.toolCalls ||
+                            (toolCalls.length ? toolCalls : undefined),
+                          proposedAction:
+                            data.proposedAction || proposedAction,
+                        }
+                      : m
+                  )
+                );
+              }
+            } catch (e) {
+              // Partial SSE chunk
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Falling back to server action:", err);
+      // Fallback directly to server action
       const res = await sendAiMessageAction(
         activeConversation.id,
         textToSend,
@@ -132,13 +227,10 @@ export function AiChatInterface({
 
       if (res.success && res.assistantMessage) {
         setMessages((prev) => [
-          ...prev.filter((m) => m.id !== tempUserMsg.id),
-          res.userMessage || tempUserMsg,
+          ...prev.filter((m) => m.id !== assistantMsgId),
           res.assistantMessage!,
         ]);
       }
-    } catch (err) {
-      console.error("sendAiMessage error:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -487,7 +579,19 @@ export function AiChatInterface({
 
                     {/* Markdown Body */}
                     <div className="prose prose-invert max-w-none space-y-2 whitespace-pre-wrap font-sans pr-4">
-                      {msg.content}
+                      {msg.content ? (
+                        <>
+                          {msg.content}
+                          {isSubmitting && isAssistant && (
+                            <span className="inline-block w-1.5 h-3 ml-1 bg-[#10B981] animate-pulse align-middle" />
+                          )}
+                        </>
+                      ) : (
+                        <span className="flex items-center gap-2 text-[#10B981] font-mono text-[11px]">
+                          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+                          <span>Streaming sovereign reasoning & tool execution...</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Read-Only Tool Execution Badge */}
@@ -601,18 +705,6 @@ export function AiChatInterface({
               </div>
             );
           })}
-
-          {isSubmitting && (
-            <div className="flex gap-3 max-w-2xl mr-auto">
-              <div className="w-8 h-8 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981] shrink-0">
-                <Bot className="w-4 h-4 animate-spin" />
-              </div>
-              <div className="p-4 rounded-2xl rounded-tl-none bg-[#101915] border border-[#25352C] flex items-center gap-2 text-xs text-[#10B981] font-mono">
-                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-                <span>Executing read-only tools & formulating verified invariants...</span>
-              </div>
-            </div>
-          )}
 
           <div ref={messagesEndRef} />
         </div>
