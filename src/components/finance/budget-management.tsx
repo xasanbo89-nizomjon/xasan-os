@@ -18,6 +18,7 @@ import {
 import { BudgetSummary } from "@/types";
 import { setBudgetLimitAction } from "@/server/actions/finance";
 import { formatCurrency } from "@/lib/utils";
+import { useFinanceStore } from "@/stores/finance-store";
 
 interface BudgetManagementProps {
   initialBudgets: BudgetSummary[];
@@ -35,7 +36,11 @@ const CATEGORIES = [
 ];
 
 export function BudgetManagement({ initialBudgets }: BudgetManagementProps) {
-  const [budgets, setBudgets] = useState<BudgetSummary[]>(initialBudgets);
+  const storeBudgets = useFinanceStore((s) => s.budgets);
+  const setBudgetLimit = useFinanceStore((s) => s.setBudgetLimit);
+  const isHydrated = useFinanceStore((s) => s.isHydrated);
+
+  const budgets = isHydrated ? storeBudgets : initialBudgets;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("2026-11");
 
@@ -61,37 +66,8 @@ export function BudgetManagement({ initialBudgets }: BudgetManagementProps) {
     if (!formLimit || parseFloat(formLimit) <= 0) return;
 
     const limit = parseFloat(formLimit);
-    const res = await setBudgetLimitAction(formCategory, limit, selectedMonth);
-
-    if (res.success) {
-      setBudgets((prev) => {
-        const existing = prev.find((b) => b.category === formCategory && b.month === selectedMonth);
-        if (existing) {
-          return prev.map((b) =>
-            b.id === existing.id
-              ? {
-                  ...b,
-                  monthlyLimit: limit,
-                  percentageUsed: limit > 0 ? parseFloat(((b.spentAmount / limit) * 100).toFixed(1)) : 0,
-                }
-              : b
-          );
-        } else {
-          const newBud: BudgetSummary = {
-            id: `bud-${Date.now()}`,
-            userId: "demo",
-            category: formCategory,
-            month: selectedMonth,
-            monthlyLimit: limit,
-            spentAmount: 0,
-            percentageUsed: 0,
-            currency: "USD",
-          };
-          return [...prev, newBud];
-        }
-      });
-      setIsModalOpen(false);
-    }
+    setBudgetLimit(formCategory, limit, selectedMonth);
+    setIsModalOpen(false);
   };
 
   const getAlertBadge = (pct: number) => {

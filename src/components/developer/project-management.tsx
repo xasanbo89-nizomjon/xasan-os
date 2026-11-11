@@ -23,18 +23,20 @@ import {
   Terminal,
 } from "lucide-react";
 import { ProjectSummary, ProjectStatus, Priority } from "@/types";
-import {
-  createProjectAction,
-  updateProjectAction,
-  deleteProjectAction,
-} from "@/server/actions/developer";
+import { useDeveloperStore } from "@/stores/developer-store";
 
 interface ProjectManagementProps {
   initialProjects: ProjectSummary[];
 }
 
 export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
-  const [projects, setProjects] = useState<ProjectSummary[]>(initialProjects);
+  const storeProjects = useDeveloperStore((s) => s.projects);
+  const addProject = useDeveloperStore((s) => s.addProject);
+  const updateProject = useDeveloperStore((s) => s.updateProject);
+  const deleteProject = useDeveloperStore((s) => s.deleteProject);
+  const isHydrated = useDeveloperStore((s) => s.isHydrated);
+
+  const projects = isHydrated ? storeProjects : initialProjects;
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -123,7 +125,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
     setIsCreateModalOpen(true);
   };
 
-  const handleSaveProject = async (e: React.FormEvent) => {
+  const handleSaveProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
@@ -133,8 +135,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
       .filter(Boolean);
 
     if (editingProject) {
-      // Update
-      const res = await updateProjectAction(editingProject.id, {
+      updateProject(editingProject.id, {
         name: formData.name,
         description: formData.description,
         status: formData.status,
@@ -144,36 +145,11 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
         liveUrl: formData.liveUrl,
         progress: Number(formData.progress),
         color: formData.color,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
-        targetDate: formData.targetDate ? new Date(formData.targetDate).toISOString() : null,
+        startDate: formData.startDate,
+        targetDate: formData.targetDate,
       });
-
-      if (res.success) {
-        setProjects((prev) =>
-          prev.map((p) =>
-            p.id === editingProject.id
-              ? {
-                  ...p,
-                  name: formData.name,
-                  description: formData.description,
-                  status: formData.status,
-                  priority: formData.priority,
-                  techStack: techArray,
-                  repositoryUrl: formData.repositoryUrl,
-                  liveUrl: formData.liveUrl,
-                  progress: Number(formData.progress),
-                  color: formData.color,
-                  startDate: formData.startDate,
-                  targetDate: formData.targetDate,
-                  updatedAt: new Date().toISOString(),
-                }
-              : p
-          )
-        );
-      }
     } else {
-      // Create
-      const res = await createProjectAction({
+      addProject({
         name: formData.name,
         description: formData.description,
         status: formData.status,
@@ -181,32 +157,20 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
         techStack: techArray,
         repositoryUrl: formData.repositoryUrl,
         liveUrl: formData.liveUrl,
-        progress: Number(formData.progress),
         color: formData.color,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
-        targetDate: formData.targetDate ? new Date(formData.targetDate).toISOString() : undefined,
       });
-
-      if (res.success && res.project) {
-        const newProj: ProjectSummary = {
-          ...res.project,
-          startDate: res.project.startDate ? new Date(res.project.startDate).toISOString() : null,
-          targetDate: res.project.targetDate ? new Date(res.project.targetDate).toISOString() : null,
-          createdAt: typeof res.project.createdAt === "string" ? res.project.createdAt : new Date(res.project.createdAt).toISOString(),
-          updatedAt: typeof res.project.updatedAt === "string" ? res.project.updatedAt : new Date(res.project.updatedAt).toISOString(),
-        };
-        setProjects((prev) => [newProj, ...prev]);
-      }
     }
 
     setIsCreateModalOpen(false);
+    setEditingProject(null);
   };
 
-  const handleDeleteProject = async (id: string) => {
+  const handleDeleteProject = (id: string) => {
     if (confirm("Are you sure you want to delete this project and its related data?")) {
-      const res = await deleteProjectAction(id);
-      if (res.success) {
-        setProjects((prev) => prev.filter((p) => p.id !== id));
+      deleteProject(id);
+      if (editingProject?.id === id) {
+        setIsCreateModalOpen(false);
+        setEditingProject(null);
       }
     }
   };

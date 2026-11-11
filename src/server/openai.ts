@@ -201,7 +201,7 @@ export async function executeOpenAiToolCall(
     const data = await toolGetFinanceSummary();
     return {
       result: data,
-      toolCallInfo: { name: "getFinanceSummary", arguments: args, isMutative: false, result: { balance: data.metrics.totalBalance } },
+      toolCallInfo: { name: "getFinanceSummary", arguments: args, isMutative: false, result: { balance: data.balance } },
     };
   }
 
@@ -209,7 +209,7 @@ export async function executeOpenAiToolCall(
     const data = await toolGetGoals();
     return {
       result: data,
-      toolCallInfo: { name: "getGoals", arguments: args, isMutative: false, result: { count: data.goals.length } },
+      toolCallInfo: { name: "getGoals", arguments: args, isMutative: false, result: { count: data.savingsGoals.length } },
     };
   }
 

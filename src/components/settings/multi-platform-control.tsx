@@ -20,6 +20,7 @@ import {
   Cpu,
   Lock,
   FileCheck,
+  Trash2,
 } from "lucide-react";
 import {
   getPendingQueue,
@@ -28,6 +29,12 @@ import {
 } from "@/lib/offline-sync";
 import { isTauriApp, sendDesktopNotification } from "@/lib/desktop";
 import { isCapacitorApp, authenticateWithDeviceBiometrics, triggerHaptic } from "@/lib/mobile";
+import {
+  exportLocalBackup,
+  importLocalBackup,
+  clearAllLocalData,
+  resetAllLocalData,
+} from "@/stores/local-storage-sync";
 import {
   exportSovereignBackupAction,
   importSovereignBackupAction,
@@ -82,20 +89,21 @@ export function MultiPlatformControl() {
   const handleExportBackup = async () => {
     setIsExporting(true);
     try {
-      const res = await exportSovereignBackupAction();
-      if (res.success && res.jsonString) {
-        // Trigger client download
-        const blob = new Blob([res.jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `xasan-os-backup-${new Date().toISOString().split("T")[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        triggerHaptic("SUCCESS");
-      }
+      // Export live client-side data from all Zustand stores
+      const jsonString = exportLocalBackup();
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `xasan-os-sovereign-backup-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setImportStatus("Backup exported successfully from local storage.");
+      triggerHaptic("SUCCESS");
+    } catch (e: any) {
+      setImportStatus(`Export error: ${e.message}`);
     } finally {
       setIsExporting(false);
     }
@@ -107,16 +115,44 @@ export function MultiPlatformControl() {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const content = event.target?.result as string;
-      const res = await importSovereignBackupAction(content);
-      if (res.success) {
-        setImportStatus(res.message || "Backup verified and restored.");
-        triggerHaptic("SUCCESS");
-      } else {
-        setImportStatus(`Verification Failed: ${res.error}`);
+      try {
+        const content = event.target?.result as string;
+        const res = importLocalBackup(content);
+        if (res.success) {
+          setImportStatus("Backup verified and restored into local storage successfully.");
+          triggerHaptic("SUCCESS");
+        } else {
+          setImportStatus(`Verification Failed: ${res.error}`);
+        }
+      } catch (err: any) {
+        setImportStatus(`Import Error: ${err.message}`);
       }
     };
     reader.readAsText(file);
+  };
+
+  const handlePurgeAllLocalData = () => {
+    if (
+      confirm(
+        "DANGER: Are you sure you want to permanently erase ALL local data from browser localStorage? All tasks, notes, habits, projects and finance logs will be deleted immediately."
+      )
+    ) {
+      clearAllLocalData();
+      setImportStatus("All local storage has been completely purged.");
+      triggerHaptic("HEAVY");
+    }
+  };
+
+  const handleResetDefaults = () => {
+    if (
+      confirm(
+        "Reset all 12 modules to default PRD seed data? Any custom local records will be restored to initial state."
+      )
+    ) {
+      resetAllLocalData();
+      setImportStatus("All local data restored to factory PRD seed defaults.");
+      triggerHaptic("SUCCESS");
+    }
   };
 
   const handleRunIntegrityAudit = async () => {
@@ -330,6 +366,43 @@ export function MultiPlatformControl() {
             <span>{importStatus}</span>
           </div>
         )}
+      </div>
+
+      {/* 4. Local Storage Sovereign Persistence Controls */}
+      <div className="glass-card rounded-2xl p-6 border border-[#25352C] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center text-[#10B981]">
+              <HardDrive className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#F3F7F4]">
+                Local Storage Sovereign State (0-Database Mode)
+              </h3>
+              <p className="text-[11px] text-[#98A69D]">
+                Data persists in browser localStorage with zero server database dependency.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleResetDefaults}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#25352C] text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] text-xs font-mono font-medium transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reset to Seed Defaults</span>
+            </button>
+
+            <button
+              onClick={handlePurgeAllLocalData}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EF4444]/15 hover:bg-[#EF4444]/25 text-[#EF4444] border border-[#EF4444]/30 text-xs font-mono font-medium transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Purge All Local Storage</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 4. Full System Integrity Audit Diagnostic */}

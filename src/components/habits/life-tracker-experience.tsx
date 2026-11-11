@@ -18,12 +18,7 @@ import { DisciplineReport } from "./discipline-report";
 import { CreateHabitModal } from "./create-habit-modal";
 import { WellnessTracker } from "./wellness-tracker";
 import { JournalView } from "@/components/journal/journal-view";
-import {
-  createHabitAction,
-  toggleHabitDayAction,
-  archiveHabitAction,
-  deleteHabitAction,
-} from "@/server/actions/habits";
+import { useHabitsStore } from "@/stores/habits-store";
 
 interface LifeTrackerExperienceProps {
   initialHabits: HabitSummary[];
@@ -37,7 +32,19 @@ export function LifeTrackerExperience({
   initialJournalEntries,
 }: LifeTrackerExperienceProps) {
   const [activeTab, setActiveTab] = useState<"habits" | "heatmap" | "report" | "wellness" | "journal">("habits");
-  const [habits, setHabits] = useState<HabitSummary[]>(initialHabits);
+  const storeHabits = useHabitsStore((s) => s.habits);
+  const storeWellness = useHabitsStore((s) => s.wellnessLogs);
+  const storeJournal = useHabitsStore((s) => s.journalEntries);
+  const addHabit = useHabitsStore((s) => s.addHabit);
+  const deleteHabit = useHabitsStore((s) => s.deleteHabit);
+  const toggleHabitDay = useHabitsStore((s) => s.toggleHabitDay);
+  const archiveHabit = useHabitsStore((s) => s.archiveHabit);
+  const isHydrated = useHabitsStore((s) => s.isHydrated);
+
+  const habits = isHydrated ? storeHabits : initialHabits;
+  const wellnessLogs = isHydrated ? storeWellness : initialWellnessLogs;
+  const journalEntries = isHydrated ? storeJournal : initialJournalEntries;
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -46,69 +53,25 @@ export function LifeTrackerExperience({
   const displayedHabits = showArchived ? archivedHabits : activeHabits;
 
   // Handlers
-  const handleToggleToday = async (habitId: string) => {
-    const today = new Date().toISOString().slice(0, 10);
-    // Optimistic update
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== habitId) return h;
-        const newStatus = !h.isCompletedToday;
-        const newStreak = newStatus ? h.streak + 1 : Math.max(0, h.streak - 1);
-        return {
-          ...h,
-          isCompletedToday: newStatus,
-          streak: newStreak,
-          bestStreak: Math.max(h.bestStreak, newStreak),
-        };
-      })
-    );
-    await toggleHabitDayAction(habitId, today);
+  const handleToggleToday = (habitId: string) => {
+    toggleHabitDay(habitId);
   };
 
-  const handleToggleDate = async (habitId: string, date: string) => {
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== habitId) return h;
-        const hasLog = h.recentLogs?.some((l) => l.date === date);
-        const updatedLogs = hasLog
-          ? h.recentLogs?.filter((l) => l.date !== date)
-          : [
-              ...(h.recentLogs || []),
-              {
-                id: `log-sim-${Date.now()}`,
-                habitId,
-                userId: h.userId,
-                date,
-                completedAt: new Date().toISOString(),
-                count: 1,
-              },
-            ];
-        return {
-          ...h,
-          recentLogs: updatedLogs,
-        };
-      })
-    );
-    await toggleHabitDayAction(habitId, date);
+  const handleToggleDate = (habitId: string, date: string) => {
+    toggleHabitDay(habitId, date);
   };
 
-  const handleArchive = async (habitId: string, archived: boolean) => {
-    setHabits((prev) =>
-      prev.map((h) => (h.id === habitId ? { ...h, archived } : h))
-    );
-    await archiveHabitAction(habitId, archived);
+  const handleArchive = (habitId: string, _archived: boolean) => {
+    archiveHabit(habitId);
   };
 
-  const handleDelete = async (habitId: string) => {
-    setHabits((prev) => prev.filter((h) => h.id !== habitId));
-    await deleteHabitAction(habitId);
+  const handleDelete = (habitId: string) => {
+    deleteHabit(habitId);
   };
 
   const handleCreateHabit = async (data: any) => {
-    const res = await createHabitAction(data);
-    if (res.success && res.habit) {
-      setHabits((prev) => [res.habit as HabitSummary, ...prev]);
-    }
+    addHabit(data);
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -256,11 +219,11 @@ export function LifeTrackerExperience({
         {activeTab === "report" && <DisciplineReport habits={habits} />}
 
         {activeTab === "wellness" && (
-          <WellnessTracker initialLogs={initialWellnessLogs} />
+          <WellnessTracker initialLogs={wellnessLogs} />
         )}
 
         {activeTab === "journal" && (
-          <JournalView initialEntries={initialJournalEntries} />
+          <JournalView initialEntries={journalEntries} />
         )}
       </div>
 

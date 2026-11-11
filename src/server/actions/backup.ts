@@ -1,6 +1,5 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import {
   FALLBACK_TASKS,

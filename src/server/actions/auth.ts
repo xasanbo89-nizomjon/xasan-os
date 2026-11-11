@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import prisma from "@/lib/prisma";
 import {
   AUTH_COOKIE_NAME,
   USER_EMAIL_COOKIE,
@@ -14,11 +13,10 @@ import {
 } from "@/lib/auth/constants";
 
 function isDatabaseConfigured(): boolean {
-  const url = process.env.DATABASE_URL;
-  if (!url) return false;
-  if (url.includes("johndoe:randompassword")) return false;
-  return true;
+  return false;
 }
+
+const prisma: any = null;
 
 export interface UserSessionPayload {
   uid: string;
@@ -410,7 +408,7 @@ export async function getActiveSessionsAction() {
       });
 
       if (user && user.sessions.length > 0) {
-        return user.sessions.map((s) => ({
+        return user.sessions.map((s: any) => ({
           id: s.id,
           device: s.device,
           browser: s.browser,

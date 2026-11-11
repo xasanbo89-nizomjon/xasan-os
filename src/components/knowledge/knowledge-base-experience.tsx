@@ -31,7 +31,7 @@ import { NotesSidebar } from "./notes-sidebar";
 import { NoteEditor } from "./note-editor";
 import { AiKnowledgeCopilot } from "./ai-knowledge-copilot";
 import { SemanticSearchModal } from "./semantic-search-modal";
-import { createKnowledgeNoteAction } from "@/server/actions/knowledge";
+import { useKnowledgeStore } from "@/stores/knowledge-store";
 import { formatDate } from "@/lib/utils";
 
 interface KnowledgeBaseExperienceProps {
@@ -43,8 +43,17 @@ export function KnowledgeBaseExperience({
   initialFolders,
   initialNotes,
 }: KnowledgeBaseExperienceProps) {
-  const [folders, setFolders] = useState<KnowledgeFolderSummary[]>(initialFolders);
-  const [notes, setNotes] = useState<KnowledgeNoteSummary[]>(initialNotes);
+  const storeFolders = useKnowledgeStore((s) => s.folders);
+  const storeNotes = useKnowledgeStore((s) => s.notes);
+  const addNote = useKnowledgeStore((s) => s.addNote);
+  const updateNote = useKnowledgeStore((s) => s.updateNote);
+  const deleteNote = useKnowledgeStore((s) => s.deleteNote);
+  const addFolder = useKnowledgeStore((s) => s.addFolder);
+  const isHydrated = useKnowledgeStore((s) => s.isHydrated);
+
+  const folders = isHydrated ? storeFolders : initialFolders;
+  const notes = isHydrated ? storeNotes : initialNotes;
+
   const [activeView, setActiveView] = useState<"ALL" | "FAVORITES" | "PINNED" | "ARCHIVED">("ALL");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [selectedContentType, setSelectedContentType] = useState<string>("ALL");
@@ -109,49 +118,40 @@ export function KnowledgeBaseExperience({
   }, [notes, selectedNoteId, filteredNotes]);
 
   // Create new note
-  const handleCreateNewNote = async () => {
-    setIsCreating(true);
-    try {
-      const folder = folders.find((f) => f.id === selectedFolderId);
-      const defaultCategory = folder ? folder.name : "Architecture";
-      const count = notes.length + 1;
-      const defaultTitle = `Architectural Note #${count}`;
+  const handleCreateNewNote = () => {
+    const folder = folders.find((f) => f.id === selectedFolderId);
+    const defaultCategory = folder ? folder.name : "Architecture";
+    const count = notes.length + 1;
+    const defaultTitle = `Architectural Note #${count}`;
 
-      const res = await createKnowledgeNoteAction({
-        title: defaultTitle,
-        content: `# ${defaultTitle}\n\n## Objective & Invariants\n- Define core requirements, invariants, and architectural constraints.\n\n## System Design & Trade-offs\nDescribe the trade-offs, state machines, and concurrency considerations here...`,
-        contentType: selectedContentType !== "ALL" ? selectedContentType : "NOTE",
-        category: defaultCategory,
-        folderId: selectedFolderId || undefined,
-        tags: selectedTag ? [selectedTag, "second-brain"] : ["architecture", "invariants"],
-        isPinned: false,
-        isFavorite: false,
-      });
+    const newNote = addNote({
+      title: defaultTitle,
+      content: `# ${defaultTitle}\n\n## Objective & Invariants\n- Define core requirements, invariants, and architectural constraints.\n\n## System Design & Trade-offs\nDescribe the trade-offs, state machines, and concurrency considerations here...`,
+      contentType: (selectedContentType !== "ALL" ? selectedContentType : "NOTE") as any,
+      category: defaultCategory,
+      folderId: selectedFolderId || undefined,
+      tags: selectedTag ? [selectedTag, "second-brain"] : ["architecture", "invariants"],
+      isPinned: false,
+      isFavorite: false,
+    });
 
-      if (res.success && res.note) {
-        const newNote = res.note as KnowledgeNoteSummary;
-        setNotes((prev) => [newNote, ...prev]);
-        setSelectedNoteId(newNote.id);
-      }
-    } finally {
-      setIsCreating(false);
-    }
+    setSelectedNoteId(newNote.id);
   };
 
   const handleNoteUpdated = (updatedNote: KnowledgeNoteSummary) => {
-    setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
+    updateNote(updatedNote.id, updatedNote);
   };
 
   const handleNoteDeleted = (noteId: string) => {
-    const remaining = notes.filter((n) => n.id !== noteId);
-    setNotes(remaining);
+    deleteNote(noteId);
     if (selectedNoteId === noteId) {
+      const remaining = notes.filter((n) => n.id !== noteId);
       setSelectedNoteId(remaining[0]?.id || null);
     }
   };
 
   const handleFolderCreated = (folder: KnowledgeFolderSummary) => {
-    setFolders((prev) => [...prev, folder]);
+    addFolder(folder);
     setSelectedFolderId(folder.id);
   };
 

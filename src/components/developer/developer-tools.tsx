@@ -43,6 +43,7 @@ import {
   createDevDeploymentAction,
   createDevReleaseAction,
 } from "@/server/actions/developer";
+import { useDeveloperStore } from "@/stores/developer-store";
 
 interface DeveloperToolsProps {
   projects: ProjectSummary[];
@@ -64,12 +65,34 @@ export function DeveloperTools({
   const [activeSubTab, setActiveSubTab] = useState<"BUGS" | "FEATURES" | "DOCS" | "DEPLOYMENTS" | "RELEASES">("BUGS");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("ALL");
 
-  // State collections
-  const [bugs, setBugs] = useState<DevBugSummary[]>(initialBugs);
-  const [features, setFeatures] = useState<DevFeatureSummary[]>(initialFeatures);
-  const [docs, setDocs] = useState<DevDocSummary[]>(initialDocs);
-  const [deployments, setDeployments] = useState<DevDeploymentSummary[]>(initialDeployments);
-  const [releases, setReleases] = useState<DevReleaseSummary[]>(initialReleases);
+  // Zustand persistent store bindings
+  const storeBugs = useDeveloperStore((s) => s.bugs);
+  const storeFeatures = useDeveloperStore((s) => s.features);
+  const storeDocs = useDeveloperStore((s) => s.docs);
+  const storeDeployments = useDeveloperStore((s) => s.deployments);
+  const storeReleases = useDeveloperStore((s) => s.releases);
+
+  const addBug = useDeveloperStore((s) => s.addBug);
+  const updateBug = useDeveloperStore((s) => s.updateBug);
+  const deleteBug = useDeveloperStore((s) => s.deleteBug);
+
+  const addFeature = useDeveloperStore((s) => s.addFeature);
+  const updateFeature = useDeveloperStore((s) => s.updateFeature);
+  const deleteFeature = useDeveloperStore((s) => s.deleteFeature);
+
+  const addDoc = useDeveloperStore((s) => s.addDoc);
+  const deleteDoc = useDeveloperStore((s) => s.deleteDoc);
+
+  const addDeployment = useDeveloperStore((s) => s.addDeployment);
+  const addRelease = useDeveloperStore((s) => s.addRelease);
+
+  const isHydrated = useDeveloperStore((s) => s.isHydrated);
+
+  const bugs = isHydrated ? storeBugs : initialBugs;
+  const features = isHydrated ? storeFeatures : initialFeatures;
+  const docs = isHydrated ? storeDocs : initialDocs;
+  const deployments = isHydrated ? storeDeployments : initialDeployments;
+  const releases = isHydrated ? storeReleases : initialReleases;
 
   // Modals
   const [isBugModalOpen, setIsBugModalOpen] = useState(false);
@@ -149,118 +172,86 @@ export function DeveloperTools({
   }, [releases, selectedProjectId]);
 
   // Handlers for BUGS
-  const handleCreateBug = async (e: React.FormEvent) => {
+  const handleCreateBug = (e: React.FormEvent) => {
     e.preventDefault();
     if (!bugForm.title.trim()) return;
 
-    const res = await createDevBugAction({
+    const targetProject = projects.find((p) => p.id === (bugForm.projectId || projects[0]?.id));
+    addBug({
       projectId: bugForm.projectId || projects[0]?.id || "proj-1",
       title: bugForm.title,
       description: bugForm.description,
       severity: bugForm.severity,
       module: bugForm.module,
       reproSteps: bugForm.reproSteps,
+      projectName: targetProject?.name || "Project",
     });
 
-    if (res.success && res.bug) {
-      const newBug: DevBugSummary = {
-        id: res.bug.id,
-        projectId: res.bug.projectId,
-        userId: res.bug.userId,
-        title: res.bug.title,
-        description: res.bug.description,
-        severity: res.bug.severity as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-        status: res.bug.status as "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED",
-        module: res.bug.module,
-        reproSteps: res.bug.reproSteps,
-        projectName: (res.bug as any).project?.name || (res.bug as any).projectName || "Project",
-        createdAt: typeof res.bug.createdAt === "string" ? res.bug.createdAt : new Date(res.bug.createdAt).toISOString(),
-        updatedAt: typeof res.bug.updatedAt === "string" ? res.bug.updatedAt : new Date(res.bug.updatedAt).toISOString(),
-      };
-      setBugs((prev) => [newBug, ...prev]);
-      setIsBugModalOpen(false);
-      setBugForm({
-        projectId: projects[0]?.id || "",
-        title: "",
-        description: "",
-        severity: "HIGH",
-        module: "",
-        reproSteps: "",
-      });
-    }
+    setIsBugModalOpen(false);
+    setBugForm({
+      projectId: projects[0]?.id || "",
+      title: "",
+      description: "",
+      severity: "HIGH",
+      module: "",
+      reproSteps: "",
+    });
   };
 
-  const handleToggleBugStatus = async (id: string, current: string) => {
+  const handleToggleBugStatus = (id: string, current: string) => {
     const nextStatus = current === "OPEN" ? "INVESTIGATING" : current === "INVESTIGATING" ? "RESOLVED" : "OPEN";
-    await updateDevBugStatusAction(id, nextStatus as any);
-    setBugs((prev) => prev.map((b) => (b.id === id ? { ...b, status: nextStatus as any } : b)));
+    updateBug(id, { status: nextStatus as any });
   };
 
-  const handleDeleteBug = async (id: string) => {
+  const handleDeleteBug = (id: string) => {
     if (confirm("Delete this bug report?")) {
-      const res = await deleteDevBugAction(id);
-      if (res.success) setBugs((prev) => prev.filter((b) => b.id !== id));
+      deleteBug(id);
     }
   };
 
   // Handlers for FEATURES
-  const handleCreateFeature = async (e: React.FormEvent) => {
+  const handleCreateFeature = (e: React.FormEvent) => {
     e.preventDefault();
     if (!featForm.title.trim()) return;
 
-    const res = await createDevFeatureAction({
+    const targetProject = projects.find((p) => p.id === (featForm.projectId || projects[0]?.id));
+    addFeature({
       projectId: featForm.projectId || projects[0]?.id || "proj-1",
       title: featForm.title,
       description: featForm.description,
       priority: featForm.priority,
       targetVersion: featForm.targetVersion,
+      projectName: targetProject?.name || "Project",
     });
 
-    if (res.success && res.feature) {
-      const newFeat: DevFeatureSummary = {
-        id: res.feature.id,
-        projectId: res.feature.projectId,
-        userId: res.feature.userId,
-        title: res.feature.title,
-        description: res.feature.description,
-        priority: res.feature.priority as "P0" | "P1" | "P2" | "P3",
-        status: res.feature.status as "BACKLOG" | "PLANNED" | "IN_DEVELOPMENT" | "SHIPPED",
-        targetVersion: res.feature.targetVersion,
-        projectName: (res.feature as any).project?.name || (res.feature as any).projectName || "Project",
-        createdAt: typeof res.feature.createdAt === "string" ? res.feature.createdAt : new Date(res.feature.createdAt).toISOString(),
-        updatedAt: typeof res.feature.updatedAt === "string" ? res.feature.updatedAt : new Date(res.feature.updatedAt).toISOString(),
-      };
-      setFeatures((prev) => [newFeat, ...prev]);
-      setIsFeatureModalOpen(false);
-      setFeatForm({
-        projectId: projects[0]?.id || "",
-        title: "",
-        description: "",
-        priority: "P1",
-        targetVersion: "v2.0.0",
-      });
-    }
+    setIsFeatureModalOpen(false);
+    setFeatForm({
+      projectId: projects[0]?.id || "",
+      title: "",
+      description: "",
+      priority: "P1",
+      targetVersion: "v2.0.0",
+    });
   };
 
-  const handleToggleFeatureStatus = async (id: string, current: string) => {
+  const handleToggleFeatureStatus = (id: string, current: string) => {
     const nextStatus = current === "BACKLOG" ? "PLANNED" : current === "PLANNED" ? "IN_DEVELOPMENT" : current === "IN_DEVELOPMENT" ? "SHIPPED" : "BACKLOG";
-    await updateDevFeatureStatusAction(id, nextStatus as any);
-    setFeatures((prev) => prev.map((f) => (f.id === id ? { ...f, status: nextStatus as any } : f)));
+    updateFeature(id, { status: nextStatus as any });
   };
 
-  const handleDeleteFeature = async (id: string) => {
+  const handleDeleteFeature = (id: string) => {
     if (confirm("Delete this backlog item?")) {
-      const res = await deleteDevFeatureAction(id);
-      if (res.success) setFeatures((prev) => prev.filter((f) => f.id !== id));
+      deleteFeature(id);
     }
   };
 
   // Handlers for DOCS
-  const handleCreateDoc = async (e: React.FormEvent) => {
+  const handleCreateDoc = (e: React.FormEvent) => {
     e.preventDefault();
     if (!docForm.title.trim()) return;
 
-    const res = await createDevDocAction({
+    const targetProject = projects.find((p) => p.id === (docForm.projectId || projects[0]?.id));
+    addDoc({
       projectId: docForm.projectId || projects[0]?.id || "proj-1",
       title: docForm.title,
       category: docForm.category,
@@ -269,40 +260,33 @@ export function DeveloperTools({
       content: docForm.content,
       requestPayload: docForm.requestPayload || undefined,
       responsePayload: docForm.responsePayload || undefined,
+      projectName: targetProject?.name || "Project",
     });
 
-    if (res.success && res.doc) {
-      const newDoc: DevDocSummary = {
-        ...res.doc,
-        createdAt: typeof res.doc.createdAt === "string" ? res.doc.createdAt : new Date(res.doc.createdAt).toISOString(),
-        updatedAt: typeof res.doc.updatedAt === "string" ? res.doc.updatedAt : new Date(res.doc.updatedAt).toISOString(),
-      };
-      setDocs((prev) => [newDoc, ...prev]);
-      setIsDocModalOpen(false);
-      setDocForm({
-        projectId: projects[0]?.id || "",
-        title: "",
-        category: "API",
-        endpoint: "",
-        method: "POST",
-        content: "",
-        requestPayload: "",
-        responsePayload: "",
-      });
-    }
+    setIsDocModalOpen(false);
+    setDocForm({
+      projectId: projects[0]?.id || "",
+      title: "",
+      category: "API",
+      endpoint: "",
+      method: "POST",
+      content: "",
+      requestPayload: "",
+      responsePayload: "",
+    });
   };
 
-  const handleDeleteDoc = async (id: string) => {
+  const handleDeleteDoc = (id: string) => {
     if (confirm("Delete this documentation item?")) {
-      const res = await deleteDevDocAction(id);
-      if (res.success) setDocs((prev) => prev.filter((d) => d.id !== id));
+      deleteDoc(id);
     }
   };
 
   // Handlers for DEPLOYMENTS
-  const handleCreateDeployment = async (e: React.FormEvent) => {
+  const handleCreateDeployment = (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await createDevDeploymentAction({
+    const targetProject = projects.find((p) => p.id === (depForm.projectId || projects[0]?.id));
+    addDeployment({
       projectId: depForm.projectId || projects[0]?.id || "proj-1",
       environment: depForm.environment,
       commitSha: depForm.commitSha || "manual-sha",
@@ -313,45 +297,33 @@ export function DeveloperTools({
       buildDurationSec: Number(depForm.buildDurationSec) || 40,
       logSnippet: depForm.logSnippet || undefined,
       source: "MANUAL",
+      projectName: targetProject?.name || "Project",
     });
 
-    if (res.success && res.deployment) {
-      const newDep: DevDeploymentSummary = {
-        ...res.deployment,
-        deployedAt: typeof res.deployment.deployedAt === "string" ? res.deployment.deployedAt : new Date(res.deployment.deployedAt).toISOString(),
-      };
-      setDeployments((prev) => [newDep, ...prev]);
-      setIsDepModalOpen(false);
-    }
+    setIsDepModalOpen(false);
   };
 
   // Handlers for RELEASES
-  const handleCreateRelease = async (e: React.FormEvent) => {
+  const handleCreateRelease = (e: React.FormEvent) => {
     e.preventDefault();
     if (!relForm.title.trim()) return;
 
-    const res = await createDevReleaseAction({
+    const targetProject = projects.find((p) => p.id === (relForm.projectId || projects[0]?.id));
+    addRelease({
       projectId: relForm.projectId || projects[0]?.id || "proj-1",
       version: relForm.version,
       title: relForm.title,
       changelog: relForm.changelog,
+      projectName: targetProject?.name || "Project",
     });
 
-    if (res.success && res.release) {
-      const newRel: DevReleaseSummary = {
-        ...res.release,
-        releaseDate: typeof res.release.releaseDate === "string" ? res.release.releaseDate : new Date(res.release.releaseDate).toISOString(),
-        createdAt: typeof res.release.createdAt === "string" ? res.release.createdAt : new Date(res.release.createdAt).toISOString(),
-      };
-      setReleases((prev) => [newRel, ...prev]);
-      setIsRelModalOpen(false);
-      setRelForm({
-        projectId: projects[0]?.id || "",
-        version: "v1.0.0",
-        title: "",
-        changelog: "",
-      });
-    }
+    setIsRelModalOpen(false);
+    setRelForm({
+      projectId: projects[0]?.id || "",
+      version: "v1.0.0",
+      title: "",
+      changelog: "",
+    });
   };
 
   return (

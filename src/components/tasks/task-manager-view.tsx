@@ -24,18 +24,8 @@ import { TaskCalendarView } from "./task-calendar-view";
 import { TaskDetailDrawer } from "./task-detail-drawer";
 import { CreateTaskModal } from "./create-task-modal";
 import { BulkActionsBar } from "./bulk-actions-bar";
-import {
-  createTaskAction,
-  updateTaskAction,
-  deleteTaskAction,
-  toggleTaskStatusAction,
-  bulkUpdateTasksStatusAction,
-  bulkDeleteTasksAction,
-  createSubtaskAction,
-  toggleSubtaskAction,
-  deleteSubtaskAction,
-} from "@/server/actions/tasks";
 import { useDashboardStore } from "@/stores/dashboard-store";
+import { useTasksStore } from "@/stores/tasks-store";
 
 export type TaskTabMode =
   | "all"
@@ -53,7 +43,19 @@ interface TaskManagerViewProps {
 }
 
 export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps) {
-  const [tasks, setTasks] = useState<TaskSummary[]>(initialTasks);
+  const storeTasks = useTasksStore((s) => s.tasks);
+  const addTask = useTasksStore((s) => s.addTask);
+  const updateTask = useTasksStore((s) => s.updateTask);
+  const deleteTask = useTasksStore((s) => s.deleteTask);
+  const toggleTaskStatus = useTasksStore((s) => s.toggleTaskStatus);
+  const bulkUpdateStatus = useTasksStore((s) => s.bulkUpdateStatus);
+  const bulkDeleteTasks = useTasksStore((s) => s.bulkDeleteTasks);
+  const addSubtask = useTasksStore((s) => s.addSubtask);
+  const toggleSubtask = useTasksStore((s) => s.toggleSubtask);
+  const deleteSubtask = useTasksStore((s) => s.deleteSubtask);
+  const isHydrated = useTasksStore((s) => s.isHydrated);
+
+  const tasks = isHydrated ? storeTasks : initialTasks;
   const [activeTab, setActiveTab] = useState<TaskTabMode>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedPriority, setSelectedPriority] = useState<string>("ALL");
@@ -61,10 +63,12 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
   // Drawer & modal states
-  const [activeTaskForDrawer, setActiveTaskForDrawer] = useState<TaskSummary | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isProcessingBulk, setIsProcessingBulk] = useState(false);
+
+  const activeTaskForDrawer = tasks.find((t) => t.id === activeTaskId) || null;
 
   const { startFocusSession } = useDashboardStore();
 
@@ -157,156 +161,58 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
     setSelectedTaskIds([]);
   };
 
-  const handleToggleTaskStatus = async (task: TaskSummary) => {
-    const nextStatus =
-      task.status === TaskStatus.COMPLETED
-        ? TaskStatus.PENDING
-        : task.status === TaskStatus.PENDING
-        ? TaskStatus.IN_PROGRESS
-        : TaskStatus.COMPLETED;
-
-    // Optimistic update
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
-    );
-
-    if (activeTaskForDrawer?.id === task.id) {
-      setActiveTaskForDrawer((prev) => (prev ? { ...prev, status: nextStatus } : null));
-    }
-
-    await toggleTaskStatusAction(task.id, task.status);
+  const handleToggleTaskStatus = (task: TaskSummary) => {
+    toggleTaskStatus(task.id);
   };
 
-  const handleUpdateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
-    );
-    await updateTaskAction(taskId, { status: newStatus });
+  const handleUpdateTaskStatus = (taskId: string, newStatus: TaskStatus) => {
+    updateTask(taskId, { status: newStatus });
   };
 
   const handleOpenTaskDetail = (task: TaskSummary) => {
-    setActiveTaskForDrawer(task);
+    setActiveTaskId(task.id);
     setIsDrawerOpen(true);
   };
 
   const handleUpdateTask = async (taskId: string, updates: any) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
-    );
-    await updateTaskAction(taskId, updates);
+    updateTask(taskId, updates);
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    deleteTask(taskId);
     setSelectedTaskIds((prev) => prev.filter((id) => id !== taskId));
-    await deleteTaskAction(taskId);
+    if (activeTaskId === taskId) {
+      setIsDrawerOpen(false);
+      setActiveTaskId(null);
+    }
   };
 
   const handleCreateTask = async (data: any) => {
-    const res = await createTaskAction(data);
-    if (res.success && res.task) {
-      const createdTask: TaskSummary = {
-        ...res.task,
-        subtasks: res.task.subtasks || [],
-        tags: res.task.tags || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setTasks((prev) => [createdTask, ...prev]);
-    }
+    addTask(data);
+    setIsCreateModalOpen(false);
   };
 
-  const handleBulkStatusUpdate = async (status: TaskStatus) => {
-    setIsProcessingBulk(true);
-    try {
-      setTasks((prev) =>
-        prev.map((t) =>
-          selectedTaskIds.includes(t.id) ? { ...t, status } : t
-        )
-      );
-      await bulkUpdateTasksStatusAction(selectedTaskIds, status);
-      setSelectedTaskIds([]);
-    } finally {
-      setIsProcessingBulk(false);
-    }
+  const handleBulkStatusUpdate = (status: TaskStatus) => {
+    bulkUpdateStatus(selectedTaskIds, status);
+    setSelectedTaskIds([]);
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (!confirm(`Delete ${selectedTaskIds.length} selected tasks?`)) return;
-    setIsProcessingBulk(true);
-    try {
-      setTasks((prev) => prev.filter((t) => !selectedTaskIds.includes(t.id)));
-      await bulkDeleteTasksAction(selectedTaskIds);
-      setSelectedTaskIds([]);
-    } finally {
-      setIsProcessingBulk(false);
-    }
+    bulkDeleteTasks(selectedTaskIds);
+    setSelectedTaskIds([]);
   };
 
   const handleCreateSubtask = async (taskId: string, title: string) => {
-    const res = await createSubtaskAction(taskId, title);
-    if (res.success && res.subtask) {
-      setTasks((prev) =>
-        prev.map((t) => {
-          if (t.id !== taskId) return t;
-          return {
-            ...t,
-            subtasks: [...(t.subtasks || []), res.subtask],
-          };
-        })
-      );
-      if (activeTaskForDrawer?.id === taskId) {
-        setActiveTaskForDrawer((prev) =>
-          prev
-            ? { ...prev, subtasks: [...(prev.subtasks || []), res.subtask] }
-            : null
-        );
-      }
-    }
+    addSubtask(taskId, title);
   };
 
-  const handleToggleSubtask = async (subtaskId: string, completed: boolean) => {
-    setTasks((prev) =>
-      prev.map((t) => ({
-        ...t,
-        subtasks: t.subtasks?.map((st) =>
-          st.id === subtaskId ? { ...st, completed: !completed } : st
-        ),
-      }))
-    );
-    if (activeTaskForDrawer) {
-      setActiveTaskForDrawer((prev) =>
-        prev
-          ? {
-              ...prev,
-              subtasks: prev.subtasks?.map((st) =>
-                st.id === subtaskId ? { ...st, completed: !completed } : st
-              ),
-            }
-          : null
-      );
-    }
-    await toggleSubtaskAction(subtaskId, completed);
+  const handleToggleSubtask = async (subtaskId: string, _completed: boolean) => {
+    toggleSubtask(subtaskId);
   };
 
   const handleDeleteSubtask = async (subtaskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) => ({
-        ...t,
-        subtasks: t.subtasks?.filter((st) => st.id !== subtaskId),
-      }))
-    );
-    if (activeTaskForDrawer) {
-      setActiveTaskForDrawer((prev) =>
-        prev
-          ? {
-              ...prev,
-              subtasks: prev.subtasks?.filter((st) => st.id !== subtaskId),
-            }
-          : null
-      );
-    }
-    await deleteSubtaskAction(subtaskId);
+    deleteSubtask(subtaskId);
   };
 
   return (
@@ -546,7 +452,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
         isOpen={isDrawerOpen}
         onClose={() => {
           setIsDrawerOpen(false);
-          setActiveTaskForDrawer(null);
+          setActiveTaskId(null);
         }}
         onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}

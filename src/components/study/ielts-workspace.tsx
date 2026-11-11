@@ -24,6 +24,7 @@ import {
   deleteExamResultAction,
 } from "@/server/actions/study";
 import { formatDate } from "@/lib/utils";
+import { useStudyStore } from "@/stores/study-store";
 
 interface IeltsWorkspaceProps {
   initialRecords: IeltsPracticeRecordSummary[];
@@ -34,8 +35,16 @@ export function IeltsWorkspace({
   initialRecords,
   initialExamResults,
 }: IeltsWorkspaceProps) {
-  const [records, setRecords] = useState<IeltsPracticeRecordSummary[]>(initialRecords);
-  const [examResults, setExamResults] = useState<ExamResultSummary[]>(initialExamResults);
+  const storeRecords = useStudyStore((s) => s.ieltsRecords);
+  const storeExamResults = useStudyStore((s) => s.examResults);
+  const addIeltsRecord = useStudyStore((s) => s.addIeltsRecord);
+  const deleteIeltsRecord = useStudyStore((s) => s.deleteIeltsRecord);
+  const addExamResult = useStudyStore((s) => s.addExamResult);
+  const deleteExamResult = useStudyStore((s) => s.deleteExamResult);
+  const isHydrated = useStudyStore((s) => s.isHydrated);
+
+  const records = isHydrated ? storeRecords : initialRecords;
+  const examResults = isHydrated ? storeExamResults : initialExamResults;
   const [selectedSection, setSelectedSection] = useState<string>("ALL");
 
   // Modals
@@ -112,7 +121,7 @@ export function IeltsWorkspace({
 
     setIsSubmittingRecord(true);
     try {
-      const res = await createIeltsRecordAction({
+      addIeltsRecord({
         section: recordSection,
         title: recordTitle.trim(),
         taskType: recordTaskType,
@@ -124,14 +133,11 @@ export function IeltsWorkspace({
         feedback: recordFeedback.trim() || undefined,
       });
 
-      if (res.success && res.record) {
-        setRecords((prev) => [res.record as IeltsPracticeRecordSummary, ...prev]);
-        setIsRecordModalOpen(false);
-        setRecordTitle("");
-        setRecordPrompt("");
-        setRecordSubmission("");
-        setRecordFeedback("");
-      }
+      setIsRecordModalOpen(false);
+      setRecordTitle("");
+      setRecordPrompt("");
+      setRecordSubmission("");
+      setRecordFeedback("");
     } finally {
       setIsSubmittingRecord(false);
     }
@@ -139,8 +145,7 @@ export function IeltsWorkspace({
 
   const handleDeleteRecord = async (id: string) => {
     if (!confirm("Delete practice record?")) return;
-    setRecords((prev) => prev.filter((r) => r.id !== id));
-    await deleteIeltsRecordAction(id);
+    deleteIeltsRecord(id);
   };
 
   const handleCreateExam = async (e: React.FormEvent) => {
@@ -149,7 +154,7 @@ export function IeltsWorkspace({
 
     setIsSubmittingExam(true);
     try {
-      const res = await createExamResultAction({
+      addExamResult({
         title: examTitle.trim(),
         listeningScore: Number(examListening),
         readingScore: Number(examReading),
@@ -158,12 +163,9 @@ export function IeltsWorkspace({
         notes: examNotes.trim() || undefined,
       });
 
-      if (res.success && res.result) {
-        setExamResults((prev) => [res.result as ExamResultSummary, ...prev]);
-        setIsExamModalOpen(false);
-        setExamTitle("");
-        setExamNotes("");
-      }
+      setIsExamModalOpen(false);
+      setExamTitle("");
+      setExamNotes("");
     } finally {
       setIsSubmittingExam(false);
     }
@@ -171,8 +173,7 @@ export function IeltsWorkspace({
 
   const handleDeleteExam = async (id: string) => {
     if (!confirm("Delete mock exam result?")) return;
-    setExamResults((prev) => prev.filter((r) => r.id !== id));
-    await deleteExamResultAction(id);
+    deleteExamResult(id);
   };
 
   // Recent mock overall band

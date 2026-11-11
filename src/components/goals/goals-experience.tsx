@@ -17,11 +17,7 @@ import { GoalCard } from "./goal-card";
 import { CreateGoalModal } from "./create-goal-modal";
 import { GoalTimelineView } from "./goal-timeline-view";
 import { VisionBoard } from "./vision-board";
-import {
-  createGoalAction,
-  toggleMilestoneAction,
-  deleteGoalAction,
-} from "@/server/actions/goals";
+import { useGoalsStore } from "@/stores/goals-store";
 
 type GoalViewTab =
   | "all"
@@ -41,7 +37,16 @@ export function GoalsExperience({
   initialGoals,
   initialVisionItems,
 }: GoalsExperienceProps) {
-  const [goals, setGoals] = useState<GoalSummary[]>(initialGoals);
+  const storeGoals = useGoalsStore((s) => s.goals);
+  const storeVision = useGoalsStore((s) => s.visionItems);
+  const addGoal = useGoalsStore((s) => s.addGoal);
+  const deleteGoal = useGoalsStore((s) => s.deleteGoal);
+  const toggleMilestone = useGoalsStore((s) => s.toggleMilestone);
+  const isHydrated = useGoalsStore((s) => s.isHydrated);
+
+  const goals = isHydrated ? storeGoals : initialGoals;
+  const visionItems = isHydrated ? storeVision : initialVisionItems;
+
   const [activeTab, setActiveTab] = useState<GoalViewTab>("all");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -92,42 +97,23 @@ export function GoalsExperience({
   }, [goals, activeTab, selectedCategory]);
 
   // Milestone checkoff handler
-  const handleToggleMilestone = async (milestoneId: string, completed: boolean) => {
-    // Optimistic update
-    setGoals((prev) =>
-      prev.map((g) => {
-        const hasMilestone = g.milestones?.some((m) => m.id === milestoneId);
-        if (!hasMilestone) return g;
-
-        const updatedMilestones = (g.milestones || []).map((m) =>
-          m.id === milestoneId ? { ...m, isCompleted: !completed } : m
-        );
-        const completedMilestones = updatedMilestones.filter((m) => m.isCompleted).length;
-        const progress = Math.round((completedMilestones / updatedMilestones.length) * 100);
-        const isAchieved = progress === 100;
-
-        return {
-          ...g,
-          progress,
-          isAchieved,
-          milestones: updatedMilestones,
-        };
-      })
-    );
-
-    await toggleMilestoneAction(milestoneId, completed);
+  const handleToggleMilestone = (milestoneId: string, _completed: boolean) => {
+    // Find parent goal
+    const parentGoal = goals.find((g) => g.milestones?.some((m) => m.id === milestoneId));
+    if (parentGoal) {
+      toggleMilestone(parentGoal.id, milestoneId);
+    }
   };
 
-  const handleDeleteGoal = async (goalId: string) => {
-    setGoals((prev) => prev.filter((g) => g.id !== goalId));
-    await deleteGoalAction(goalId);
+  const handleDeleteGoal = (goalId: string) => {
+    if (confirm("Delete this strategic goal?")) {
+      deleteGoal(goalId);
+    }
   };
 
   const handleCreateGoal = async (data: any) => {
-    const res = await createGoalAction(data);
-    if (res.success && res.goal) {
-      setGoals((prev) => [res.goal as GoalSummary, ...prev]);
-    }
+    addGoal(data);
+    setIsCreateModalOpen(false);
   };
 
   return (

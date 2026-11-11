@@ -20,18 +20,20 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { VocabularyCardSummary } from "@/types";
-import {
-  createVocabCardAction,
-  reviewVocabCardAction,
-  deleteVocabCardAction,
-} from "@/server/actions/study";
+import { useStudyStore } from "@/stores/study-store";
 
 interface VocabularySystemProps {
   initialCards: VocabularyCardSummary[];
 }
 
 export function VocabularySystem({ initialCards }: VocabularySystemProps) {
-  const [cards, setCards] = useState<VocabularyCardSummary[]>(initialCards);
+  const storeCards = useStudyStore((s) => s.vocabCards);
+  const addVocabCard = useStudyStore((s) => s.addVocabCard);
+  const reviewVocabCard = useStudyStore((s) => s.reviewVocabCard);
+  const deleteVocabCard = useStudyStore((s) => s.deleteVocabCard);
+  const isHydrated = useStudyStore((s) => s.isHydrated);
+
+  const cards = isHydrated ? storeCards : initialCards;
   const [activeTab, setActiveTab] = useState<"REVIEW" | "LIBRARY">("REVIEW");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -99,37 +101,13 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
   const learningCount = cards.filter((c) => c.status === "LEARNING" || c.status === "REVIEWING").length;
   const dueCount = cards.filter((c) => new Date(c.nextReviewDate) <= new Date()).length;
 
-  // Handle Review Grade
-  const handleReview = async (rating: 0 | 1 | 2 | 3) => {
+  // Handle Review Grade with local SM-2
+  const handleReview = (rating: 0 | 1 | 2 | 3) => {
     if (!currentCard || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      const res = await reviewVocabCardAction(currentCard.id, rating);
-      if (res.success) {
-        // Optimistically update card
-        setCards((prev) =>
-          prev.map((c) => {
-            if (c.id === currentCard.id) {
-              const newInterval = rating === 0 ? 1 : rating === 1 ? 2 : rating === 2 ? 4 : 8;
-              const nextDate = new Date();
-              nextDate.setDate(nextDate.getDate() + newInterval);
-              return {
-                ...c,
-                reviewCount: c.reviewCount + 1,
-                correctCount: rating > 0 ? c.correctCount + 1 : c.correctCount,
-                incorrectCount: rating === 0 ? c.incorrectCount + 1 : c.incorrectCount,
-                interval: newInterval,
-                status: rating === 0 ? "LEARNING" : c.repetition >= 3 ? "MASTERED" : "REVIEWING",
-                nextReviewDate: nextDate.toISOString(),
-                lastReviewedAt: new Date().toISOString(),
-              };
-            }
-            return c;
-          })
-        );
-      }
-
+      reviewVocabCard(currentCard.id, rating);
       setReviewedSessionCount((prev) => prev + 1);
       setIsFlipped(false);
 
@@ -154,11 +132,11 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
     }
   };
 
-  const handleCreateCard = async (e: React.FormEvent) => {
+  const handleCreateCard = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.word.trim() || !formData.translation.trim()) return;
 
-    const res = await createVocabCardAction({
+    addVocabCard({
       word: formData.word,
       translation: formData.translation,
       language: formData.language,
@@ -169,34 +147,22 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
       exampleTranslation: formData.exampleTranslation,
     });
 
-    if (res.success && res.card) {
-      const newCard: VocabularyCardSummary = {
-        ...res.card,
-        nextReviewDate: typeof res.card.nextReviewDate === "string" ? res.card.nextReviewDate : new Date(res.card.nextReviewDate).toISOString(),
-        createdAt: typeof res.card.createdAt === "string" ? res.card.createdAt : new Date(res.card.createdAt).toISOString(),
-        updatedAt: typeof res.card.updatedAt === "string" ? res.card.updatedAt : new Date(res.card.updatedAt).toISOString(),
-      };
-      setCards((prev) => [newCard, ...prev]);
-      setIsCreateModalOpen(false);
-      setFormData({
-        word: "",
-        translation: "",
-        language: "ENGLISH",
-        difficulty: "C1",
-        topic: "Academic IELTS",
-        phonetic: "",
-        exampleSentence: "",
-        exampleTranslation: "",
-      });
-    }
+    setIsCreateModalOpen(false);
+    setFormData({
+      word: "",
+      translation: "",
+      language: "ENGLISH",
+      difficulty: "C1",
+      topic: "Academic IELTS",
+      phonetic: "",
+      exampleSentence: "",
+      exampleTranslation: "",
+    });
   };
 
-  const handleDeleteCard = async (id: string) => {
+  const handleDeleteCard = (id: string) => {
     if (confirm("Are you sure you want to delete this vocabulary card?")) {
-      const res = await deleteVocabCardAction(id);
-      if (res.success) {
-        setCards((prev) => prev.filter((c) => c.id !== id));
-      }
+      deleteVocabCard(id);
     }
   };
 

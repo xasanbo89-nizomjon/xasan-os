@@ -21,11 +21,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { TransactionSummary, TransactionType } from "@/types";
-import {
-  createTransactionAction,
-  updateTransactionAction,
-  deleteTransactionAction,
-} from "@/server/actions/finance";
+import { useFinanceStore } from "@/stores/finance-store";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface TransactionManagementProps {
@@ -56,7 +52,13 @@ export function TransactionManagement({
   initialTransactions,
   onTransactionUpdated,
 }: TransactionManagementProps) {
-  const [transactions, setTransactions] = useState<TransactionSummary[]>(initialTransactions);
+  const storeTransactions = useFinanceStore((s) => s.transactions);
+  const addTransaction = useFinanceStore((s) => s.addTransaction);
+  const updateTransaction = useFinanceStore((s) => s.updateTransaction);
+  const deleteTransaction = useFinanceStore((s) => s.deleteTransaction);
+  const isHydrated = useFinanceStore((s) => s.isHydrated);
+
+  const transactions = isHydrated ? storeTransactions : initialTransactions;
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -144,7 +146,7 @@ export function TransactionManagement({
     setIsModalOpen(true);
   };
 
-  const handleSaveTransaction = async (e: React.FormEvent) => {
+  const handleSaveTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.amount) return;
 
@@ -154,8 +156,7 @@ export function TransactionManagement({
       .filter(Boolean);
 
     if (editingTransaction) {
-      // Update
-      const res = await updateTransactionAction(editingTransaction.id, {
+      updateTransaction(editingTransaction.id, {
         title: formData.title,
         amount: parseFloat(formData.amount),
         type: formData.type,
@@ -167,43 +168,32 @@ export function TransactionManagement({
         notes: formData.notes,
         tags: tagsArray,
       });
-
-      if (res.success && res.transaction) {
-        setTransactions((prev) =>
-          prev.map((t) => (t.id === editingTransaction.id ? (res.transaction as TransactionSummary) : t))
-        );
-      }
     } else {
-      // Create
-      const res = await createTransactionAction({
+      addTransaction({
         title: formData.title,
         amount: parseFloat(formData.amount),
         type: formData.type,
         category: formData.category,
         account: formData.account,
-        currency: formData.currency,
-        paymentMethod: formData.paymentMethod,
         date: new Date(formData.date).toISOString(),
         notes: formData.notes,
         tags: tagsArray,
       });
-
-      if (res.success && res.transaction) {
-        setTransactions((prev) => [res.transaction as TransactionSummary, ...prev]);
-      }
     }
 
     setIsModalOpen(false);
+    setEditingTransaction(null);
     onTransactionUpdated?.();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (confirm("Delete this financial record permanently?")) {
-      const res = await deleteTransactionAction(id);
-      if (res.success) {
-        setTransactions((prev) => prev.filter((t) => t.id !== id));
-        onTransactionUpdated?.();
+      deleteTransaction(id);
+      if (editingTransaction?.id === id) {
+        setIsModalOpen(false);
+        setEditingTransaction(null);
       }
+      onTransactionUpdated?.();
     }
   };
 

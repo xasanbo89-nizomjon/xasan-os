@@ -22,6 +22,7 @@ import {
   deleteArabicLogAction,
 } from "@/server/actions/study";
 import { formatDate } from "@/lib/utils";
+import { useStudyStore } from "@/stores/study-store";
 
 interface ArabicWorkspaceProps {
   initialLogs: ArabicPracticeLogSummary[];
@@ -32,7 +33,12 @@ export function ArabicWorkspace({
   initialLogs,
   onOpenVocabTab,
 }: ArabicWorkspaceProps) {
-  const [logs, setLogs] = useState<ArabicPracticeLogSummary[]>(initialLogs);
+  const storeLogs = useStudyStore((s) => s.arabicLogs);
+  const addArabicLog = useStudyStore((s) => s.addArabicLog);
+  const deleteArabicLog = useStudyStore((s) => s.deleteArabicLog);
+  const isHydrated = useStudyStore((s) => s.isHydrated);
+
+  const logs = isHydrated ? storeLogs : initialLogs;
   const [selectedSkill, setSelectedSkill] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -65,7 +71,7 @@ export function ArabicWorkspace({
 
     setIsSubmitting(true);
     try {
-      const res = await createArabicLogAction({
+      addArabicLog({
         skill,
         topic: topic.trim(),
         cefrLevel,
@@ -74,13 +80,10 @@ export function ArabicWorkspace({
         durationMinutes: Number(durationMinutes),
       });
 
-      if (res.success && res.log) {
-        setLogs((prev) => [res.log as ArabicPracticeLogSummary, ...prev]);
-        setIsModalOpen(false);
-        setTopic("");
-        setGrammarFocus("");
-        setNotes("");
-      }
+      setIsModalOpen(false);
+      setTopic("");
+      setGrammarFocus("");
+      setNotes("");
     } finally {
       setIsSubmitting(false);
     }
@@ -88,8 +91,7 @@ export function ArabicWorkspace({
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete Arabic practice log?")) return;
-    setLogs((prev) => prev.filter((l) => l.id !== id));
-    await deleteArabicLogAction(id);
+    deleteArabicLog(id);
   };
 
   return (

@@ -1,6 +1,5 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import {
   AiConversationSummary,
   AiMessageSummary,
@@ -36,11 +35,10 @@ let runtimeMemories = [...FALLBACK_AI_MEMORIES];
 let runtimeTokensUsedToday = 1420;
 
 function isDatabaseConfigured(): boolean {
-  const url = process.env.DATABASE_URL;
-  if (!url) return false;
-  if (url.includes("johndoe:randompassword")) return false;
-  return true;
+  return false;
 }
+
+const prisma: any = null;
 
 async function getOrCreateCurrentUser() {
   if (!isDatabaseConfigured()) {
@@ -107,7 +105,7 @@ export async function getAiConversationsAction(): Promise<AiConversationSummary[
       return runtimeConversations;
     }
 
-    return records.map((c) => ({
+    return records.map((c: any) => ({
       id: c.id,
       userId: c.userId,
       title: c.title,
@@ -269,7 +267,7 @@ export async function getConversationMessagesAction(conversationId: string): Pro
       orderBy: { createdAt: "asc" },
     });
 
-    return records.map((m) => ({
+    return records.map((m: any) => ({
       id: m.id,
       conversationId: m.conversationId,
       role: m.role as "user" | "assistant" | "system" | "tool",
@@ -397,7 +395,7 @@ export async function sendAiMessageAction(
       name: "getFinanceSummary",
       arguments: {},
       isMutative: false,
-      result: { balance: finRes.metrics.totalBalance },
+      result: { balance: finRes.balance },
     });
     toolResults.push({ tool: "getFinanceSummary", data: finRes });
   }
@@ -736,7 +734,7 @@ export async function getAiMemoriesAction(): Promise<AiUserMemorySummary[]> {
 
     if (records.length === 0) return runtimeMemories;
 
-    return records.map((m) => ({
+    return records.map((m: any) => ({
       id: m.id,
       userId: m.userId,
       category: m.category,

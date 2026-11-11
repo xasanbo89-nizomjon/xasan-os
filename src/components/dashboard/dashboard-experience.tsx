@@ -2,6 +2,15 @@
 
 import React, { useState } from "react";
 import { useDashboardStore } from "@/stores/dashboard-store";
+import {
+  useTasksStore,
+  useHabitsStore,
+  useDeveloperStore,
+  useFinanceStore,
+  useKnowledgeStore,
+  useComputedDashboardMetrics,
+  useHydration,
+} from "@/stores/local-storage-sync";
 import { WelcomeWidget } from "./widgets/welcome-widget";
 import { DashboardViewSwitcher } from "./dashboard-view-switcher";
 import { OverviewWidgetGrid } from "./views/overview-widget-grid";
@@ -30,13 +39,27 @@ interface DashboardExperienceProps {
 }
 
 export function DashboardExperience({
-  metrics,
-  tasks,
-  habits,
-  projects,
-  transactions,
-  notes,
+  metrics: initialMetrics,
+  tasks: initialTasks,
+  habits: initialHabits,
+  projects: initialProjects,
+  transactions: initialTransactions,
+  notes: initialNotes,
 }: DashboardExperienceProps) {
+  const isHydrated = useHydration();
+  const computedMetrics = useComputedDashboardMetrics();
+  const storeTasks = useTasksStore((s) => s.tasks);
+  const storeHabits = useHabitsStore((s) => s.habits);
+  const storeProjects = useDeveloperStore((s) => s.projects);
+  const storeTransactions = useFinanceStore((s) => s.transactions);
+  const storeNotes = useKnowledgeStore((s) => s.notes);
+
+  const metrics = isHydrated ? computedMetrics : initialMetrics;
+  const tasks = isHydrated ? storeTasks : initialTasks;
+  const habits = isHydrated ? storeHabits : initialHabits;
+  const projects = isHydrated ? storeProjects : initialProjects;
+  const transactions = isHydrated ? storeTransactions : initialTransactions;
+  const notes = isHydrated ? storeNotes : initialNotes;
   const { currentView, startFocusSession } = useDashboardStore();
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);

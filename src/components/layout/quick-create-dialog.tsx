@@ -11,13 +11,11 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-import {
-  createTaskAction,
-  createHabitAction,
-  createProjectAction,
-  createTransactionAction,
-  createKnowledgeNoteAction,
-} from "@/server/actions/os";
+import { useTasksStore } from "@/stores/tasks-store";
+import { useHabitsStore } from "@/stores/habits-store";
+import { useDeveloperStore } from "@/stores/developer-store";
+import { useFinanceStore } from "@/stores/finance-store";
+import { useKnowledgeStore } from "@/stores/knowledge-store";
 import { Priority, TransactionType } from "@/types";
 
 interface QuickCreateDialogProps {
@@ -65,7 +63,7 @@ export function QuickCreateDialog({
 
   if (!open) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -74,60 +72,55 @@ export function QuickCreateDialog({
     try {
       if (activeTab === "task") {
         if (!taskTitle.trim()) throw new Error("Task title is required");
-        const res = await createTaskAction({
+        useTasksStore.getState().addTask({
           title: taskTitle,
           description: taskDescription,
           priority: taskPriority,
           dueDate: taskDueDate || undefined,
         });
-        if (!res.success) throw new Error(res.error || "Failed to create task");
         setTaskTitle("");
         setTaskDescription("");
         setSuccessMessage("Task created successfully!");
       } else if (activeTab === "habit") {
         if (!habitName.trim()) throw new Error("Habit name is required");
-        const res = await createHabitAction({
+        useHabitsStore.getState().addHabit({
           name: habitName,
           description: habitDescription,
           category: habitCategory,
         });
-        if (!res.success) throw new Error(res.error || "Failed to create habit");
         setHabitName("");
         setHabitDescription("");
         setSuccessMessage("Habit registered!");
       } else if (activeTab === "project") {
         if (!projectName.trim()) throw new Error("Project name is required");
-        const res = await createProjectAction({
+        useDeveloperStore.getState().addProject({
           name: projectName,
           slug: projectName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
           description: projectDescription,
           techStack: projectTechStack ? projectTechStack.split(",").map((s) => s.trim()) : [],
         });
-        if (!res.success) throw new Error(res.error || "Failed to create project");
         setProjectName("");
         setProjectDescription("");
         setProjectTechStack("");
         setSuccessMessage("Project created!");
       } else if (activeTab === "transaction") {
         if (!txTitle.trim() || !txAmount) throw new Error("Title and amount are required");
-        const res = await createTransactionAction({
+        useFinanceStore.getState().addTransaction({
           title: txTitle,
           amount: parseFloat(txAmount),
           type: txType,
           category: txCategory,
         });
-        if (!res.success) throw new Error(res.error || "Failed to record transaction");
         setTxTitle("");
         setTxAmount("");
         setSuccessMessage("Transaction recorded!");
       } else if (activeTab === "note") {
         if (!noteTitle.trim()) throw new Error("Note title is required");
-        const res = await createKnowledgeNoteAction({
+        useKnowledgeStore.getState().addNote({
           title: noteTitle,
           content: noteContent,
           category: noteCategory,
         });
-        if (!res.success) throw new Error(res.error || "Failed to save note");
         setNoteTitle("");
         setNoteContent("");
         setSuccessMessage("Knowledge Note saved!");
@@ -136,7 +129,7 @@ export function QuickCreateDialog({
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
-      }, 1000);
+      }, 700);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An error occurred";
       setErrorMessage(message);

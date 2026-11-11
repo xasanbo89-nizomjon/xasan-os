@@ -58,7 +58,7 @@ export default async function DeveloperHubPage() {
         integration={integration}
         githubRepos={githubData.repos}
         githubCommits={githubData.commits}
-        githubPRs={githubData.pullRequests}
+        githubPRs={githubData.prs}
         githubIssues={githubData.issues}
         vercelProjects={vercelData.projects}
         vercelDeployments={vercelData.deployments}

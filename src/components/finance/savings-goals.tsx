@@ -24,6 +24,7 @@ import {
   deleteSavingsGoalAction,
 } from "@/server/actions/finance";
 import { formatCurrency } from "@/lib/utils";
+import { useFinanceStore } from "@/stores/finance-store";
 
 interface SavingsGoalsProps {
   initialGoals: SavingsGoalSummary[];
@@ -31,7 +32,13 @@ interface SavingsGoalsProps {
 }
 
 export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps) {
-  const [goals, setGoals] = useState<SavingsGoalSummary[]>(initialGoals);
+  const storeGoals = useFinanceStore((s) => s.savingsGoals);
+  const addSavingsGoal = useFinanceStore((s) => s.addSavingsGoal);
+  const contributeToGoal = useFinanceStore((s) => s.contributeToGoal);
+  const deleteSavingsGoal = useFinanceStore((s) => s.deleteSavingsGoal);
+  const isHydrated = useFinanceStore((s) => s.isHydrated);
+
+  const goals = isHydrated ? storeGoals : initialGoals;
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,12 +58,12 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
   const [depositAmount, setDepositAmount] = useState("");
   const [depositNote, setDepositNote] = useState("");
 
-  const handleCreateGoal = async (e: React.FormEvent) => {
+  const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!createForm.name.trim() || !createForm.targetAmount) return;
 
     const target = parseFloat(createForm.targetAmount);
-    const res = await createSavingsGoalAction({
+    addSavingsGoal({
       name: createForm.name,
       targetAmount: target,
       category: createForm.category,
@@ -64,69 +71,34 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
       color: createForm.color,
     });
 
-    if (res.success && res.goal) {
-      setGoals((prev) => [res.goal as SavingsGoalSummary, ...prev]);
-      setIsCreateModalOpen(false);
-      setCreateForm({
-        name: "",
-        targetAmount: "",
-        category: "Hardware",
-        targetDate: "",
-        color: "#10B981",
-      });
-      onGoalUpdated?.();
-    }
+    setIsCreateModalOpen(false);
+    setCreateForm({
+      name: "",
+      targetAmount: "",
+      category: "Hardware",
+      targetDate: "",
+      color: "#10B981",
+    });
+    onGoalUpdated?.();
   };
 
-  const handleDeposit = async (e: React.FormEvent) => {
+  const handleDeposit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedGoal || !depositAmount || parseFloat(depositAmount) <= 0) return;
 
     const amt = parseFloat(depositAmount);
-    const res = await contributeToSavingsGoalAction(selectedGoal.id, amt, depositNote);
+    contributeToGoal(selectedGoal.id, amt);
 
-    if (res.success) {
-      setGoals((prev) =>
-        prev.map((g) => {
-          if (g.id === selectedGoal.id) {
-            const nextCurrent = g.currentAmount + amt;
-            const nextPct = Math.min(100, parseFloat(((nextCurrent / g.targetAmount) * 100).toFixed(1)));
-            return {
-              ...g,
-              currentAmount: nextCurrent,
-              progressPercentage: nextPct,
-              isCompleted: nextCurrent >= g.targetAmount,
-              contributions: [
-                {
-                  id: `con-${Date.now()}`,
-                  goalId: g.id,
-                  userId: g.userId,
-                  amount: amt,
-                  note: depositNote || null,
-                  date: new Date().toISOString(),
-                },
-                ...(g.contributions || []),
-              ],
-            };
-          }
-          return g;
-        })
-      );
-
-      setIsDepositModalOpen(false);
-      setDepositAmount("");
-      setDepositNote("");
-      onGoalUpdated?.();
-    }
+    setIsDepositModalOpen(false);
+    setDepositAmount("");
+    setDepositNote("");
+    onGoalUpdated?.();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (confirm("Delete this savings goal?")) {
-      const res = await deleteSavingsGoalAction(id);
-      if (res.success) {
-        setGoals((prev) => prev.filter((g) => g.id !== id));
-        onGoalUpdated?.();
-      }
+      deleteSavingsGoal(id);
+      onGoalUpdated?.();
     }
   };
 

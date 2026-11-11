@@ -1,6 +1,5 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import {
   AnalyticsTimePeriod,
   PeriodReportSummary,
@@ -20,49 +19,6 @@ import {
   DEFAULT_USER_EMAIL,
   DEFAULT_USER_NAME,
 } from "@/lib/constants";
-
-function isDatabaseConfigured(): boolean {
-  const url = process.env.DATABASE_URL;
-  if (!url) return false;
-  if (url.includes("johndoe:randompassword")) return false;
-  return true;
-}
-
-async function getOrCreateCurrentUser() {
-  if (!isDatabaseConfigured()) {
-    return {
-      id: "demo-user-uuid-1",
-      email: DEFAULT_USER_EMAIL,
-      displayName: DEFAULT_USER_NAME,
-      role: "OWNER",
-    };
-  }
-
-  try {
-    let user = await prisma.user.findUnique({
-      where: { email: DEFAULT_USER_EMAIL },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: DEFAULT_USER_EMAIL,
-          displayName: DEFAULT_USER_NAME,
-          role: "OWNER",
-        },
-      });
-    }
-
-    return user;
-  } catch (error) {
-    return {
-      id: "demo-user-uuid-1",
-      email: DEFAULT_USER_EMAIL,
-      displayName: DEFAULT_USER_NAME,
-      role: "OWNER",
-    };
-  }
-}
 
 // ==================== DATE RANGE CALCULATION ====================
 
@@ -106,9 +62,7 @@ export async function getAnalyticsReportAction(
   period: AnalyticsTimePeriod = "WEEKLY"
 ): Promise<PeriodReportSummary> {
   const { startDate, endDate, label } = getDateRangeForPeriod(period);
-  const dataSource = isDatabaseConfigured()
-    ? "Prisma PostgreSQL Engine & Sovereign Focus Telemetry (Live)"
-    : "Deterministic Sovereign Kernel Simulation & Telemetry Logs";
+  const dataSource = "Client-Side Local Storage & Sovereign Telemetry Engine";
 
   // Base metrics mapped per period
   let multiplier = 1;
