@@ -748,4 +748,106 @@ export interface AiUsageSummary {
   requestsCount: number;
 }
 
+// ==================== PHASE 11: ANALYTICS & REPORTS TYPES ====================
+
+export type AnalyticsTimePeriod = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+
+export interface AnalyticsCoreMetrics {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  taskCompletionRate: number;
+  taskVelocityScore: number;
+  totalStudyHours: number;
+  targetStudyHours: number;
+  ieltsHours: number;
+  arabicHours: number;
+  engineeringHours: number;
+  estimatedBandScore: number;
+  masteredVocabCount: number;
+  activeHabits: number;
+  avgConsistencyRate: number;
+  currentStreakAvg: number;
+  longestStreakRecord: number;
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  overallProgressAvg: number;
+  totalBalance: number;
+  income: number;
+  expenses: number;
+  netSavings: number;
+  savingsRate: number;
+  totalGoals: number;
+  completedGoals: number;
+  avgGoalProgress: number;
+}
+
+export interface TimeTrendPoint {
+  label: string;
+  studyHours: number;
+  targetHours: number;
+  completedTasks: number;
+  expenses: number;
+  income: number;
+  habitScore: number;
+}
+
+export interface CategoryDistribution {
+  name: string;
+  value: number;
+  color: string;
+  percentage: number;
+}
+
+export interface SubjectBreakdown {
+  subject: string;
+  hours: number;
+  sessionsCount: number;
+  color: string;
+  percentage: number;
+}
+
+export interface HeatmapDayData {
+  date: string;
+  dayOfWeek: number;
+  level: number; // 0 to 4
+  studyMinutes: number;
+  tasksCompleted: number;
+  habitsCompleted: number;
+}
+
+export interface PeriodReportSummary {
+  period: AnalyticsTimePeriod;
+  startDate: string;
+  endDate: string;
+  dataSource: string;
+  generatedAt: string;
+  metrics: AnalyticsCoreMetrics;
+  trendData: TimeTrendPoint[];
+  studyBreakdown: SubjectBreakdown[];
+  expenseBreakdown: CategoryDistribution[];
+  taskPriorityDistribution: CategoryDistribution[];
+  heatmapData: HeatmapDayData[];
+}
+
+export interface AiGeneratedReportResult {
+  type:
+    | "PRODUCTIVITY"
+    | "STUDY_PERFORMANCE"
+    | "HABIT_CONSISTENCY"
+    | "PROJECT_PROGRESS"
+    | "FINANCIAL_TREASURY"
+    | "EXECUTIVE_SYNTHESIS";
+  period: AnalyticsTimePeriod;
+  title: string;
+  executiveSummary: string;
+  keyFindings: string[];
+  strengths: string[];
+  bottlenecks: string[];
+  actionableRecommendations: string[];
+  generatedAt: string;
+}
+
+
 
