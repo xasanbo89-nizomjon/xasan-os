@@ -1,6 +1,33 @@
-import { Priority, TaskStatus, ProjectStatus, TransactionType } from "@prisma/client";
+export const Priority = {
+  LOW: "LOW",
+  NORMAL: "NORMAL",
+  HIGH: "HIGH",
+  URGENT: "URGENT",
+} as const;
+export type Priority = (typeof Priority)[keyof typeof Priority];
 
-export type { Priority, TaskStatus, ProjectStatus, TransactionType };
+export const TaskStatus = {
+  PENDING: "PENDING",
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
+} as const;
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
+
+export const ProjectStatus = {
+  PLANNING: "PLANNING",
+  ACTIVE: "ACTIVE",
+  PAUSED: "PAUSED",
+  COMPLETED: "COMPLETED",
+  ARCHIVED: "ARCHIVED",
+} as const;
+export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus];
+
+export const TransactionType = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+  TRANSFER: "TRANSFER",
+} as const;
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
 
 export interface NavItem {
   id: string;
@@ -213,6 +240,8 @@ export interface ProjectSummary {
   progress: number;
   color?: string | null;
   icon?: string | null;
+  startDate?: Date | string | null;
+  targetDate?: Date | string | null;
   taskCount?: number;
   completedTaskCount?: number;
   createdAt: Date | string;
@@ -356,4 +385,175 @@ export interface DashboardMetrics {
     incomeThisMonth: number;
     expensesThisMonth: number;
   };
+}
+
+export interface DevBugSummary {
+  id: string;
+  projectId: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  status: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
+  module?: string | null;
+  reproSteps?: string | null;
+  projectName?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface DevFeatureSummary {
+  id: string;
+  projectId: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  priority: "P0" | "P1" | "P2" | "P3";
+  status: "BACKLOG" | "PLANNED" | "IN_DEVELOPMENT" | "SHIPPED";
+  targetVersion?: string | null;
+  projectName?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface DevDocSummary {
+  id: string;
+  projectId: string;
+  userId: string;
+  title: string;
+  category: "API" | "ARCHITECTURE" | "ENVIRONMENT" | "GUIDE" | string;
+  endpoint?: string | null;
+  method?: "GET" | "POST" | "PUT" | "DELETE" | string | null;
+  content: string;
+  requestPayload?: string | null;
+  responsePayload?: string | null;
+  projectName?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface DevDeploymentSummary {
+  id: string;
+  projectId: string;
+  userId: string;
+  environment: "PRODUCTION" | "PREVIEW" | "STAGING" | string;
+  commitSha?: string | null;
+  commitMessage?: string | null;
+  branch: string;
+  status: "SUCCESS" | "FAILED" | "BUILDING" | string;
+  deploymentUrl?: string | null;
+  buildDurationSec?: number | null;
+  deployedAt: Date | string;
+  logSnippet?: string | null;
+  source: "MANUAL" | "VERCEL" | "GITHUB_ACTIONS" | string;
+  projectName?: string;
+}
+
+export interface DevReleaseSummary {
+  id: string;
+  projectId: string;
+  userId: string;
+  version: string;
+  title: string;
+  changelog: string;
+  releaseDate: Date | string;
+  createdAt: Date | string;
+  projectName?: string;
+}
+
+export interface DevIntegrationSettingSummary {
+  id?: string;
+  userId: string;
+  githubConnected: boolean;
+  githubUsername?: string | null;
+  githubToken?: string | null;
+  githubLastSync?: Date | string | null;
+  vercelConnected: boolean;
+  vercelUsername?: string | null;
+  vercelToken?: string | null;
+  vercelLastSync?: Date | string | null;
+  monitoringMode: "LIVE" | "CACHED" | "MANUAL" | "HYBRID" | string;
+  updatedAt?: Date | string;
+}
+
+export interface GitHubRepoMetadata {
+  id: number | string;
+  name: string;
+  fullName: string;
+  htmlUrl: string;
+  description?: string | null;
+  language?: string | null;
+  starsCount: number;
+  forksCount: number;
+  openIssuesCount: number;
+  defaultBranch: string;
+  updatedAt: string;
+}
+
+export interface GitHubCommitSummary {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  authorAvatar?: string;
+  date: string;
+  htmlUrl: string;
+  verified: boolean;
+}
+
+export interface GitHubPullRequestSummary {
+  number: number;
+  title: string;
+  author: string;
+  branch: string;
+  status: "OPEN" | "MERGED" | "CLOSED";
+  htmlUrl: string;
+  createdAt: string;
+}
+
+export interface GitHubIssueSummary {
+  number: number;
+  title: string;
+  author: string;
+  status: "OPEN" | "CLOSED";
+  labels: string[];
+  htmlUrl: string;
+  createdAt: string;
+}
+
+export interface VercelProjectSummary {
+  id: string;
+  name: string;
+  framework: string;
+  latestDeploymentStatus: "READY" | "BUILDING" | "ERROR" | "CANCELED";
+  deploymentUrl: string;
+  domains: string[];
+  updatedAt: string;
+}
+
+export interface VercelDeploymentSummary {
+  id: string;
+  name: string;
+  url: string;
+  state: "READY" | "BUILDING" | "ERROR" | "CANCELED";
+  target: "production" | "preview";
+  branch: string;
+  commitMessage?: string;
+  creator: string;
+  createdAt: string;
+  durationMs?: number;
+  errorMessage?: string;
+  buildLogSnippet?: string;
+}
+
+export interface DeveloperHubMetrics {
+  totalProjects: number;
+  activeProjects: number;
+  openBugs: number;
+  criticalBugs: number;
+  backlogFeatures: number;
+  deploymentsThisMonth: number;
+  deploymentSuccessRate: number;
+  githubSyncedAt?: string | null;
+  vercelSyncedAt?: string | null;
 }
