@@ -37,6 +37,9 @@ import {
   SavingsContributionSummary,
   FinanceMetrics,
   FinancialReportSummary,
+  KnowledgeFolderSummary,
+  AiNoteAnalysisResult,
+  SemanticSearchResult,
 } from "@/types";
 
 export const DEFAULT_USER_EMAIL = "xasan@os.local";
@@ -739,32 +742,306 @@ export const FALLBACK_TRANSACTIONS: TransactionSummary[] = [
   },
 ];
 
+export const FALLBACK_FOLDERS: KnowledgeFolderSummary[] = [
+  {
+    id: "fold-1",
+    userId: "demo-user-uuid-1",
+    name: "Software Architecture & Systems",
+    slug: "software-architecture",
+    parentId: null,
+    color: "#10B981",
+    icon: "Server",
+    noteCount: 3,
+  },
+  {
+    id: "fold-1-1",
+    userId: "demo-user-uuid-1",
+    name: "Distributed Consensus",
+    slug: "distributed-consensus",
+    parentId: "fold-1",
+    color: "#3B82F6",
+    icon: "Cpu",
+    noteCount: 1,
+  },
+  {
+    id: "fold-2",
+    userId: "demo-user-uuid-1",
+    name: "IELTS Band 8.5 Masterclass",
+    slug: "ielts-masterclass",
+    parentId: null,
+    color: "#F59E0B",
+    icon: "GraduationCap",
+    noteCount: 2,
+  },
+  {
+    id: "fold-3",
+    userId: "demo-user-uuid-1",
+    name: "Arabic Linguistics & Nahw",
+    slug: "arabic-linguistics",
+    parentId: null,
+    color: "#8B5CF6",
+    icon: "Languages",
+    noteCount: 1,
+  },
+  {
+    id: "fold-4",
+    userId: "demo-user-uuid-1",
+    name: "Book Syntheses & Notes",
+    slug: "book-syntheses",
+    parentId: null,
+    color: "#EC4899",
+    icon: "BookOpen",
+    noteCount: 1,
+  },
+  {
+    id: "fold-5",
+    userId: "demo-user-uuid-1",
+    name: "Personal Journal & Ideas",
+    slug: "personal-journal",
+    parentId: null,
+    color: "#06B6D4",
+    icon: "Compass",
+    noteCount: 1,
+  },
+];
+
 export const FALLBACK_NOTES: KnowledgeNoteSummary[] = [
   {
     id: "note-1",
     userId: "demo-user-uuid-1",
-    title: "Distributed Consensus: Raft vs Multi-Paxos",
-    content: "Deep architectural comparison regarding leader election latency, log replication idempotency, and cluster membership reconfiguration.",
-    summary: "Comparison of consensus models in production distributed state machines.",
-    category: "Distributed Systems",
-    tags: ["Architecture", "System Design", "Backend"],
+    folderId: "fold-1-1",
+    folderName: "Distributed Consensus",
+    title: "Distributed Consensus: Raft vs Multi-Paxos in Production",
+    content: `# Distributed Consensus: Raft vs Multi-Paxos in Production
+
+## Executive Overview
+Consensus algorithms ensure that a cluster of machines agree on a sequence of values despite crash faults and network partitions.
+
+### 1. Leader Election & Heartbeats
+* **Raft**: Disjoint terms with randomized election timeouts (150ms–300ms). Guaranteed at most one leader per term.
+* **Multi-Paxos**: Symmetric phase 1 runs once per instance; leader is an optimization, which makes pipeline interleaving complex.
+
+\`\`\`rust
+pub struct RaftLeaderElection {
+    pub current_term: u64,
+    pub voted_for: Option<NodeId>,
+    pub election_timeout_ms: u64,
+}
+\`\`\`
+
+### 2. Log Replication Invariants
+* If an entry is committed in a given term, that entry will be present in the logs of the leaders for all higher-numbered terms.
+* Prevents split-brain state machine diverging.`,
+    summary: "Comprehensive architectural breakdown of leader election, heartbeat timeouts, and log replication invariants in Raft vs Paxos.",
+    contentType: "PROGRAMMING_DOC",
+    category: "Architecture",
+    collection: "Systems Architecture",
+    tags: ["DistributedSystems", "Raft", "Consensus", "Backend"],
+    attachments: ["raft_paper_summary.pdf", "consensus_benchmark.json"],
+    internalLinks: ["note-4"],
     isPinned: true,
     isFavorite: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
     id: "note-2",
     userId: "demo-user-uuid-1",
-    title: "IELTS Writing Task 2: Cohesion & Lexical Resource Band 9",
-    content: "Framework for thematic topic sentence progression, counter-argument balance, and idiomatic collocations.",
-    summary: "High-band essay argumentation structure.",
+    folderId: "fold-2",
+    folderName: "IELTS Band 8.5 Masterclass",
+    title: "IELTS Writing Task 2: Cohesion, Lexical Range & Macro Structure",
+    content: `# IELTS Writing Task 2: Cohesion & Band 9 Lexical Range
+
+## Essay Macro Architecture
+1. **Introduction (45 words)**: Paraphrase prompt + clear overarching thesis + outline sentence.
+2. **Body Paragraph 1 (90 words)**: The primary pillar, concrete evidence, cause-and-effect progression.
+3. **Body Paragraph 2 (90 words)**: Counter-perspective or nuanced secondary dimension + rebuttal.
+4. **Conclusion (40 words)**: Restate thesis with elevated vocabulary, zero new ideas.
+
+### High-Band Lexical Collocations:
+- *Inexorably linked to*
+- *Catalyzes structural shifts*
+- *A paramount consideration*
+- *Preponderance of empirical evidence*`,
+    summary: "Band 9 macro essay architecture with topic sentence cohesion templates and low-frequency C2 collocations.",
+    contentType: "STUDY_NOTE",
     category: "IELTS Preparation",
-    tags: ["IELTS", "Writing", "English"],
+    collection: "IELTS Band 8.5",
+    tags: ["IELTS", "Writing", "LexicalRange", "English"],
+    attachments: ["cambridge19_sample_essays.pdf"],
+    internalLinks: ["note-8"],
     isPinned: true,
+    isFavorite: true,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  },
+  {
+    id: "note-3",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-4",
+    folderName: "Book Syntheses & Notes",
+    title: "Designing Data-Intensive Applications (Martin Kleppmann)",
+    content: `# Designing Data-Intensive Applications — Key Principles
+
+## Part 1: Foundations of Data Systems
+- **Reliability**: Tolerate hardware faults, human errors, and software bugs.
+- **Scalability**: Describe load with parameters; evaluate response times (p95, p99, p99.9).
+- **Maintainability**: Operability, simplicity (abstractions), and evolvability.
+
+## Part 2: Storage Engines
+* **LSM-Trees (Log-Structured Merge-Trees)**: Append-only write path with MemTable (SSTables) and background compaction. Excellent for high write throughput.
+* **B-Trees**: Page-based updates in place with Write-Ahead Logging (WAL). Predictable read latencies.`,
+    summary: "Core takeaways from Martin Kleppmann's book regarding LSM-trees, B-trees, partitioning, and replication topologies.",
+    contentType: "BOOK_SUMMARY",
+    category: "Books",
+    collection: "Engineering Classics",
+    tags: ["Databases", "LSMTrees", "Kleppmann", "Storage"],
+    attachments: ["ddia_notes_complete.pdf"],
+    internalLinks: ["note-1"],
+    isPinned: false,
+    isFavorite: true,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+  },
+  {
+    id: "note-4",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-1",
+    folderName: "Software Architecture & Systems",
+    title: "Zero-Latency Real-Time Audio Streaming Pipeline with WebRTC",
+    content: `# Zero-Latency Real-Time Audio Streaming Pipeline
+
+## Pipeline Architecture
+1. **Client Audio Worklet**: Captures 48kHz audio chunks via WebAudio API.
+2. **Downsampling & VAD**: WebAssembly module converts stereo to 16kHz mono, applies Voice Activity Detection.
+3. **WebSockets/WebRTC Ingestion**: Audio chunks dispatched with binary framing.
+4. **Whisper Inference Cluster**: PyTorch C++ runtime processes 250ms chunks with temperature 0.0.
+
+\`\`\`typescript
+const audioContext = new AudioContext({ sampleRate: 16000 });
+await audioContext.audioWorklet.addModule('/worklets/vad-processor.js');
+\`\`\``,
+    summary: "Technical architecture of sub-200ms latency streaming audio pipelines for automated voice scoring.",
+    contentType: "ARTICLE",
+    category: "Architecture",
+    collection: "Venture Engineering",
+    tags: ["WebAudio", "Whisper", "Latency", "WebSockets"],
+    attachments: ["audio_pipeline_diagram.svg"],
+    internalLinks: ["note-8"],
+    isPinned: false,
     isFavorite: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: "note-5",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-3",
+    folderName: "Arabic Linguistics & Nahw",
+    title: "Arabic Triliteral Root System & Sarf Conjugation Forms I-X",
+    content: `# Arabic Morphological Derivatives (Sarf)
+
+## Triliteral Roots (جذر ثلاثي)
+All Semitic verbal stems derive from three consonants (Fa-Ayn-Lam / ف-ع-ل).
+
+### The Ten Primary Verbal Forms:
+1. **Form I (فَعَلَ - يَفْعَلُ)**: Ground form (e.g. كَتَبَ - to write).
+2. **Form II (فَعَّلَ - يُفَعِّلُ)**: Causative or intensive (e.g. عَلَّمَ - to teach).
+3. **Form III (فَاعَلَ - يُفَاعِلُ)**: Mutual or reciprocal action (e.g. قَاتَلَ - to combat).
+4. **Form X (اسْتَفْعَلَ - يَسْتَفْعِلُ)**: Seeking or asking for (e.g. اسْتَغْفَرَ - to seek forgiveness).`,
+    summary: "Systematic index of Arabic verb forms I through X, semantic augmentations, and active/passive participles.",
+    contentType: "STUDY_NOTE",
+    category: "Linguistics",
+    collection: "Arabic Mastery",
+    tags: ["Arabic", "Sarf", "Nahw", "Linguistics"],
+    attachments: ["sarf_table_complete.pdf"],
+    internalLinks: [],
+    isPinned: false,
+    isFavorite: true,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 6).toISOString(),
+  },
+  {
+    id: "note-6",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-5",
+    folderName: "Personal Journal & Ideas",
+    title: "Self-Hosted Semantic Vector Memory for Antigravity AI",
+    content: `# Idea: Local Embedding Memory Layer for Developer OS
+
+## Concept Blueprint
+Store conversation embeddings locally using SQLite + sqlite-vss or PostgreSQL pgvector.
+- Every note, task, and architectural decision is automatically chunked into 512-token segments.
+- Local model (e.g. BGE-small-en-v1.5) generates 384-dimensional dense vectors.
+- Instant sub-millisecond semantic retrieval across entire personal knowledge garden.`,
+    summary: "Idea proposal for local vector embeddings enabling semantic graph exploration across the entire personal OS.",
+    contentType: "IDEA",
+    category: "Ideas",
+    collection: "Venture Engineering",
+    tags: ["AI", "VectorSearch", "pgvector", "Embeddings"],
+    attachments: [],
+    internalLinks: ["note-1"],
+    isPinned: false,
+    isFavorite: true,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  },
+  {
+    id: "note-7",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-5",
+    folderName: "Personal Journal & Ideas",
+    title: "Reflections on Deep Focus, Cognitive Stamina & Architecture",
+    content: `# Daily Reflection: Cognitive Stamina & Discipline Cadence
+
+## Observations on Attention Density
+Focus is not a binary toggle; it is an energetic reservoir.
+- When deep work is scheduled in 90-minute ultradian cycles with zero tab switching, output velocity doubles.
+- Physical discipline (early morning running, hydration, deliberate nutrition) directly shields cognitive sharpness from fatigue.`,
+    summary: "Personal reflection on 90-minute focus sessions, physical stamina, and high-velocity software engineering.",
+    contentType: "PERSONAL_JOURNAL",
+    category: "Journal",
+    collection: "Personal Evolution",
+    tags: ["Discipline", "Focus", "Reflections"],
+    attachments: [],
+    internalLinks: [],
+    isPinned: false,
+    isFavorite: false,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: "note-8",
+    userId: "demo-user-uuid-1",
+    folderId: "fold-2",
+    folderName: "IELTS Band 8.5 Masterclass",
+    title: "Acoustic Hesitation & Formant Analysis for IELTS Speaking Band 8.5",
+    content: `# Acoustic Analysis of Fluent Band 8.5+ Speech
+
+## Formants, Intonation & Pause Durations
+Examiners penalize *hesitation content search* differently from *hesitation grammatical repairs*.
+- Natural pauses occur at syntactic clause boundaries (< 300ms).
+- Mid-sentence self-correction pauses (> 500ms) degrade fluency down to Band 7.0.
+- Rising intonation on discourse markers signals sentence continuation without stutter.`,
+    summary: "Research notes on speech pause durations, syntactic boundary alignment, and phonetics for Band 8.5.",
+    contentType: "RESEARCH",
+    category: "Research",
+    collection: "IELTS Band 8.5",
+    tags: ["Phonetics", "IELTS", "Acoustics", "Research"],
+    attachments: ["speech_pause_distribution.csv"],
+    internalLinks: ["note-2", "note-4"],
+    isPinned: false,
+    isFavorite: false,
+    isArchived: false,
+    createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
   },
 ];
 

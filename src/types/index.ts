@@ -265,18 +265,67 @@ export interface TransactionSummary {
   updatedAt?: Date | string;
 }
 
+export type NoteContentType =
+  | "NOTE"
+  | "IDEA"
+  | "ARTICLE"
+  | "BOOK_SUMMARY"
+  | "PROGRAMMING_DOC"
+  | "STUDY_NOTE"
+  | "PERSONAL_JOURNAL"
+  | "RESEARCH";
+
+export interface KnowledgeFolderSummary {
+  id: string;
+  userId: string;
+  name: string;
+  slug: string;
+  parentId?: string | null;
+  color?: string | null;
+  icon?: string | null;
+  noteCount?: number;
+  children?: KnowledgeFolderSummary[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
 export interface KnowledgeNoteSummary {
   id: string;
   userId: string;
+  folderId?: string | null;
+  folderName?: string | null;
   title: string;
   content: string;
   summary?: string | null;
+  contentType: NoteContentType | string;
   category: string;
+  collection?: string | null;
   tags: string[];
+  attachments: string[];
+  internalLinks: string[];
   isPinned: boolean;
   isFavorite: boolean;
+  isArchived: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+export interface AiNoteAnalysisResult {
+  action: "SUMMARIZE" | "EXPLAIN" | "GENERATE_QUESTIONS" | "EXTRACT_INFO";
+  noteId: string;
+  noteTitle: string;
+  result: string;
+  bullets?: string[];
+  questions?: { question: string; answer: string }[];
+  keyPoints?: string[];
+  timestamp: string;
+}
+
+export interface SemanticSearchResult {
+  note: KnowledgeNoteSummary;
+  similarityScore: number;
+  matchedSnippet: string;
+  relevanceReason: string;
 }
 
 export interface IeltsPracticeRecordSummary {
