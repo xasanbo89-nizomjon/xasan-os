@@ -677,3 +677,75 @@ export interface FinancialReportSummary {
   transactionCount: number;
 }
 
+export type AiChatMode =
+  | "GENERAL"
+  | "ARCHITECT"
+  | "STUDY_IELTS"
+  | "ARABIC"
+  | "FINANCE"
+  | "DEV_PROJECTS"
+  | "DISCIPLINE";
+
+export interface AiProposedAction {
+  id: string;
+  type: "CREATE_TASK" | "UPDATE_TASK" | "CREATE_REMINDER" | "DELETE_RECORD" | "FINANCE_TRANSACTION";
+  title: string;
+  description: string;
+  payload: Record<string, any>;
+  status: "PENDING" | "CONFIRMED" | "REJECTED" | "EXECUTED";
+}
+
+export interface AiToolCallInfo {
+  name: string;
+  arguments: Record<string, any>;
+  isMutative: boolean;
+  result?: any;
+}
+
+export interface AiMessageSummary {
+  id: string;
+  conversationId: string;
+  role: "user" | "assistant" | "system" | "tool";
+  content: string;
+  toolCalls?: AiToolCallInfo[] | null;
+  toolResults?: any[] | null;
+  proposedAction?: AiProposedAction | null;
+  actionConfirmed?: boolean | null; // null = pending, true = confirmed, false = rejected
+  tokenCount?: number;
+  contextAttachment?: string | null;
+  createdAt: Date | string;
+}
+
+export interface AiConversationSummary {
+  id: string;
+  userId: string;
+  title: string;
+  systemPrompt?: string | null;
+  mode: AiChatMode | string;
+  pinned: boolean;
+  messageCount: number;
+  lastMessageSnippet?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface AiUserMemorySummary {
+  id: string;
+  userId: string;
+  category: "PREFERENCE" | "GOAL" | "CONSTRAINT" | "STYLE" | string;
+  key: string;
+  value: string;
+  isPinned: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface AiUsageSummary {
+  tokensUsedToday: number;
+  dailyLimit: number;
+  remainingTokens: number;
+  percentageUsed: number;
+  requestsCount: number;
+}
+
+

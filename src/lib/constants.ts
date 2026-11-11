@@ -2073,4 +2073,239 @@ export const FALLBACK_FINANCIAL_REPORTS: Record<string, FinancialReportSummary> 
   },
 };
 
+export const FALLBACK_AI_CONVERSATIONS: any[] = [
+  {
+    id: "conv-1",
+    userId: "demo-user-uuid-1",
+    title: "Architecture Advisory & Consensus Invariants",
+    mode: "ARCHITECT",
+    pinned: true,
+    messageCount: 3,
+    lastMessageSnippet: "Raft consensus protocol guarantees linearizability via strict leader lease...",
+    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+  {
+    id: "conv-2",
+    userId: "demo-user-uuid-1",
+    title: "Daily Execution & Productivity Protocol",
+    mode: "GENERAL",
+    pinned: true,
+    messageCount: 4,
+    lastMessageSnippet: "Synchronized today's 4 active tasks with Aurelius IELTS release roadmap...",
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+  },
+  {
+    id: "conv-3",
+    userId: "demo-user-uuid-1",
+    title: "IELTS Band 8.5 Task 2 Coaching & Hedging",
+    mode: "STUDY_IELTS",
+    pinned: false,
+    messageCount: 2,
+    lastMessageSnippet: "Analyzed your argument on algorithmic governance with band 8.5 criteria...",
+    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+  },
+  {
+    id: "conv-4",
+    userId: "demo-user-uuid-1",
+    title: "Financial Runway & CapEx Allocation",
+    mode: "FINANCE",
+    pinned: false,
+    messageCount: 2,
+    lastMessageSnippet: "Current liquidity reserve is $42,850.00 with 78.9% net savings rate...",
+    createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 36).toISOString(),
+  },
+];
+
+export const FALLBACK_AI_MESSAGES: Record<string, any[]> = {
+  "conv-1": [
+    {
+      id: "msg-1-1",
+      conversationId: "conv-1",
+      role: "user",
+      content: "Explain how Raft log compaction interacts with snapshotting under high network jitter.",
+      tokenCount: 42,
+      createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+    },
+    {
+      id: "msg-1-2",
+      conversationId: "conv-1",
+      role: "assistant",
+      content: `### Raft Log Compaction & Snapshotting Invariants
+
+In distributed consensus systems like **Raft**, log compaction prevents unbounded disk memory growth by discarding committed entries up to a designated index $I_{snap}$.
+
+#### 1. The Core Invariant
+- A snapshot contains the full state machine up to log index $I_{snap}$ and term $T_{snap}$.
+- Once written to durable disk, all preceding log entries $[1 \dots I_{snap}]$ are truncated safely.
+- **Strict Invariant**: The leader *never* rewrites or overrides uncommitted entries beyond the snapshot index.
+
+#### 2. Network Jitter & Lagging Followers
+When a network partition or heavy I/O jitter causes a replica to fall behind the leader's earliest log entry:
+1. **AppendEntries Fallback**: The leader cannot stream log deltas because entries $[1 \dots I_{snap}]$ no longer exist in the WAL.
+2. **InstallSnapshot RPC**: The leader dispatches chunked snapshot data directly to the follower.
+3. **Atomic State Application**: The follower applies the snapshot atomically, resets its state machine, and resumes standard heartbeat streaming.
+
+\`\`\`rust
+// Conceptual Raft InstallSnapshot boundary invariant
+pub fn install_snapshot(
+    leader_term: Term,
+    last_included_index: LogIndex,
+    last_included_term: Term,
+    data: &[u8]
+) -> Result<SnapshotStatus, ConsensusError> {
+    if leader_term < current_term() {
+        return Err(ConsensusError::StaleLeader);
+    }
+    apply_state_machine_snapshot(last_included_index, data)?;
+    truncate_wal_prior_to(last_included_index);
+    Ok(SnapshotStatus::Synchronized)
+}
+\`\`\`
+
+Would you like to analyze split-brain mitigation or leader lease timers?`,
+      tokenCount: 384,
+      createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    },
+  ],
+  "conv-2": [
+    {
+      id: "msg-2-1",
+      conversationId: "conv-2",
+      role: "user",
+      content: "Audit my daily schedule and active tasks. What should I prioritize this morning?",
+      tokenCount: 35,
+      createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+    },
+    {
+      id: "msg-2-2",
+      conversationId: "conv-2",
+      role: "assistant",
+      content: `### Daily Sovereign Execution Audit
+
+I retrieved your live database tasks, study metrics, and venture priorities using secure read-only tools:
+- \`getTasks({ status: "PENDING" })\` &bull; **4 active tasks** identified.
+- \`getStudyProgress()\` &bull; **IELTS Band 8.0 estimate**; 42 flashcards due for SM-2 repetition.
+- \`getProjects({ status: "ACTIVE" })\` &bull; **Aurelius IELTS** v1.4 release milestone approaching.
+
+#### Priority Hierarchy
+1. **Urgent Execution (09:00 - 11:30)**: Complete *Task #1: Distributed Consensus Protocol Integration* for XASAN OS.
+2. **Deep Work Focus (11:30 - 13:00)**: Aurelius IELTS Band 8.5 mock essay review and lexical cohesion test.
+3. **Discipline Maintenance (15:00 - 15:45)**: Arabic CEFR B2 root conjugation drill (45 minutes).
+
+I have prepared an action proposal to schedule an urgent reminder for the Aurelius IELTS deployment:`,
+      toolCalls: [
+        {
+          name: "getTasks",
+          arguments: { status: "PENDING" },
+          isMutative: false,
+          result: { count: 4, urgent: 1 },
+        },
+        {
+          name: "getStudyProgress",
+          arguments: {},
+          isMutative: false,
+          result: { bandScore: 8.0, dueFlashcards: 42 },
+        },
+      ],
+      proposedAction: {
+        id: "prop-1",
+        type: "CREATE_TASK",
+        title: "Deploy Aurelius IELTS v1.4 to Production",
+        description: "Run automated E2E test suite and trigger Vercel deployment pipeline.",
+        payload: {
+          title: "Deploy Aurelius IELTS v1.4 to Production",
+          category: "Technology",
+          priority: "HIGH",
+          estimatedMinutes: 60,
+        },
+        status: "PENDING",
+      },
+      actionConfirmed: null,
+      tokenCount: 420,
+      createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    },
+  ],
+};
+
+export const FALLBACK_AI_MEMORIES: any[] = [
+  {
+    id: "mem-1",
+    userId: "demo-user-uuid-1",
+    category: "PREFERENCE",
+    key: "Response Style",
+    value: "Senior software architect tone: concise, mathematically precise, dense bullet-points, zero filler, dark emerald theme.",
+    isPinned: true,
+    createdAt: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
+  },
+  {
+    id: "mem-2",
+    userId: "demo-user-uuid-1",
+    category: "GOAL",
+    key: "Target IELTS Band",
+    value: "Overall 8.5 (Listening: 9.0, Reading: 9.0, Writing: 8.0, Speaking: 8.5). Strict lexical hedging and cohesive reference mastery.",
+    isPinned: true,
+    createdAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+  },
+  {
+    id: "mem-3",
+    userId: "demo-user-uuid-1",
+    category: "GOAL",
+    key: "Core Ventures",
+    value: "Active portfolio: Aurelius IELTS (AI mock test lab), LinguaHub (Arabic/English vocabulary SaaS), Ravon Auto Tuning (ECU tuning), 36-School LMS.",
+    isPinned: true,
+    createdAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+  },
+  {
+    id: "mem-4",
+    userId: "demo-user-uuid-1",
+    category: "CONSTRAINT",
+    key: "Architectural Integrity",
+    value: "PostgreSQL Prisma schema with UUID primary keys, user data isolation, no third-party bank scraping, zero client-side API key leakage.",
+    isPinned: true,
+    createdAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+  },
+];
+
+export const AI_QUICK_DIRECTIVES = [
+  {
+    id: "dir-1",
+    label: "Daily Execution Plan",
+    icon: "Calendar",
+    prompt: "Audit today's tasks, study commitments, and habit discipline targets. Generate an optimized time-blocked schedule.",
+  },
+  {
+    id: "dir-2",
+    label: "Audit Developer Ventures",
+    icon: "Code2",
+    prompt: "Analyze active Developer Hub ventures (Aurelius IELTS, LinguaHub, Ravon Auto, LMS). Review open bugs and deployment status.",
+  },
+  {
+    id: "dir-3",
+    label: "IELTS Band 8.5 Strategy",
+    icon: "GraduationCap",
+    prompt: "Evaluate my latest IELTS practice records and flashcard retention. Recommend high-impact lexical hedging and writing adjustments.",
+  },
+  {
+    id: "dir-4",
+    label: "Treasury & Financial Health",
+    icon: "Wallet",
+    prompt: "Provide an executive summary of current ledger balance, category spending velocity, and savings goal milestones.",
+  },
+  {
+    id: "dir-5",
+    label: "Arabic CEFR B2 Morphology",
+    icon: "BookOpen",
+    prompt: "Conduct an active linguistic review of Arabic triliteral verb forms (الأوزان) and low-frequency vocabulary cards.",
+  },
+];
+
+
 
