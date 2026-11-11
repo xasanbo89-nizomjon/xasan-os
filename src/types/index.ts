@@ -252,14 +252,17 @@ export interface TransactionSummary {
   id: string;
   userId: string;
   title: string;
-  amount: number | string;
+  amount: number;
   type: TransactionType;
   category: string;
   account: string;
+  currency?: string;
+  paymentMethod?: string;
   date: Date | string;
   notes?: string | null;
   tags: string[];
   createdAt: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface KnowledgeNoteSummary {
@@ -557,3 +560,71 @@ export interface DeveloperHubMetrics {
   githubSyncedAt?: string | null;
   vercelSyncedAt?: string | null;
 }
+
+export interface BudgetSummary {
+  id: string;
+  userId: string;
+  category: string;
+  month: string;
+  monthlyLimit: number;
+  spentAmount: number;
+  percentageUsed: number;
+  currency: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface SavingsContributionSummary {
+  id: string;
+  goalId: string;
+  userId: string;
+  amount: number;
+  note?: string | null;
+  date: Date | string;
+  createdAt?: Date | string;
+}
+
+export interface SavingsGoalSummary {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  currency: string;
+  targetDate?: Date | string | null;
+  color?: string | null;
+  icon?: string | null;
+  category: string;
+  isCompleted: boolean;
+  progressPercentage: number;
+  contributions?: SavingsContributionSummary[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface FinanceMetrics {
+  totalBalance: number;
+  incomeThisMonth: number;
+  expensesThisMonth: number;
+  netSavingsThisMonth: number;
+  savingsRatePercentage: number;
+  monthlyBudgetLimit: number;
+  budgetUtilizationPercentage: number;
+  totalSavingsGoalTarget: number;
+  totalSavingsAccumulated: number;
+  currency: string;
+}
+
+export interface FinancialReportSummary {
+  period: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  startDate: string;
+  endDate: string;
+  totalIncome: number;
+  totalExpenses: number;
+  netCashflow: number;
+  savingsRate: number;
+  topExpenseCategories: { category: string; amount: number; percentage: number }[];
+  topIncomeSources: { source: string; amount: number; percentage: number }[];
+  transactionCount: number;
+}
+
