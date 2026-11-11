@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { TaskStatus, Priority } from "@prisma/client";
-import { TaskSummary } from "@/types";
+import { TaskStatus, Priority, TaskSummary } from "@/types";
 import { TaskCard } from "./task-card";
 import { Plus, ArrowLeft, ArrowRight, Clock, CheckCircle2, Circle } from "lucide-react";
 

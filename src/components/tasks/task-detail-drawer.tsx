@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Priority, TaskStatus } from "@prisma/client";
-import { TaskSummary, SubtaskSummary } from "@/types";
+import { Priority, TaskStatus, TaskSummary, SubtaskSummary } from "@/types";
 import {
   X,
   Calendar,

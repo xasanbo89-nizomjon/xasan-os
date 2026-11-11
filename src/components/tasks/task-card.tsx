@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Priority, TaskStatus } from "@prisma/client";
-import { TaskSummary } from "@/types";
+import { Priority, TaskStatus, TaskSummary } from "@/types";
 import {
   CheckCircle2,
   Circle,

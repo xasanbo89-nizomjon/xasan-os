@@ -1,9 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { GoalSummary, VisionItemSummary } from "@/types";
+import { GoalSummary, VisionItemSummary, Priority } from "@/types";
 import { FALLBACK_GOALS, FALLBACK_VISION_ITEMS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME } from "@/lib/constants";
-import { Priority } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 function isDatabaseConfigured(): boolean {

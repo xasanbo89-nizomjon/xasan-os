@@ -1,8 +1,18 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Priority, TaskStatus, ProjectStatus, TransactionType } from "@prisma/client";
-import { DashboardMetrics, TaskSummary, HabitSummary, ProjectSummary, TransactionSummary, KnowledgeNoteSummary } from "@/types";
+import {
+  Priority,
+  TaskStatus,
+  ProjectStatus,
+  TransactionType,
+  DashboardMetrics,
+  TaskSummary,
+  HabitSummary,
+  ProjectSummary,
+  TransactionSummary,
+  KnowledgeNoteSummary,
+} from "@/types";
 import {
   DEFAULT_USER_EMAIL,
   DEFAULT_USER_NAME,
@@ -133,19 +143,19 @@ export async function getDashboardData(): Promise<{
       };
     }
 
-    const pendingTasks = tasks.filter((t) => t.status !== TaskStatus.COMPLETED).length;
-    const completedTasks = tasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
-    const urgentTasks = tasks.filter((t) => t.priority === Priority.URGENT && t.status !== TaskStatus.COMPLETED).length;
+    const pendingTasks = tasks.filter((t: any) => t.status !== TaskStatus.COMPLETED).length;
+    const completedTasks = tasks.filter((t: any) => t.status === TaskStatus.COMPLETED).length;
+    const urgentTasks = tasks.filter((t: any) => t.priority === Priority.URGENT && t.status !== TaskStatus.COMPLETED).length;
 
     const habitActiveCount = habits.length;
-    const habitCompletedCount = habits.filter((h) => h.streak > 0).length;
+    const habitCompletedCount = habits.filter((h: any) => h.streak > 0).length;
 
     const income = transactions
-      .filter((tx) => tx.type === TransactionType.INCOME)
-      .reduce((acc, curr) => acc + Number(curr.amount), 0);
+      .filter((tx: any) => tx.type === TransactionType.INCOME)
+      .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
     const expenses = transactions
-      .filter((tx) => tx.type === TransactionType.EXPENSE)
-      .reduce((acc, curr) => acc + Number(curr.amount), 0);
+      .filter((tx: any) => tx.type === TransactionType.EXPENSE)
+      .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
 
     return {
       metrics: {
@@ -160,8 +170,8 @@ export async function getDashboardData(): Promise<{
           completionRate: habitActiveCount > 0 ? Math.round((habitCompletedCount / habitActiveCount) * 100) : 0,
         },
         projects: {
-          active: projects.filter((p) => p.status === ProjectStatus.ACTIVE).length,
-          completed: projects.filter((p) => p.status === ProjectStatus.COMPLETED).length,
+          active: projects.filter((p: any) => p.status === ProjectStatus.ACTIVE).length,
+          completed: projects.filter((p: any) => p.status === ProjectStatus.COMPLETED).length,
         },
         finance: {
           balance: income - expenses,
@@ -169,7 +179,7 @@ export async function getDashboardData(): Promise<{
           expensesThisMonth: expenses,
         },
       },
-      recentTasks: tasks.map((t) => ({
+      recentTasks: tasks.map((t: any) => ({
         id: t.id,
         userId: t.userId,
         projectId: t.projectId,
@@ -185,7 +195,7 @@ export async function getDashboardData(): Promise<{
         estimatedMinutes: t.estimatedMinutes,
         actualMinutes: t.actualMinutes,
         recurrence: t.recurrence,
-        subtasks: t.subtasks.map((st) => ({
+        subtasks: t.subtasks.map((st: any) => ({
           id: st.id,
           taskId: st.taskId,
           title: st.title,
@@ -198,7 +208,7 @@ export async function getDashboardData(): Promise<{
         createdAt: t.createdAt.toISOString(),
         updatedAt: t.updatedAt.toISOString(),
       })),
-      activeHabits: habits.map((h) => ({
+      activeHabits: habits.map((h: any) => ({
         id: h.id,
         userId: h.userId,
         name: h.name,
@@ -214,7 +224,7 @@ export async function getDashboardData(): Promise<{
         archived: h.archived,
         createdAt: h.createdAt.toISOString(),
       })),
-      projects: projects.map((p) => ({
+      projects: projects.map((p: any) => ({
         id: p.id,
         userId: p.userId,
         name: p.name,
@@ -229,11 +239,11 @@ export async function getDashboardData(): Promise<{
         color: p.color,
         icon: p.icon,
         taskCount: p.tasks.length,
-        completedTaskCount: p.tasks.filter((t) => t.status === TaskStatus.COMPLETED).length,
+        completedTaskCount: p.tasks.filter((t: any) => t.status === TaskStatus.COMPLETED).length,
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
       })),
-      recentTransactions: transactions.map((tx) => ({
+      recentTransactions: transactions.map((tx: any) => ({
         id: tx.id,
         userId: tx.userId,
         title: tx.title,
@@ -323,7 +333,7 @@ export async function getGlobalSearchDataAction(): Promise<{
     ]);
 
     return {
-      tasks: tasks.map((t) => ({
+      tasks: tasks.map((t: any) => ({
         id: t.id,
         userId: t.userId,
         projectId: t.projectId,
@@ -337,7 +347,7 @@ export async function getGlobalSearchDataAction(): Promise<{
         createdAt: t.createdAt.toISOString(),
         updatedAt: t.updatedAt.toISOString(),
       })),
-      projects: projects.map((p) => ({
+      projects: projects.map((p: any) => ({
         id: p.id,
         userId: p.userId,
         name: p.name,
@@ -372,7 +382,7 @@ export async function getGlobalSearchDataAction(): Promise<{
         createdAt: n.createdAt.toISOString ? n.createdAt.toISOString() : String(n.createdAt),
         updatedAt: n.updatedAt.toISOString ? n.updatedAt.toISOString() : String(n.updatedAt),
       })),
-      transactions: transactions.map((tx) => ({
+      transactions: transactions.map((tx: any) => ({
         id: tx.id,
         userId: tx.userId,
         title: tx.title,

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CheckCircle2, Clock, Trash2, X, AlertTriangle } from "lucide-react";
-import { TaskStatus, Priority } from "@prisma/client";
+import { TaskStatus, Priority } from "@/types";
 
 interface BulkActionsBarProps {
   selectedCount: number;

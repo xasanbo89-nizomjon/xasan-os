@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Priority } from "@prisma/client";
-import { ProjectSummary } from "@/types";
+import { Priority, ProjectSummary } from "@/types";
 import { X, Plus, Calendar, Clock, Tag, ListChecks, Sparkles } from "lucide-react";
 
 interface CreateTaskModalProps {

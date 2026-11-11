@@ -1,8 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Priority, TaskStatus } from "@prisma/client";
-import { TaskSummary, SubtaskSummary } from "@/types";
+import { Priority, TaskStatus, TaskSummary, SubtaskSummary } from "@/types";
 import { FALLBACK_TASKS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME } from "@/lib/constants";
 import { revalidatePath } from "next/cache";
 
@@ -59,17 +58,17 @@ export async function getTasksAction(filters?: {
   if (!isDatabaseConfigured()) {
     let filtered = [...FALLBACK_TASKS];
     if (filters?.category && filters.category !== "ALL") {
-      filtered = filtered.filter((t) => t.category?.toLowerCase() === filters.category?.toLowerCase());
+      filtered = filtered.filter((t: TaskSummary) => t.category?.toLowerCase() === filters.category?.toLowerCase());
     }
     if (filters?.priority) {
-      filtered = filtered.filter((t) => t.priority === filters.priority);
+      filtered = filtered.filter((t: TaskSummary) => t.priority === filters.priority);
     }
     if (filters?.status) {
-      filtered = filtered.filter((t) => t.status === filters.status);
+      filtered = filtered.filter((t: TaskSummary) => t.status === filters.status);
     }
     if (filters?.search) {
       const q = filters.search.toLowerCase();
-      filtered = filtered.filter((t) => t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
+      filtered = filtered.filter((t: TaskSummary) => t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
     }
     return filtered;
   }
@@ -107,7 +106,7 @@ export async function getTasksAction(filters?: {
       return FALLBACK_TASKS;
     }
 
-    return tasks.map((t) => ({
+    return tasks.map((t: any) => ({
       id: t.id,
       userId: t.userId,
       projectId: t.projectId,
@@ -123,7 +122,7 @@ export async function getTasksAction(filters?: {
       estimatedMinutes: t.estimatedMinutes,
       actualMinutes: t.actualMinutes,
       recurrence: t.recurrence,
-      subtasks: t.subtasks.map((st) => ({
+      subtasks: t.subtasks.map((st: any) => ({
         id: st.id,
         taskId: st.taskId,
         title: st.title,
@@ -178,7 +177,7 @@ export async function createTaskAction(data: {
         estimatedMinutes,
         actualMinutes: 0,
         recurrence,
-        subtasks: (data.subtasks || []).map((title, i) => ({
+        subtasks: (data.subtasks || []).map((title: string, i: number) => ({
           id: `st-sim-${Date.now()}-${i}`,
           taskId: `task-sim-${Date.now()}`,
           title,
@@ -208,7 +207,7 @@ export async function createTaskAction(data: {
         recurrence,
         tags,
         subtasks: data.subtasks && data.subtasks.length > 0 ? {
-          create: data.subtasks.map((stTitle, i) => ({
+          create: data.subtasks.map((stTitle: string, i: number) => ({
             title: stTitle,
             completed: false,
             order: i,

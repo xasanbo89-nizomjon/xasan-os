@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { TaskStatus, Priority } from "@prisma/client";
-import { TaskSummary, ProjectSummary } from "@/types";
+import { TaskStatus, Priority, TaskSummary, ProjectSummary } from "@/types";
 import {
   CheckSquare,
   Search,

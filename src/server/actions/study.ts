@@ -71,7 +71,7 @@ export async function getIeltsRecordsAction(section?: string): Promise<IeltsPrac
   if (!isDatabaseConfigured()) {
     if (!section || section === "ALL") return FALLBACK_IELTS_RECORDS;
     return FALLBACK_IELTS_RECORDS.filter(
-      (r) => r.section.toUpperCase() === section.toUpperCase()
+      (r: IeltsPracticeRecordSummary) => r.section.toUpperCase() === section.toUpperCase()
     );
   }
 
@@ -91,7 +91,7 @@ export async function getIeltsRecordsAction(section?: string): Promise<IeltsPrac
       return FALLBACK_IELTS_RECORDS;
     }
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       userId: r.userId,
       section: r.section,
@@ -198,7 +198,7 @@ export async function getExamResultsAction(): Promise<ExamResultSummary[]> {
       return FALLBACK_EXAM_RESULTS;
     }
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       userId: r.userId,
       examType: r.examType,
@@ -298,7 +298,7 @@ export async function getArabicLogsAction(skill?: string): Promise<ArabicPractic
   if (!isDatabaseConfigured()) {
     if (!skill || skill === "ALL") return FALLBACK_ARABIC_LOGS;
     return FALLBACK_ARABIC_LOGS.filter(
-      (l) => l.skill.toUpperCase() === skill.toUpperCase()
+      (l: ArabicPracticeLogSummary) => l.skill.toUpperCase() === skill.toUpperCase()
     );
   }
 
@@ -318,7 +318,7 @@ export async function getArabicLogsAction(skill?: string): Promise<ArabicPractic
       return FALLBACK_ARABIC_LOGS;
     }
 
-    return logs.map((l) => ({
+    return logs.map((l: any) => ({
       id: l.id,
       userId: l.userId,
       skill: l.skill,
@@ -407,15 +407,15 @@ export async function getVocabCardsAction(filters?: {
   if (!isDatabaseConfigured()) {
     let cards = [...FALLBACK_VOCAB_CARDS];
     if (filters?.language && filters.language !== "ALL") {
-      cards = cards.filter((c) => c.language.toUpperCase() === filters.language?.toUpperCase());
+      cards = cards.filter((c: VocabularyCardSummary) => c.language.toUpperCase() === filters.language?.toUpperCase());
     }
     if (filters?.status && filters.status !== "ALL") {
-      cards = cards.filter((c) => c.status.toUpperCase() === filters.status?.toUpperCase());
+      cards = cards.filter((c: VocabularyCardSummary) => c.status.toUpperCase() === filters.status?.toUpperCase());
     }
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       cards = cards.filter(
-        (c) =>
+        (c: VocabularyCardSummary) =>
           c.word.toLowerCase().includes(q) ||
           c.translation.toLowerCase().includes(q) ||
           c.topic.toLowerCase().includes(q)
@@ -451,7 +451,7 @@ export async function getVocabCardsAction(filters?: {
       return FALLBACK_VOCAB_CARDS;
     }
 
-    return cards.map((c) => ({
+    return cards.map((c: any) => ({
       id: c.id,
       userId: c.userId,
       word: c.word,
@@ -671,7 +671,7 @@ export async function getStudySessionsAction(): Promise<StudySessionSummary[]> {
       return FALLBACK_STUDY_SESSIONS;
     }
 
-    return sessions.map((s) => ({
+    return sessions.map((s: any) => ({
       id: s.id,
       userId: s.userId,
       subject: s.subject,
@@ -735,17 +735,17 @@ export async function getStudyMetricsAction(): Promise<StudyCenterMetrics> {
       prisma.studySession.findMany({ where: { userId: user.id } }),
     ]);
 
-    const totalStudyMinutes = sessions.reduce((acc, s) => acc + s.durationMinutes, 0);
+    const totalStudyMinutes = sessions.reduce((acc: number, s: any) => acc + s.durationMinutes, 0);
     const totalStudyHours = parseFloat((totalStudyMinutes / 60).toFixed(1));
 
-    const cardsMastered = vocabCards.filter((c) => c.status === "MASTERED").length;
+    const cardsMastered = vocabCards.filter((c: any) => c.status === "MASTERED").length;
     const now = new Date();
-    const cardsReviewDue = vocabCards.filter((c) => new Date(c.nextReviewDate) <= now).length;
+    const cardsReviewDue = vocabCards.filter((c: any) => new Date(c.nextReviewDate) <= now).length;
 
     const mockTestsCompleted = mockResults.length;
     const averageMockScore =
       mockResults.length > 0
-        ? parseFloat((mockResults.reduce((acc, r) => acc + r.overallBand, 0) / mockResults.length).toFixed(2))
+        ? parseFloat((mockResults.reduce((acc: number, r: any) => acc + r.overallBand, 0) / mockResults.length).toFixed(2))
         : 8.0;
 
     return {

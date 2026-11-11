@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Priority } from "@prisma/client";
+import { Priority } from "@/types";
 import { X, Plus, Target, Calendar, ListChecks, Sparkles } from "lucide-react";
 
 interface CreateGoalModalProps {
