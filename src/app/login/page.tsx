@@ -24,11 +24,13 @@ import {
   User,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/";
+  const { isUz } = useTranslation();
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -44,18 +46,28 @@ function LoginForm() {
     try {
       const res = await signInWithGoogle();
       if (!res.success || !res.user) {
-        throw new Error(res.error || "Google authentication failed");
+        throw new Error(
+          res.error || (isUz ? "Google orqali kirishda xatolik yuz berdi" : "Google authentication failed")
+        );
       }
 
       const syncRes = await syncFirebaseUserAction(res.user);
       if (!syncRes.success) {
-        throw new Error(syncRes.error || "Failed to establish database session");
+        throw new Error(
+          syncRes.error || (isUz ? "Foydalanuvchi seansini o‘rnatib bo‘lmadi" : "Failed to establish database session")
+        );
       }
 
       router.push(returnUrl);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Authentication error");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isUz
+          ? "Autentifikatsiya xatoligi"
+          : "Authentication error"
+      );
     } finally {
       setLoading(false);
     }
@@ -68,7 +80,9 @@ function LoginForm() {
 
     try {
       if (!email.trim() || !password) {
-        throw new Error("Please enter both email and password");
+        throw new Error(
+          isUz ? "Iltimos, email va parolni kiriting" : "Please enter both email and password"
+        );
       }
 
       let res;
@@ -79,18 +93,28 @@ function LoginForm() {
       }
 
       if (!res.success || !res.user) {
-        throw new Error(res.error || "Authentication failed");
+        throw new Error(
+          res.error || (isUz ? "Kirish muvaffaqiyatsiz bo‘ldi" : "Authentication failed")
+        );
       }
 
       const syncRes = await syncFirebaseUserAction(res.user);
       if (!syncRes.success) {
-        throw new Error(syncRes.error || "Failed to establish database session");
+        throw new Error(
+          syncRes.error || (isUz ? "Foydalanuvchi seansini o‘rnatib bo‘lmadi" : "Failed to establish database session")
+        );
       }
 
       router.push(returnUrl);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Authentication error");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isUz
+          ? "Autentifikatsiya xatoligi"
+          : "Authentication error"
+      );
     } finally {
       setLoading(false);
     }
@@ -101,11 +125,21 @@ function LoginForm() {
     setError(null);
     try {
       const res = await loginArchitectDemoAction();
-      if (!res.success) throw new Error(res.error || "Demo login failed");
+      if (!res.success) {
+        throw new Error(
+          res.error || (isUz ? "Demo kirish amalga oshmadi" : "Demo login failed")
+        );
+      }
       router.push(returnUrl);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Demo login error");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isUz
+          ? "Demo kirish xatoligi"
+          : "Demo login error"
+      );
     } finally {
       setLoading(false);
     }
@@ -127,7 +161,9 @@ function LoginForm() {
             XASAN OS ULTIMATE
           </h1>
           <p className="text-xs text-[#98A69D] mt-1">
-            Phase 2: Authentication & Sovereign Access Gate
+            {isUz
+              ? "Autentifikatsiya va Suveren Kirish Darvozasi"
+              : "Phase 2: Authentication & Sovereign Access Gate"}
           </p>
         </div>
 
@@ -147,13 +183,13 @@ function LoginForm() {
               setMode("signin");
               setError(null);
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               mode === "signin"
                 ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow"
                 : "text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
           >
-            Sign In
+            {isUz ? "Kirish" : "Sign In"}
           </button>
           <button
             type="button"
@@ -161,13 +197,13 @@ function LoginForm() {
               setMode("signup");
               setError(null);
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               mode === "signup"
                 ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow"
                 : "text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
           >
-            Create Account
+            {isUz ? "Ro‘yxatdan o‘tish" : "Create Account"}
           </button>
         </div>
 
@@ -197,14 +233,14 @@ function LoginForm() {
               d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"
             />
           </svg>
-          <span>Continue with Google</span>
+          <span>{isUz ? "Google orqali davom etish" : "Continue with Google"}</span>
         </button>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-4">
           <div className="flex-1 h-px bg-[#25352C]" />
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#98A69D]">
-            or with email
+            {isUz ? "yoki email orqali" : "or with email"}
           </span>
           <div className="flex-1 h-px bg-[#25352C]" />
         </div>
@@ -214,12 +250,12 @@ function LoginForm() {
           {mode === "signup" && (
             <div>
               <label className="block text-[11px] font-medium text-[#98A69D] mb-1">
-                Display Name
+                {isUz ? "Ism va familiya" : "Display Name"}
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="e.g. Xasan Mukhammadiev"
+                  placeholder={isUz ? "Masalan: Xasan Mukhammadiev" : "e.g. Xasan Mukhammadiev"}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-[#101915] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] placeholder-[#98A69D]/50 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -231,7 +267,7 @@ function LoginForm() {
 
           <div>
             <label className="block text-[11px] font-medium text-[#98A69D] mb-1">
-              Email Address
+              {isUz ? "Email manzili" : "Email Address"}
             </label>
             <div className="relative">
               <input
@@ -248,7 +284,7 @@ function LoginForm() {
 
           <div>
             <label className="block text-[11px] font-medium text-[#98A69D] mb-1">
-              Password
+              {isUz ? "Parol" : "Password"}
             </label>
             <div className="relative">
               <input
@@ -280,15 +316,15 @@ function LoginForm() {
             className="w-full py-2.5 px-4 rounded-xl bg-[#10B981] text-[#080D0B] font-bold text-xs hover:bg-[#059669] transition-all shadow-md shadow-[#10B981]/25 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 cursor-pointer mt-2"
           >
             {loading ? (
-              <span>Authenticating...</span>
+              <span>{isUz ? "Tekshirilmoqda..." : "Authenticating..."}</span>
             ) : mode === "signin" ? (
               <>
-                <span>Sign In to System</span>
+                <span>{isUz ? "Tizimga kirish" : "Sign In to System"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             ) : (
               <>
-                <span>Create Architect Account</span>
+                <span>{isUz ? "Arxitektor hisobini yaratish" : "Create Architect Account"}</span>
                 <Sparkles className="w-4 h-4" />
               </>
             )}
@@ -304,7 +340,7 @@ function LoginForm() {
             className="w-full py-2 px-3 rounded-xl bg-[#142019] border border-[#10B981]/30 hover:border-[#10B981] text-[11px] font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all hover:bg-[#10B981]/10 active:scale-[0.98] cursor-pointer"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>Instant Architect Demo Access (One-Click)</span>
+            <span>{isUz ? "Tezkor Demo Kirish (Bir bosishda)" : "Instant Architect Demo Access (One-Click)"}</span>
           </button>
         </div>
 
@@ -312,7 +348,7 @@ function LoginForm() {
         <div className="mt-5 text-center">
           <span className="text-[10px] text-[#98A69D] flex items-center justify-center gap-1.5 font-mono">
             <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-            PostgreSQL User Isolation • Prisma ORM Protected
+            {isUz ? "Mahalliy Avtonom Xotira • Xavfsiz Shaxsiy Rejim" : "Local Storage Isolation • Sovereign Engine"}
           </span>
         </div>
       </div>

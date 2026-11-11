@@ -25,12 +25,14 @@ import {
   deleteJournalEntryAction,
 } from "@/server/actions/journal";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface JournalViewProps {
   initialEntries: JournalEntrySummary[];
 }
 
 export function JournalView({ initialEntries }: JournalViewProps) {
+  const { dict, isUz } = useTranslation();
   const [entries, setEntries] = useState<JournalEntrySummary[]>(initialEntries);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMood, setSelectedMood] = useState("ALL");
@@ -47,7 +49,32 @@ export function JournalView({ initialEntries }: JournalViewProps) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const moods = ["ALL", "Energized", "Productive", "Reflective", "Focused", "Challenged"];
+  const moods = [
+    { key: "ALL", label: isUz ? "Barchasi" : "ALL" },
+    { key: "Energized", label: isUz ? "G‘ayratli" : "Energized" },
+    { key: "Productive", label: isUz ? "Mahsuldor" : "Productive" },
+    { key: "Reflective", label: isUz ? "Mushohadali" : "Reflective" },
+    { key: "Focused", label: isUz ? "Diqqatli" : "Focused" },
+    { key: "Challenged", label: isUz ? "Sinovli" : "Challenged" },
+  ];
+
+  const getMoodLabel = (m: string) => {
+    if (!isUz) return m;
+    switch (m.toLowerCase()) {
+      case "energized":
+        return "G‘ayratli";
+      case "productive":
+        return "Mahsuldor";
+      case "reflective":
+        return "Mushohadali";
+      case "focused":
+        return "Diqqatli";
+      case "challenged":
+        return "Sinovli";
+      default:
+        return m;
+    }
+  };
 
   const filteredEntries = useMemo(() => {
     return entries.filter((e) => {
@@ -116,7 +143,10 @@ export function JournalView({ initialEntries }: JournalViewProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this journal reflection?")) return;
+    const confirmMsg = isUz
+      ? "Ushbu jurnal qaydini o‘chirib tashlamoqchimisiz?"
+      : "Delete this journal reflection?";
+    if (!confirm(confirmMsg)) return;
     setEntries((prev) => prev.filter((e) => e.id !== id));
     await deleteJournalEntryAction(id);
   };
@@ -132,7 +162,11 @@ export function JournalView({ initialEntries }: JournalViewProps) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search reflections, insights, or tags..."
+            placeholder={
+              isUz
+                ? "Xulosalar, qaydlar yoki teglarni qidirish..."
+                : "Search reflections, insights, or tags..."
+            }
             className="w-full bg-[#142019] border border-[#25352C] rounded-xl pl-9 pr-3 py-2 text-xs text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
           />
         </div>
@@ -142,16 +176,16 @@ export function JournalView({ initialEntries }: JournalViewProps) {
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {moods.map((m) => (
               <button
-                key={m}
+                key={m.key}
                 type="button"
-                onClick={() => setSelectedMood(m)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
-                  selectedMood === m
+                onClick={() => setSelectedMood(m.key)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                  selectedMood === m.key
                     ? "bg-[#142019] text-[#10B981] border border-[#10B981]/40 font-semibold"
                     : "bg-[#142019]/60 text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
                 }`}
               >
-                {m}
+                {m.label}
               </button>
             ))}
           </div>
@@ -159,13 +193,15 @@ export function JournalView({ initialEntries }: JournalViewProps) {
           <button
             type="button"
             onClick={() => setShowArchived(!showArchived)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-colors ${
+            className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-colors cursor-pointer ${
               showArchived
                 ? "bg-[#142019] text-[#F59E0B] border-[#F59E0B]/40"
                 : "bg-[#142019] text-[#98A69D] border-[#25352C] hover:text-[#F3F7F4]"
             }`}
           >
-            {showArchived ? "Archived View" : "Active Entries"}
+            {showArchived
+              ? (isUz ? "Arxivlangan qaydlar" : "Archived View")
+              : (isUz ? "Faol qaydlar" : "Active Entries")}
           </button>
 
           <button
@@ -174,7 +210,7 @@ export function JournalView({ initialEntries }: JournalViewProps) {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            New Reflection
+            {isUz ? "Yangi Xulosa" : "New Reflection"}
           </button>
         </div>
       </div>
@@ -187,18 +223,20 @@ export function JournalView({ initialEntries }: JournalViewProps) {
               <BookOpen className="w-6 h-6" />
             </div>
             <h3 className="text-base font-semibold text-[#F3F7F4]">
-              No Journal Reflections Found
+              {isUz ? "Jurnal Qaydlari Topilmadi" : "No Journal Reflections Found"}
             </h3>
             <p className="text-xs text-[#98A69D] max-w-sm">
-              Capture your engineering breakthroughs, IELTS essay reviews, and philosophical reflections.
+              {isUz
+                ? "Muhandislik kashfiyotlaringiz, IELTS sharhlaringiz va shaxsiy mushohadalaringizni yozib boring."
+                : "Capture your engineering breakthroughs, IELTS essay reviews, and philosophical reflections."}
             </p>
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              Write First Reflection
+              {isUz ? "Birinchi Xulosani Yozish" : "Write First Reflection"}
             </button>
           </div>
         ) : (
@@ -219,11 +257,11 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                         {entry.title}
                       </h4>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] text-[#10B981] border border-[#10B981]/30">
-                        {entry.mood}
+                        {getMoodLabel(entry.mood)}
                       </span>
                       {entry.isPrivate && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30 flex items-center gap-1">
-                          <Lock className="w-2.5 h-2.5" /> Confidential
+                          <Lock className="w-2.5 h-2.5" /> {isUz ? "Maxfiy" : "Confidential"}
                         </span>
                       )}
                     </div>
@@ -248,8 +286,12 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                       <button
                         type="button"
                         onClick={() => handleToggleUnlock(entry.id)}
-                        className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] transition-colors"
-                        title={isUnlocked ? "Lock entry" : "Reveal private reflection"}
+                        className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] transition-colors cursor-pointer"
+                        title={
+                          isUnlocked
+                            ? (isUz ? "Qulfni qayta yopish" : "Lock entry")
+                            : (isUz ? "Maxfiy qaydni ko‘rsatish" : "Reveal private reflection")
+                        }
                       >
                         {isUnlocked ? (
                           <EyeOff className="w-3.5 h-3.5" />
@@ -262,8 +304,8 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                     <button
                       type="button"
                       onClick={() => handleToggleArchive(entry.id, entry.isArchived)}
-                      className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-                      title={entry.isArchived ? "Unarchive" : "Archive"}
+                      className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+                      title={entry.isArchived ? (isUz ? "Arxivdan chiqarish" : "Unarchive") : (isUz ? "Arxivlash" : "Archive")}
                     >
                       <Archive className="w-3.5 h-3.5" />
                     </button>
@@ -271,8 +313,8 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                     <button
                       type="button"
                       onClick={() => handleDelete(entry.id)}
-                      className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors"
-                      title="Delete"
+                      className="p-1.5 rounded-lg bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors cursor-pointer"
+                      title={isUz ? "O‘chirish" : "Delete"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -289,7 +331,9 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                   onClick={() => isBlurProtected && handleToggleUnlock(entry.id)}
                 >
                   {isBlurProtected
-                    ? "This reflection is locked with privacy encryption. Click reveal icon to view content."
+                    ? (isUz
+                        ? "Ushbu qayd maxfiylik bilan himoyalangan. Ko‘rish uchun qulf belgisini bosing."
+                        : "This reflection is locked with privacy encryption. Click reveal icon to view content.")
                     : entry.content}
                 </div>
               </div>
@@ -309,16 +353,18 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#F3F7F4]">
-                    Record Journal Reflection
+                    {isUz ? "Jurnal Qaydnomasi Yozish" : "Record Journal Reflection"}
                   </h3>
                   <p className="text-xs text-[#98A69D]">
-                    Capture thoughts, technical breakthroughs, or daily retrospective
+                    {isUz
+                      ? "Fikrlar, texnik yutuqlar yoki kunlik retrospektivani qayd eting"
+                      : "Capture thoughts, technical breakthroughs, or daily retrospective"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -327,14 +373,18 @@ export function JournalView({ initialEntries }: JournalViewProps) {
             <form onSubmit={handleCreateEntry} className="space-y-4 pt-4">
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Title <span className="text-[#EF4444]">*</span>
+                  {isUz ? "Sarlavha" : "Title"} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Architectural Latency Breakthrough in WebSockets"
+                  placeholder={
+                    isUz
+                      ? "Masalan: WebSockets kechikishini bartaraf etish usuli"
+                      : "e.g. Architectural Latency Breakthrough in WebSockets"
+                  }
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -342,7 +392,7 @@ export function JournalView({ initialEntries }: JournalViewProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Date
+                    {isUz ? "Sana" : "Date"}
                   </label>
                   <input
                     type="date"
@@ -354,45 +404,49 @@ export function JournalView({ initialEntries }: JournalViewProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Dominant Mood
+                    {isUz ? "Asosiy Kayfiyat" : "Dominant Mood"}
                   </label>
                   <select
                     value={mood}
                     onChange={(e) => setMood(e.target.value)}
                     className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="Energized">Energized</option>
-                    <option value="Productive">Productive</option>
-                    <option value="Reflective">Reflective</option>
-                    <option value="Focused">Focused</option>
-                    <option value="Challenged">Challenged</option>
+                    <option value="Energized">{isUz ? "G‘ayratli (Energized)" : "Energized"}</option>
+                    <option value="Productive">{isUz ? "Mahsuldor (Productive)" : "Productive"}</option>
+                    <option value="Reflective">{isUz ? "Mushohadali (Reflective)" : "Reflective"}</option>
+                    <option value="Focused">{isUz ? "Diqqatli (Focused)" : "Focused"}</option>
+                    <option value="Challenged">{isUz ? "Sinovli (Challenged)" : "Challenged"}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Reflection Content <span className="text-[#EF4444]">*</span>
+                  {isUz ? "Mushohada Mazmuni" : "Reflection Content"} <span className="text-[#EF4444]">*</span>
                 </label>
                 <textarea
                   rows={5}
                   required
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Deep architectural realizations, IELTS speaking practice notes, personal insights..."
+                  placeholder={
+                    isUz
+                      ? "Chuqur arxitektura xulosalari, IELTS amaliyoti qaydlari yoki shaxsiy kuzatuvlar..."
+                      : "Deep architectural realizations, IELTS speaking practice notes, personal insights..."
+                  }
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] leading-relaxed resize-none"
                 />
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Tags (comma-separated)
+                  {isUz ? "Teglar (vergul bilan ajrating)" : "Tags (comma-separated)"}
                 </label>
                 <input
                   type="text"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="Engineering, IELTS, Philosophy, Architecture"
+                  placeholder={isUz ? "Muhandislik, IELTS, Falsafa, Arxitektura" : "Engineering, IELTS, Philosophy, Architecture"}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
                 />
               </div>
@@ -408,7 +462,7 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                 />
                 <label htmlFor="privateCheck" className="text-xs text-[#F3F7F4] cursor-pointer flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-[#EF4444]" />
-                  Mark as Confidential (Blur-Protected)
+                  {isUz ? "Maxfiy deb belgilash (Shifrlangan ko‘rinish)" : "Mark as Confidential (Blur-Protected)"}
                 </label>
               </div>
 
@@ -416,17 +470,19 @@ export function JournalView({ initialEntries }: JournalViewProps) {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {isUz ? "Bekor qilish" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !title.trim() || !content.trim()}
-                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
+                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  {isSubmitting ? "Saving..." : "Save Reflection"}
+                  {isSubmitting
+                    ? (isUz ? "Saqlanmoqda..." : "Saving...")
+                    : (isUz ? "Xulosani Saqlash" : "Save Reflection")}
                 </button>
               </div>
             </form>

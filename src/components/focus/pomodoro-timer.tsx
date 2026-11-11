@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { DistractionFreeFocus } from "./distraction-free-focus";
 import { logFocusSessionAction } from "@/server/actions/focus";
+import { useTranslation } from "@/stores/language-store";
 
 type TimerMode = "POMODORO" | "DEEP_WORK" | "SHORT_BREAK" | "LONG_BREAK" | "CUSTOM";
 
@@ -29,6 +30,7 @@ interface PomodoroTimerProps {
 }
 
 export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: PomodoroTimerProps) {
+  const { dict, isUz } = useTranslation();
   const [mode, setMode] = useState<TimerMode>("DEEP_WORK");
   const [selectedTaskId, setSelectedTaskId] = useState<string>(initialTaskId || "");
   const [customSubject, setCustomSubject] = useState("");
@@ -123,8 +125,8 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
     customSubject.trim() ||
     selectedTask?.title ||
     (mode === "SHORT_BREAK" || mode === "LONG_BREAK"
-      ? "Mind Renewal & Rest"
-      : "Deep Work Block");
+      ? (isUz ? "Dam Olish va Tiklanish" : "Mind Renewal & Rest")
+      : (isUz ? "Chuqur Ishlash Bloki" : "Deep Work Block"));
 
   const handleCompleteSession = async () => {
     const durationMinutes = Math.round((totalSeconds - secondsRemaining) / 60) || 1;
@@ -158,6 +160,22 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
     seconds
   ).padStart(2, "0")}`;
 
+  const getModeDisplay = (m: TimerMode) => {
+    if (!isUz) return m.replace("_", " ");
+    switch (m) {
+      case "POMODORO":
+        return "POMODORO";
+      case "DEEP_WORK":
+        return "CHUQUR ISHLASH";
+      case "SHORT_BREAK":
+        return "QISQA TANAFFUS";
+      case "LONG_BREAK":
+        return "UZOQ TANAFFUS";
+      default:
+        return "MAXSUS REJIM";
+    }
+  };
+
   return (
     <div className="glass-card rounded-2xl p-6 sm:p-8 border border-[#25352C] bg-[#101915] flex flex-col items-center">
       {/* Mode Switcher Tabs */}
@@ -172,7 +190,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          Pomodoro (25m)
+          {isUz ? "Pomodoro (25d)" : "Pomodoro (25m)"}
         </button>
 
         <button
@@ -185,7 +203,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
           }`}
         >
           <Brain className="w-3.5 h-3.5" />
-          Deep Work (50m)
+          {isUz ? "Chuqur Ishlash (50d)" : "Deep Work (50m)"}
         </button>
 
         <button
@@ -198,7 +216,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
           }`}
         >
           <Coffee className="w-3.5 h-3.5" />
-          Short Break (5m)
+          {isUz ? "Qisqa Tanaffus (5d)" : "Short Break (5m)"}
         </button>
 
         <button
@@ -211,7 +229,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
           }`}
         >
           <Coffee className="w-3.5 h-3.5" />
-          Long Break (15m)
+          {isUz ? "Uzoq Tanaffus (15d)" : "Long Break (15m)"}
         </button>
       </div>
 
@@ -220,7 +238,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         <div className="flex items-center gap-2">
           <ListTodo className="w-4 h-4 text-[#10B981]" />
           <span className="text-xs font-semibold text-[#F3F7F4]">
-            Attach Task or Work Pipeline Item:
+            {isUz ? "Vazifa yoki Ish Rejasini Biriktirish:" : "Attach Task or Work Pipeline Item:"}
           </span>
         </div>
 
@@ -235,7 +253,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
           }}
           className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
         >
-          <option value="">No Task Linked (Custom Subject)</option>
+          <option value="">{isUz ? "Vazifa biriktirilmagan (Maxsus Mavzu)" : "No Task Linked (Custom Subject)"}</option>
           {tasks
             .filter((t) => t.status !== "COMPLETED")
             .map((t) => (
@@ -250,7 +268,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
             type="text"
             value={customSubject}
             onChange={(e) => setCustomSubject(e.target.value)}
-            placeholder="Focus Subject (e.g. Raft Consensus Study, IELTS Mock #5)"
+            placeholder={isUz ? "Diqqat mavzusi (Masalan: Raft konsensus, IELTS Mock #5)" : "Focus Subject (e.g. Raft Consensus Study, IELTS Mock #5)"}
             className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
           />
         )}
@@ -295,7 +313,7 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         {/* Center Countdown Display */}
         <div className="absolute flex flex-col items-center justify-center text-center space-y-1">
           <span className="text-[10px] font-mono uppercase tracking-widest text-[#10B981] font-bold">
-            {mode.replace("_", " ")}
+            {getModeDisplay(mode)}
           </span>
           <div className="text-5xl sm:text-6xl font-black font-mono text-[#F3F7F4] tracking-widest">
             {timeFormatted}
@@ -311,10 +329,10 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         <button
           type="button"
           onClick={() => handleAddMinutes(5)}
-          className="px-3 py-2 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] text-xs font-mono transition-colors"
-          title="Add 5 minutes"
+          className="px-3 py-2 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] text-xs font-mono transition-colors cursor-pointer"
+          title={isUz ? "5 daqiqa qo‘shish" : "Add 5 minutes"}
         >
-          +5m
+          {isUz ? "+5d" : "+5m"}
         </button>
 
         <button
@@ -328,11 +346,11 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         >
           {isActive ? (
             <>
-              <Pause className="w-5 h-5 fill-current" /> Pause
+              <Pause className="w-5 h-5 fill-current" /> {isUz ? "To‘xtatish" : "Pause"}
             </>
           ) : (
             <>
-              <Play className="w-5 h-5 fill-current" /> Start Focus
+              <Play className="w-5 h-5 fill-current" /> {isUz ? "Boshlash" : "Start Focus"}
             </>
           )}
         </button>
@@ -340,8 +358,8 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         <button
           type="button"
           onClick={handleReset}
-          className="p-3.5 rounded-2xl bg-[#142019] hover:bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-          title="Reset Timer"
+          className="p-3.5 rounded-2xl bg-[#142019] hover:bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+          title={isUz ? "Taymerni qayta o‘rnatish" : "Reset Timer"}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -349,8 +367,8 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         <button
           type="button"
           onClick={handleCompleteSession}
-          className="p-3.5 rounded-2xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 transition-colors"
-          title="Complete and Log Session"
+          className="p-3.5 rounded-2xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 transition-colors cursor-pointer"
+          title={isUz ? "Seansni yakunlash va saqlash" : "Complete and Log Session"}
         >
           <CheckCircle2 className="w-4 h-4" />
         </button>
@@ -361,23 +379,23 @@ export function PomodoroTimer({ tasks, onSessionLogged, initialTaskId }: Pomodor
         <button
           type="button"
           onClick={() => setIsDistractionFreeOpen(true)}
-          className="flex items-center gap-2 text-xs font-semibold text-[#10B981] hover:text-[#059669] transition-colors"
+          className="flex items-center gap-2 text-xs font-semibold text-[#10B981] hover:text-[#059669] transition-colors cursor-pointer"
         >
           <Maximize2 className="w-4 h-4" />
-          Enter Distraction-Free Overlay
+          {isUz ? "Chalg‘ituvchilarsiz To‘liq Ekran" : "Enter Distraction-Free Overlay"}
         </button>
 
         <button
           type="button"
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="flex items-center gap-1.5 text-xs text-[#98A69D] hover:text-[#F3F7F4] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-[#98A69D] hover:text-[#F3F7F4] transition-colors cursor-pointer"
         >
           {soundEnabled ? (
             <Volume2 className="w-4 h-4 text-[#10B981]" />
           ) : (
             <VolumeX className="w-4 h-4" />
           )}
-          <span>{soundEnabled ? "Chime On" : "Chime Muted"}</span>
+          <span>{soundEnabled ? (isUz ? "Ovoz Yoqilgan" : "Chime On") : (isUz ? "Ovoz O‘chiq" : "Chime Muted")}</span>
         </button>
       </div>
 

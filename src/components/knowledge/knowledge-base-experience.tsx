@@ -32,6 +32,7 @@ import { NoteEditor } from "./note-editor";
 import { AiKnowledgeCopilot } from "./ai-knowledge-copilot";
 import { SemanticSearchModal } from "./semantic-search-modal";
 import { useKnowledgeStore } from "@/stores/knowledge-store";
+import { useTranslation } from "@/stores/language-store";
 import { formatDate } from "@/lib/utils";
 
 interface KnowledgeBaseExperienceProps {
@@ -43,6 +44,7 @@ export function KnowledgeBaseExperience({
   initialFolders,
   initialNotes,
 }: KnowledgeBaseExperienceProps) {
+  const { isUz, dict } = useTranslation();
   const storeFolders = useKnowledgeStore((s) => s.folders);
   const storeNotes = useKnowledgeStore((s) => s.notes);
   const addNote = useKnowledgeStore((s) => s.addNote);
@@ -120,13 +122,15 @@ export function KnowledgeBaseExperience({
   // Create new note
   const handleCreateNewNote = () => {
     const folder = folders.find((f) => f.id === selectedFolderId);
-    const defaultCategory = folder ? folder.name : "Architecture";
+    const defaultCategory = folder ? folder.name : (isUz ? "Arxitektura" : "Architecture");
     const count = notes.length + 1;
-    const defaultTitle = `Architectural Note #${count}`;
+    const defaultTitle = isUz ? `Qayd #${count}` : `Architectural Note #${count}`;
 
     const newNote = addNote({
       title: defaultTitle,
-      content: `# ${defaultTitle}\n\n## Objective & Invariants\n- Define core requirements, invariants, and architectural constraints.\n\n## System Design & Trade-offs\nDescribe the trade-offs, state machines, and concurrency considerations here...`,
+      content: isUz
+        ? `# ${defaultTitle}\n\n## Maqsad va Invariantlar\n- Asosiy talablar, prinsiplar va tizim chegaralarini belgilang.\n\n## Tizim Dizayni va Tahlil\nBu yerda arxitektura yechimlari, holat mashinalari va xulosalarni bayon qiling...`
+        : `# ${defaultTitle}\n\n## Objective & Invariants\n- Define core requirements, invariants, and architectural constraints.\n\n## System Design & Trade-offs\nDescribe the trade-offs, state machines, and concurrency considerations here...`,
       contentType: (selectedContentType !== "ALL" ? selectedContentType : "NOTE") as any,
       category: defaultCategory,
       folderId: selectedFolderId || undefined,
@@ -189,7 +193,7 @@ export function KnowledgeBaseExperience({
           <button
             onClick={() => setIsSidebarOpen((prev) => !prev)}
             className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors"
-            title={isSidebarOpen ? "Collapse Folders Tree" : "Expand Folders Tree"}
+            title={isSidebarOpen ? (isUz ? "Papkalar panelini yashirish" : "Collapse Folders Tree") : (isUz ? "Papkalar panelini ochish" : "Expand Folders Tree")}
           >
             {isSidebarOpen ? (
               <ChevronLeft className="w-4 h-4" />
@@ -201,17 +205,17 @@ export function KnowledgeBaseExperience({
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-bold text-[#F3F7F4] tracking-wide flex items-center gap-1.5">
               <BookOpen className="w-4 h-4 text-[#10B981]" />
-              SECOND BRAIN
+              {isUz ? "IKKINCHI MIYA" : "SECOND BRAIN"}
             </span>
             <div className="hidden md:flex items-center gap-1.5 text-[10px] font-mono text-[#98A69D] border-l border-[#25352C] pl-2.5">
               <span className="px-1.5 py-0.5 rounded bg-[#142019] border border-[#25352C]">
-                {totalNotesCount} Notes
+                {totalNotesCount} {isUz ? "ta Qayd" : "Notes"}
               </span>
               <span className="px-1.5 py-0.5 rounded bg-[#142019] border border-[#25352C] text-[#10B981]">
-                {pinnedCount} Pinned
+                {pinnedCount} {isUz ? "ta Qadalgan" : "Pinned"}
               </span>
               <span className="px-1.5 py-0.5 rounded bg-[#142019] border border-[#25352C] text-amber-400">
-                {favoriteCount} Starred
+                {favoriteCount} {isUz ? "ta Tanlangan" : "Starred"}
               </span>
             </div>
           </div>
@@ -225,7 +229,7 @@ export function KnowledgeBaseExperience({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search title, markdown text or tags..."
+              placeholder={isUz ? "Sarlavha, matn yoki teglarni qidirish..." : "Search title, markdown text or tags..."}
               className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#080D0B] border border-[#25352C] rounded-xl text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981] transition-colors"
             />
           </div>
@@ -233,10 +237,10 @@ export function KnowledgeBaseExperience({
           <button
             onClick={() => setIsSemanticSearchOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#10B981]/15 text-[#10B981] hover:bg-[#10B981]/25 border border-[#10B981]/30 text-xs font-mono font-medium transition-colors shrink-0"
-            title="Semantic Conceptual Search"
+            title={isUz ? "Semantik mantiqiy qidiruv" : "Semantic Conceptual Search"}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">Semantic Search</span>
+            <span className="hidden lg:inline">{isUz ? "Semantik qidiruv" : "Semantic Search"}</span>
           </button>
         </div>
 
@@ -248,10 +252,10 @@ export function KnowledgeBaseExperience({
               setIsCopilotOpen(true);
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#F3F7F4] border border-[#25352C] hover:border-[#10B981]/40 text-xs font-medium transition-colors"
-            title="Open AI Copilot"
+            title={isUz ? "AI Yordamchini ochish" : "Open AI Copilot"}
           >
             <Brain className="w-3.5 h-3.5 text-[#10B981]" />
-            <span className="hidden sm:inline">AI Copilot</span>
+            <span className="hidden sm:inline">{isUz ? "AI Yordamchi" : "AI Copilot"}</span>
           </button>
 
           <button
@@ -260,7 +264,7 @@ export function KnowledgeBaseExperience({
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-sm disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
-            <span>New Note</span>
+            <span>{isUz ? "Yangi qayd" : "New Note"}</span>
           </button>
         </div>
       </div>
@@ -299,13 +303,13 @@ export function KnowledgeBaseExperience({
           <div className="p-3.5 border-b border-[#25352C] bg-[#101915]/60 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono font-semibold text-[#F3F7F4]">
-                {activeView === "ALL" && !selectedFolderId && "All Documents"}
-                {activeView === "FAVORITES" && "Starred Notes"}
-                {activeView === "PINNED" && "Pinned Invariants"}
-                {activeView === "ARCHIVED" && "Archived Material"}
+                {activeView === "ALL" && !selectedFolderId && (isUz ? "Barcha qaydlar" : "All Documents")}
+                {activeView === "FAVORITES" && (isUz ? "Tanlangan qaydlar" : "Starred Notes")}
+                {activeView === "PINNED" && (isUz ? "Qadalgan invariantlar" : "Pinned Invariants")}
+                {activeView === "ARCHIVED" && (isUz ? "Arxivlangan qaydlar" : "Archived Material")}
                 {selectedFolderId && (
                   <span className="text-[#10B981]">
-                    {folders.find((f) => f.id === selectedFolderId)?.name || "Folder"}
+                    {folders.find((f) => f.id === selectedFolderId)?.name || (isUz ? "Papka" : "Folder")}
                   </span>
                 )}
               </span>
@@ -322,7 +326,7 @@ export function KnowledgeBaseExperience({
                 }}
                 className="text-[10px] font-mono text-[#10B981] hover:underline"
               >
-                Clear filters
+                {isUz ? "Filtrlarni tozalash" : "Clear filters"}
               </button>
             )}
           </div>
@@ -332,15 +336,19 @@ export function KnowledgeBaseExperience({
             {filteredNotes.length === 0 ? (
               <div className="p-8 text-center space-y-2 text-[#98A69D]">
                 <FileText className="w-8 h-8 text-[#25352C] mx-auto stroke-1" />
-                <p className="text-xs font-medium text-[#F3F7F4]">No Notes Found</p>
+                <p className="text-xs font-medium text-[#F3F7F4]">
+                  {isUz ? "Hech qanday qayd topilmadi" : "No Notes Found"}
+                </p>
                 <p className="text-[11px] leading-relaxed">
-                  No notes match the current filters. Create a new document to start recording.
+                  {isUz
+                    ? "Tanlangan filtrlarga mos qaydlar mavjud emas. Yangi hujjat yarating."
+                    : "No notes match the current filters. Create a new document to start recording."}
                 </p>
                 <button
                   onClick={handleCreateNewNote}
                   className="mt-2 text-xs font-mono text-[#10B981] hover:underline"
                 >
-                  + Create New Note
+                  {isUz ? "+ Yangi qayd yaratish" : "+ Create New Note"}
                 </button>
               </div>
             ) : (
@@ -421,16 +429,18 @@ export function KnowledgeBaseExperience({
             <div className="h-full flex flex-col items-center justify-center p-8 text-center text-[#98A69D]">
               <BookOpen className="w-12 h-12 text-[#25352C] mb-3 stroke-1" />
               <h3 className="text-sm font-semibold text-[#F3F7F4]">
-                No Document Selected
+                {isUz ? "Hech qanday hujjat tanlanmagan" : "No Document Selected"}
               </h3>
               <p className="text-xs text-[#98A69D] mt-1 max-w-sm">
-                Select a document from the left list or create a new note to start building your second brain.
+                {isUz
+                  ? "Chap ro‘yxatdan hujjat tanlang yoki ikkinchi miyangizni shakllantirish uchun yangi qayd yarating."
+                  : "Select a document from the left list or create a new note to start building your second brain."}
               </p>
               <button
                 onClick={handleCreateNewNote}
                 className="mt-4 px-4 py-2 bg-[#10B981] text-[#080D0B] font-bold text-xs rounded-xl hover:bg-[#059669] transition-colors"
               >
-                + Create New Note
+                {isUz ? "+ Yangi qayd yaratish" : "+ Create New Note"}
               </button>
             </div>
           )}

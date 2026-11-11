@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Priority } from "@/types";
 import { X, Plus, Target, Calendar, ListChecks, Sparkles } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface CreateGoalModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function CreateGoalModal({
   onClose,
   onCreateGoal,
 }: CreateGoalModalProps) {
+  const { isUz } = useTranslation();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Career");
@@ -35,15 +37,25 @@ export function CreateGoalModal({
 
   if (!isOpen) return null;
 
-  const categories = [
-    "Education",
-    "Career",
-    "Finance",
-    "Health",
-    "Technology",
-    "Personal Development",
-    "Travel",
-  ];
+  const categories = isUz
+    ? [
+        { id: "Education", label: "Ta’lim" },
+        { id: "Career", label: "Karyera va Ish" },
+        { id: "Finance", label: "Moliya" },
+        { id: "Health", label: "Salomatlik" },
+        { id: "Technology", label: "Texnologiya" },
+        { id: "Personal Development", label: "Shaxsiy rivojlanish" },
+        { id: "Travel", label: "Sayohat" },
+      ]
+    : [
+        { id: "Education", label: "Education" },
+        { id: "Career", label: "Career" },
+        { id: "Finance", label: "Finance" },
+        { id: "Health", label: "Health" },
+        { id: "Technology", label: "Technology" },
+        { id: "Personal Development", label: "Personal Development" },
+        { id: "Travel", label: "Travel" },
+      ];
 
   const handleAddMilestone = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,10 +108,12 @@ export function CreateGoalModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-[#F3F7F4]">
-                Establish Strategic Goal & OKR
+                {isUz ? "Strategik Maqsad va OKR Belgilash" : "Establish Strategic Goal & OKR"}
               </h3>
               <p className="text-xs text-[#98A69D]">
-                Define major lifelong or annual Objective & Key Results
+                {isUz
+                  ? "Yillik yoki hayotiy katta maqsad va uning asosiy natijalarini belgilang"
+                  : "Define major lifelong or annual Objective & Key Results"}
               </p>
             </div>
           </div>
@@ -114,27 +128,27 @@ export function CreateGoalModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Objective Title <span className="text-[#EF4444]">*</span>
+              {isUz ? "Maqsad Sarlavhasi" : "Objective Title"} <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Master High-Scale Distributed Systems Architecture"
+              placeholder={isUz ? "Masalan: Tarmoqlangan tizimlar arxitekturasini mukammal o‘rganish" : "e.g. Master High-Scale Distributed Systems Architecture"}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
             />
           </div>
 
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Description / Strategic Rationale
+              {isUz ? "Tavsif / Strategik Sabab" : "Description / Strategic Rationale"}
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Why this objective matters to sovereign engineering and academic mastery..."
+              placeholder={isUz ? "Nima sababdan bu maqsad muhandislik yoki akademik yuksalish uchun muhim..." : "Why this objective matters to sovereign engineering and academic mastery..."}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
             />
           </div>
@@ -142,7 +156,7 @@ export function CreateGoalModal({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Category
+                {isUz ? "Kategoriya" : "Category"}
               </label>
               <select
                 value={category}
@@ -150,8 +164,8 @@ export function CreateGoalModal({
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
                 {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                  <option key={c.id} value={c.id}>
+                    {c.label}
                   </option>
                 ))}
               </select>
@@ -159,39 +173,40 @@ export function CreateGoalModal({
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Timeframe
+                {isUz ? "Muddat" : "Timeframe"}
               </label>
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value="SHORT_TERM">Short-Term</option>
-                <option value="ANNUAL">Annual</option>
-                <option value="LONG_TERM">Long-Term</option>
+                <option value="SHORT_TERM">{isUz ? "Qisqa muddatli" : "Short-Term"}</option>
+                <option value="ANNUAL">{isUz ? "Yillik" : "Annual"}</option>
+                <option value="LONG_TERM">{isUz ? "Uzoq muddatli" : "Long-Term"}</option>
               </select>
             </div>
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Priority
+                {isUz ? "Ustuvorlik" : "Priority"}
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value={Priority.LOW}>LOW</option>
-                <option value={Priority.NORMAL}>NORMAL</option>
-                <option value={Priority.HIGH}>HIGH</option>
-                <option value={Priority.URGENT}>URGENT</option>
+                <option value={Priority.LOW}>{isUz ? "PAST" : "LOW"}</option>
+                <option value={Priority.NORMAL}>{isUz ? "O‘RTA" : "NORMAL"}</option>
+                <option value={Priority.HIGH}>{isUz ? "YUQORI" : "HIGH"}</option>
+                <option value={Priority.URGENT}>{isUz ? "SHOSHILINCH" : "URGENT"}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-[#10B981]" /> Target Completion Date
+              <Calendar className="w-3 h-3 text-[#10B981]" />
+              <span>{isUz ? "Erishish Sanasi" : "Target Completion Date"}</span>
             </label>
             <input
               type="date"
@@ -204,7 +219,8 @@ export function CreateGoalModal({
           {/* Key Milestones */}
           <div className="space-y-2">
             <label className="text-[11px] font-mono text-[#98A69D] uppercase flex items-center gap-1">
-              <ListChecks className="w-3 h-3 text-[#10B981]" /> Key Milestones & Key Results
+              <ListChecks className="w-3 h-3 text-[#10B981]" />
+              <span>{isUz ? "Bosqichli Marralar va Asosiy Natijalar" : "Key Milestones & Key Results"}</span>
             </label>
 
             {milestonesInput.length > 0 && (
@@ -232,7 +248,7 @@ export function CreateGoalModal({
                 type="text"
                 value={newMilestone}
                 onChange={(e) => setNewMilestone(e.target.value)}
-                placeholder="Add measurable milestone..."
+                placeholder={isUz ? "O‘lchanadigan oraliq marra qo‘shing..." : "Add measurable milestone..."}
                 className="flex-1 bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -249,7 +265,7 @@ export function CreateGoalModal({
                 onClick={handleAddMilestone}
                 className="px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 text-xs font-semibold"
               >
-                + Add
+                {isUz ? "+ Qo‘shish" : "+ Add"}
               </button>
             </div>
           </div>
@@ -260,7 +276,7 @@ export function CreateGoalModal({
               onClick={onClose}
               className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
             >
-              Cancel
+              {isUz ? "Bekor qilish" : "Cancel"}
             </button>
             <button
               type="submit"
@@ -268,7 +284,7 @@ export function CreateGoalModal({
               className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
             >
               <Plus className="w-3.5 h-3.5" />
-              {isSubmitting ? "Creating..." : "Establish Objective"}
+              {isSubmitting ? (isUz ? "Yaratilmoqda..." : "Creating...") : (isUz ? "Maqsadni yaratish" : "Establish Objective")}
             </button>
           </div>
         </form>

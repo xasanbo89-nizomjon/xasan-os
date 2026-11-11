@@ -29,12 +29,14 @@ import { DistributionPieChart } from "./charts/distribution-pie-chart";
 import { ActivityHeatmap } from "./charts/activity-heatmap";
 import { AiReportModal } from "./ai-report-modal";
 import { getAnalyticsReportAction } from "@/server/actions/analytics";
+import { useTranslation } from "@/stores/language-store";
 
 interface AnalyticsExperienceProps {
   initialReport: PeriodReportSummary;
 }
 
 export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps) {
+  const { dict, isUz } = useTranslation();
   const [report, setReport] = useState<PeriodReportSummary>(initialReport);
   const [period, setPeriod] = useState<AnalyticsTimePeriod>(initialReport.period);
   const [comparisonType, setComparisonType] = useState<"STUDY" | "FINANCE">("STUDY");
@@ -56,6 +58,22 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
 
   const { metrics } = report;
 
+  const getPeriodLabel = (p: AnalyticsTimePeriod) => {
+    if (!isUz) return p;
+    switch (p) {
+      case "DAILY":
+        return "KUNLIK";
+      case "WEEKLY":
+        return "HAFTALIK";
+      case "MONTHLY":
+        return "OYLIK";
+      case "YEARLY":
+        return "YILLIK";
+      default:
+        return p;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Period Switcher */}
@@ -63,20 +81,21 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
-              QUANTIFIED SOVEREIGNTY
+              {isUz ? "SOVEREIGN TAHLIL" : "QUANTIFIED SOVEREIGNTY"}
             </span>
             <span className="text-xs text-[#98A69D] font-mono flex items-center gap-1">
               <Database className="w-3 h-3 text-[#10B981]" />
-              {report.dataSource}
+              {isUz ? "Mahalliy Xotira Telemetriyasi" : report.dataSource}
             </span>
           </div>
           <h1 className="text-2xl font-bold text-[#F3F7F4] flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-[#10B981]" />
-            Analytics & Reports
+            {isUz ? "Tahlil va Hisobotlar" : "Analytics & Reports"}
           </h1>
           <p className="text-xs text-[#98A69D] mt-1 font-mono">
-            Date Window: <span className="text-[#F3F7F4] font-semibold">{report.startDate}</span> to{" "}
-            <span className="text-[#F3F7F4] font-semibold">{report.endDate}</span>
+            {isUz ? "Sana oralig‘i: " : "Date Window: "}
+            <span className="text-[#F3F7F4] font-semibold">{report.startDate}</span> {isUz ? "dan " : "to "}
+            <span className="text-[#F3F7F4] font-semibold">{report.endDate}</span> {isUz ? "gacha" : ""}
           </p>
         </div>
 
@@ -89,13 +108,13 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
                 key={p}
                 onClick={() => handlePeriodChange(p)}
                 disabled={isUpdating}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   period === p
                     ? "bg-[#10B981] text-[#080D0B] font-bold shadow-sm"
                     : "text-[#98A69D] hover:text-[#F3F7F4]"
                 }`}
               >
-                {p}
+                {getPeriodLabel(p)}
               </button>
             ))}
           </div>
@@ -103,10 +122,10 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
           {/* AI Report Button */}
           <button
             onClick={() => setIsAiModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#10B981] text-[#10B981] hover:text-[#080D0B] border border-[#10B981]/40 text-xs font-bold transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#10B981] text-[#10B981] hover:text-[#080D0B] border border-[#10B981]/40 text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Generate AI Report</span>
+            <span>{isUz ? "AI Hisobot Yaratish" : "Generate AI Report"}</span>
           </button>
         </div>
       </div>
@@ -116,7 +135,7 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
         {/* 1. Tasks Throughput */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>TASK VELOCITY</span>
+            <span>{isUz ? "VAZIFALAR TEZLIGI" : "TASK VELOCITY"}</span>
             <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold text-[#F3F7F4]">
@@ -126,22 +145,22 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             </span>
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#10B981]">
-            <span>{metrics.taskCompletionRate}% rate</span>
-            <span className="text-[#98A69D]">Score: {metrics.taskVelocityScore}</span>
+            <span>{metrics.taskCompletionRate}% {isUz ? "bajarildi" : "rate"}</span>
+            <span className="text-[#98A69D]">{isUz ? "Ball: " : "Score: "}{metrics.taskVelocityScore}</span>
           </div>
         </div>
 
         {/* 2. Deep Study Duration */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>DEEP STUDY</span>
+            <span>{isUz ? "CHUQUR O‘QISH" : "DEEP STUDY"}</span>
             <Clock className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold text-[#10B981]">
-            {metrics.totalStudyHours}h
+            {metrics.totalStudyHours} {isUz ? "soat" : "h"}
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-            <span>Target: {metrics.targetStudyHours}h</span>
+            <span>{isUz ? "Reja: " : "Target: "}{metrics.targetStudyHours}{isUz ? "s" : "h"}</span>
             <span className="text-[#10B981]">Band {metrics.estimatedBandScore}</span>
           </div>
         </div>
@@ -149,44 +168,44 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
         {/* 3. Habit Discipline */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>DISCIPLINE</span>
+            <span>{isUz ? "INTIZOM" : "DISCIPLINE"}</span>
             <Flame className="w-4 h-4 text-[#F59E0B]" />
           </div>
           <div className="text-2xl font-bold text-[#F59E0B]">
             {metrics.avgConsistencyRate}%
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-            <span>Avg Streak: {metrics.currentStreakAvg}d</span>
-            <span className="text-[#F59E0B]">Best: {metrics.longestStreakRecord}d</span>
+            <span>{isUz ? "O‘rtacha: " : "Avg Streak: "}{metrics.currentStreakAvg}{isUz ? " kun" : "d"}</span>
+            <span className="text-[#F59E0B]">{isUz ? "Eng yaxshi: " : "Best: "}{metrics.longestStreakRecord}{isUz ? " kun" : "d"}</span>
           </div>
         </div>
 
         {/* 4. Developer Ventures */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>VENTURES</span>
+            <span>{isUz ? "LOYIHALAR" : "VENTURES"}</span>
             <Code2 className="w-4 h-4 text-[#3B82F6]" />
           </div>
           <div className="text-2xl font-bold text-[#3B82F6]">
             {metrics.overallProgressAvg}%
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-            <span>{metrics.activeProjects} Active / {metrics.totalProjects}</span>
-            <span className="text-[#3B82F6]">{metrics.completedProjects} Ready</span>
+            <span>{metrics.activeProjects} {isUz ? "Faol" : "Active"} / {metrics.totalProjects}</span>
+            <span className="text-[#3B82F6]">{metrics.completedProjects} {isUz ? "Tayyor" : "Ready"}</span>
           </div>
         </div>
 
         {/* 5. Sovereign Treasury */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>TREASURY</span>
+            <span>{isUz ? "MOLIYA VA KESHFLO" : "TREASURY"}</span>
             <Wallet className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold text-[#F3F7F4]">
             ${metrics.totalBalance.toLocaleString()}
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#10B981]">
-            <span>Savings: {metrics.savingsRate}%</span>
+            <span>{isUz ? "Jamg‘arma: " : "Savings: "}{metrics.savingsRate}%</span>
             <span className="text-[#10B981]">+${metrics.netSavings.toLocaleString()}</span>
           </div>
         </div>
@@ -194,15 +213,15 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
         {/* 6. Strategic Goals */}
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] space-y-2 hover:border-[#10B981]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono">
-            <span>VISION GOALS</span>
+            <span>{isUz ? "MAQSADLAR" : "VISION GOALS"}</span>
             <Target className="w-4 h-4 text-purple-400" />
           </div>
           <div className="text-2xl font-bold text-purple-400">
             {metrics.avgGoalProgress}%
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-            <span>{metrics.totalGoals} Goals</span>
-            <span className="text-purple-400">{metrics.completedGoals} Achieved</span>
+            <span>{metrics.totalGoals} {isUz ? "Maqsad" : "Goals"}</span>
+            <span className="text-purple-400">{metrics.completedGoals} {isUz ? "Erishildi" : "Achieved"}</span>
           </div>
         </div>
       </div>
@@ -215,14 +234,14 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             <div className="space-y-0.5">
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-[#10B981]" />
-                Velocity & Deep Study Hours Trajectory
+                {isUz ? "Ishlash tezligi va Chuqur o‘qish traektoriyasi" : "Velocity & Deep Study Hours Trajectory"}
               </h3>
               <p className="text-[11px] text-[#98A69D] font-mono">
-                Comparative actual hours versus baseline targets
+                {isUz ? "Haqiqiy va rejalashtirilgan o‘qish soatlarining taqqoslanishi" : "Comparative actual hours versus baseline targets"}
               </p>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#142019] text-[#10B981] border border-[#25352C]">
-              {period}
+              {getPeriodLabel(period)}
             </span>
           </div>
 
@@ -235,29 +254,31 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             <div className="space-y-0.5">
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-[#10B981]" />
-                {comparisonType === "STUDY" ? "Target vs Actual Study Hours" : "Treasury Cashflow: Income vs Expenses"}
+                {comparisonType === "STUDY"
+                  ? (isUz ? "Reja va Haqiqiy O‘qish Soatlari" : "Target vs Actual Study Hours")
+                  : (isUz ? "Moliyaviy Oqim: Daromad va Xarajatlar" : "Treasury Cashflow: Income vs Expenses")}
               </h3>
               <p className="text-[11px] text-[#98A69D] font-mono">
-                Differential variance across reporting milestones
+                {isUz ? "Hisobot davrlari bo‘yicha farq tahlili" : "Differential variance across reporting milestones"}
               </p>
             </div>
 
             <div className="flex items-center gap-1 bg-[#080D0B] p-1 rounded-lg border border-[#25352C] text-[10px] font-mono">
               <button
                 onClick={() => setComparisonType("STUDY")}
-                className={`px-2 py-0.5 rounded ${
+                className={`px-2 py-0.5 rounded cursor-pointer ${
                   comparisonType === "STUDY" ? "bg-[#10B981] text-[#080D0B] font-bold" : "text-[#98A69D]"
                 }`}
               >
-                Study
+                {isUz ? "O‘qish" : "Study"}
               </button>
               <button
                 onClick={() => setComparisonType("FINANCE")}
-                className={`px-2 py-0.5 rounded ${
+                className={`px-2 py-0.5 rounded cursor-pointer ${
                   comparisonType === "FINANCE" ? "bg-[#10B981] text-[#080D0B] font-bold" : "text-[#98A69D]"
                 }`}
               >
-                Finance
+                {isUz ? "Moliya" : "Finance"}
               </button>
             </div>
           </div>
@@ -274,17 +295,17 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
                 <PieIcon className="w-4 h-4 text-[#10B981]" />
-                Study Time Allocation
+                {isUz ? "O‘qish Soatlari Taqsimoti" : "Study Time Allocation"}
               </h3>
               <p className="text-[11px] text-[#98A69D] font-mono">
-                Total: {metrics.totalStudyHours} hours
+                {isUz ? "Jami: " : "Total: "}{metrics.totalStudyHours} {isUz ? "soat" : "hours"}
               </p>
             </div>
           </div>
 
           <DistributionPieChart
             data={report.studyBreakdown}
-            valueFormatter={(val) => `${val} hrs`}
+            valueFormatter={(val) => `${val} ${isUz ? "soat" : "hrs"}`}
           />
         </div>
 
@@ -294,10 +315,10 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-[#3B82F6]" />
-                Expense Outflow Distribution
+                {isUz ? "Xarajatlar Toifasi Taqsimoti" : "Expense Outflow Distribution"}
               </h3>
               <p className="text-[11px] text-[#98A69D] font-mono">
-                Total: ${metrics.expenses.toLocaleString()}
+                {isUz ? "Jami: " : "Total: "}${metrics.expenses.toLocaleString()}
               </p>
             </div>
           </div>
@@ -314,17 +335,17 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#F59E0B]" />
-                Task Priority Health
+                {isUz ? "Vazifalar Ustuvorligi Holati" : "Task Priority Health"}
               </h3>
               <p className="text-[11px] text-[#98A69D] font-mono">
-                Throughput: {metrics.completedTasks} / {metrics.totalTasks} closed
+                {isUz ? "O‘tkazuvchanlik: " : "Throughput: "}{metrics.completedTasks} / {metrics.totalTasks} {isUz ? "yopildi" : "closed"}
               </p>
             </div>
           </div>
 
           <DistributionPieChart
             data={report.taskPriorityDistribution}
-            valueFormatter={(val) => `${val} tasks`}
+            valueFormatter={(val) => `${val} ${isUz ? "ta vazifa" : "tasks"}`}
           />
         </div>
       </div>
@@ -335,15 +356,17 @@ export function AnalyticsExperience({ initialReport }: AnalyticsExperienceProps)
           <div className="space-y-0.5">
             <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
               <Activity className="w-4 h-4 text-[#10B981]" />
-              28-Day Sovereign Activity & Discipline Matrix
+              {isUz ? "28 Kunlik Faoliyat va Intizom Matritsasi" : "28-Day Sovereign Activity & Discipline Matrix"}
             </h3>
             <p className="text-[11px] text-[#98A69D] font-mono">
-              Multi-dimensional density score combining deep study minutes, task closures, and habit checks
+              {isUz
+                ? "Chuqur o‘qish daqiqalari, yopilgan vazifalar va bajarilgan odatlar zichligi"
+                : "Multi-dimensional density score combining deep study minutes, task closures, and habit checks"}
             </p>
           </div>
 
           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#142019] text-[#10B981] border border-[#25352C]">
-            Past 4 Weeks
+            {isUz ? "So‘nggi 4 Hafta" : "Past 4 Weeks"}
           </span>
         </div>
 

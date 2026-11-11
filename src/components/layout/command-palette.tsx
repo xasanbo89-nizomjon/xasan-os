@@ -21,6 +21,7 @@ import {
 import { NAVIGATION_ITEMS } from "@/config/navigation";
 import { DynamicIcon } from "../icons";
 import { useDashboardStore, DashboardViewType } from "@/stores/dashboard-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -34,8 +35,30 @@ export function CommandPalette({
   onOpenQuickCreate,
 }: CommandPaletteProps) {
   const router = useRouter();
+  const { dict, isUz } = useTranslation();
   const [search, setSearch] = useState("");
   const { setView, startFocusSession } = useDashboardStore();
+
+  const getItemLocalized = (itemId: string, fallbackName: string, fallbackDesc: string) => {
+    switch (itemId) {
+      case "overview": return { name: dict.nav.overview, desc: dict.nav.overview_desc };
+      case "my-day": return { name: dict.nav.my_day, desc: dict.nav.my_day_desc };
+      case "tasks": return { name: dict.nav.tasks, desc: dict.nav.tasks_desc };
+      case "calendar": return { name: dict.nav.calendar, desc: dict.nav.calendar_desc };
+      case "life-tracker": return { name: dict.nav.life_tracker, desc: dict.nav.life_tracker_desc };
+      case "study-center": return { name: dict.nav.study_center, desc: dict.nav.study_center_desc };
+      case "developer-hub": return { name: dict.nav.developer_hub, desc: dict.nav.developer_hub_desc };
+      case "finance": return { name: dict.nav.finance, desc: dict.nav.finance_desc };
+      case "xasan-ai": return { name: dict.nav.xasan_ai, desc: dict.nav.xasan_ai_desc };
+      case "knowledge-base": return { name: dict.nav.knowledge_base, desc: dict.nav.knowledge_base_desc };
+      case "goals": return { name: dict.nav.goals, desc: dict.nav.goals_desc };
+      case "analytics": return { name: dict.nav.analytics, desc: dict.nav.analytics_desc };
+      case "notifications": return { name: dict.nav.notifications, desc: dict.nav.notifications_desc };
+      case "profile": return { name: dict.nav.profile, desc: dict.nav.profile_desc };
+      case "settings": return { name: dict.nav.settings, desc: dict.nav.settings_desc };
+      default: return { name: fallbackName, desc: fallbackDesc };
+    }
+  };
 
   // Global Ctrl+K / Cmd+K handler
   useEffect(() => {
@@ -101,7 +124,7 @@ export function CommandPalette({
             <Search className="w-5 h-5 text-[#10B981] shrink-0" />
             <Command.Input
               autoFocus
-              placeholder="Type a command or search sections... (e.g. Focus, Tasks, Weekly, IELTS)"
+              placeholder={isUz ? "Buyruq kiriting yoki bo‘limlarni qidiring... (masalan: Diqqat, Vazifalar, IELTS)" : "Type a command or search sections... (e.g. Focus, Tasks, Weekly, IELTS)"}
               className="w-full bg-transparent text-[#F3F7F4] placeholder-[#98A69D] text-sm focus:outline-none"
             />
             <div className="flex items-center gap-1.5 shrink-0">
@@ -120,12 +143,12 @@ export function CommandPalette({
           {/* List Results */}
           <Command.List className="max-h-[380px] overflow-y-auto p-2 space-y-1 focus:outline-none">
             <Command.Empty className="py-8 text-center text-sm text-[#98A69D]">
-              No results found for &quot;{search}&quot;.
+              {isUz ? `"${search}" bo‘yicha natija topilmadi.` : `No results found for "${search}".`}
             </Command.Empty>
 
             {/* Quick Actions Group */}
             <Command.Group
-              heading="Quick System Actions"
+              heading={isUz ? "Tezkor Tizim Amallari" : "Quick System Actions"}
               className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2"
             >
               <Command.Item
@@ -136,10 +159,10 @@ export function CommandPalette({
                   <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
                     <Clock className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">Open Focus & Pomodoro Lab</span>
+                  <span className="font-medium">{isUz ? "Pomodoro va Diqqat laboratoriyasini ochish" : "Open Focus & Pomodoro Lab"}</span>
                 </div>
                 <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
-                  Navigate <ArrowRight className="w-3 h-3" />
+                  {isUz ? "O‘tish" : "Navigate"} <ArrowRight className="w-3 h-3" />
                 </span>
               </Command.Item>
 
@@ -151,10 +174,10 @@ export function CommandPalette({
                   <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
                     <Clock className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">Start 50-Minute Deep Work Session</span>
+                  <span className="font-medium">{isUz ? "50 daqiqalik chuqur ishlash sessiyasini boshlash" : "Start 50-Minute Deep Work Session"}</span>
                 </div>
                 <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
-                  Trigger
+                  {isUz ? "Boshlash" : "Trigger"}
                 </span>
               </Command.Item>
 
@@ -166,10 +189,10 @@ export function CommandPalette({
                   <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
                     <PlusCircle className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">Create New Task</span>
+                  <span className="font-medium">{isUz ? "Yangi vazifa yaratish" : "Create New Task"}</span>
                 </div>
                 <span className="text-xs text-[#98A69D] flex items-center gap-1">
-                  Action <ArrowRight className="w-3 h-3" />
+                  {isUz ? "Amal" : "Action"} <ArrowRight className="w-3 h-3" />
                 </span>
               </Command.Item>
 
@@ -181,17 +204,17 @@ export function CommandPalette({
                   <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#10B981] group-hover:border-[#10B981]/40">
                     <Lock className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">Lock Application (PIN Passcode)</span>
+                  <span className="font-medium">{isUz ? "Ilovani PIN-kod bilan bloklash" : "Lock Application (PIN Passcode)"}</span>
                 </div>
                 <span className="text-xs text-[#98A69D] flex items-center gap-1">
-                  Security <ArrowRight className="w-3 h-3" />
+                  {isUz ? "Xavfsizlik" : "Security"} <ArrowRight className="w-3 h-3" />
                 </span>
               </Command.Item>
             </Command.Group>
 
             {/* Dashboard Views */}
             <Command.Group
-              heading="Switch Dashboard Views"
+              heading={isUz ? "Boshqaruv Paneli Ko‘rinishi" : "Switch Dashboard Views"}
               className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2 border-t border-[#25352C]/60 mt-1"
             >
               <Command.Item
@@ -200,9 +223,9 @@ export function CommandPalette({
               >
                 <div className="flex items-center gap-2.5">
                   <LayoutDashboard className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>Overview (Main Widgets)</span>
+                  <span>{isUz ? "Umumiy ko‘rinish (Asosiy vidjetlar)" : "Overview (Main Widgets)"}</span>
                 </div>
-                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+                <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "Ko‘rish" : "View"}</span>
               </Command.Item>
 
               <Command.Item
@@ -211,9 +234,9 @@ export function CommandPalette({
               >
                 <div className="flex items-center gap-2.5">
                   <Activity className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>My Activity Stream</span>
+                  <span>{isUz ? "Mening faoliyatlar oqimim" : "My Activity Stream"}</span>
                 </div>
-                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+                <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "Ko‘rish" : "View"}</span>
               </Command.Item>
 
               <Command.Item
@@ -222,9 +245,9 @@ export function CommandPalette({
               >
                 <div className="flex items-center gap-2.5">
                   <CalendarRange className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>Weekly Velocity & Matrix</span>
+                  <span>{isUz ? "Haftalik velositi va matrisa" : "Weekly Velocity & Matrix"}</span>
                 </div>
-                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+                <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "Ko‘rish" : "View"}</span>
               </Command.Item>
 
               <Command.Item
@@ -233,45 +256,45 @@ export function CommandPalette({
               >
                 <div className="flex items-center gap-2.5">
                   <CalendarDays className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>Monthly OKRs & Heatmap</span>
+                  <span>{isUz ? "Oylik OKR va faollik xaritasi" : "Monthly OKRs & Heatmap"}</span>
                 </div>
-                <span className="text-[10px] text-[#98A69D] font-mono">View</span>
+                <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "Ko‘rish" : "View"}</span>
               </Command.Item>
             </Command.Group>
 
             {/* Navigation Routes */}
             <Command.Group
-              heading="Operating System Modules"
+              heading={isUz ? "Operatsion Tizim Modullari" : "Operating System Modules"}
               className="text-[11px] font-semibold text-[#98A69D] uppercase tracking-wider px-3 py-2 border-t border-[#25352C]/60 mt-1"
             >
-              {NAVIGATION_ITEMS.map((item) => (
-                <Command.Item
-                  key={item.id}
-                  value={`${item.name} ${item.description} ${item.section}`}
-                  onSelect={() => navigateTo(item.href)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#98A69D] group-hover:text-[#10B981] group-hover:border-[#10B981]/40 transition-colors">
-                      <DynamicIcon name={item.icon} className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="font-medium leading-none mb-1 text-[#F3F7F4] group-hover:text-[#10B981]">
-                        {item.name}
+              {NAVIGATION_ITEMS.map((item) => {
+                const loc = getItemLocalized(item.id, item.name, item.description);
+                return (
+                  <Command.Item
+                    key={item.id}
+                    value={`${loc.name} ${loc.desc} ${item.section}`}
+                    onSelect={() => navigateTo(item.href)}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] cursor-pointer transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-[#142019] border border-[#25352C] flex items-center justify-center text-[#98A69D] group-hover:text-[#10B981] group-hover:border-[#10B981]/40 transition-colors">
+                        <DynamicIcon name={item.icon} className="w-4 h-4" />
                       </div>
-                      <div className="text-[11px] text-[#98A69D] line-clamp-1">
-                        {item.description}
+                      <div>
+                        <div className="font-medium leading-none mb-1 text-[#F3F7F4] group-hover:text-[#10B981]">
+                          {loc.name}
+                        </div>
+                        <div className="text-[11px] text-[#98A69D] line-clamp-1">
+                          {loc.desc}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#98A69D] bg-[#142019] px-2 py-0.5 rounded border border-[#25352C]">
-                      {item.section}
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#25352C] group-hover:text-[#10B981] group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                </Command.Item>
-              ))}
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-3.5 h-3.5 text-[#25352C] group-hover:text-[#10B981] group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </Command.Item>
+                );
+              })}
             </Command.Group>
           </Command.List>
 
@@ -279,20 +302,20 @@ export function CommandPalette({
           <div className="px-4 py-2.5 border-t border-[#25352C] bg-[#080D0B]/60 flex items-center justify-between text-xs text-[#98A69D]">
             <div className="flex items-center gap-2">
               <Keyboard className="w-3.5 h-3.5 text-[#10B981]" />
-              <span>Navigate with arrow keys</span>
+              <span>{isUz ? "Yo‘nalish tugmalari bilan harakatlaning" : "Navigate with arrow keys"}</span>
             </div>
             <div className="flex items-center gap-3">
               <span>
                 <kbd className="px-1.5 py-0.5 text-[10px] bg-[#142019] rounded border border-[#25352C]">
                   ↵
                 </kbd>{" "}
-                Select
+                {isUz ? "Tanlash" : "Select"}
               </span>
               <span>
                 <kbd className="px-1.5 py-0.5 text-[10px] bg-[#142019] rounded border border-[#25352C]">
                   ESC
                 </kbd>{" "}
-                Close
+                {isUz ? "Yopish" : "Close"}
               </span>
             </div>
           </div>

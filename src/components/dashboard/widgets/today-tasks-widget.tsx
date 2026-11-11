@@ -14,6 +14,7 @@ import {
 import { TaskSummary } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { createTaskAction } from "@/server/actions/os";
+import { useTranslation } from "@/stores/language-store";
 
 interface TodayTasksWidgetProps {
   initialTasks: TaskSummary[];
@@ -24,9 +25,20 @@ export function TodayTasksWidget({
   initialTasks,
   onOpenQuickCreate,
 }: TodayTasksWidgetProps) {
+  const { dict, isUz } = useTranslation();
   const [tasks, setTasks] = useState<TaskSummary[]>(initialTasks);
   const [newTitle, setNewTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+
+  const getPriorityLocalized = (p: string) => {
+    switch (p) {
+      case "URGENT": return dict.priorities.urgent;
+      case "HIGH": return dict.priorities.high;
+      case "NORMAL": return dict.priorities.normal;
+      case "LOW": return dict.priorities.low;
+      default: return p;
+    }
+  };
 
   const toggleTaskStatus = (taskId: string) => {
     setTasks((prev) =>
@@ -87,10 +99,12 @@ export function TodayTasksWidget({
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Today&apos;s Execution Tasks
+                {dict.dashboard.widgets.todays_priorities}
               </h3>
               <span className="text-[10px] text-[#98A69D]">
-                Prioritized queue • {tasks.filter((t) => t.status !== "COMPLETED").length} remaining
+                {isUz
+                  ? `Ustuvor navbat • ${tasks.filter((t) => t.status !== "COMPLETED").length} ta qoldi`
+                  : `Prioritized queue • ${tasks.filter((t) => t.status !== "COMPLETED").length} remaining`}
               </span>
             </div>
           </div>
@@ -99,7 +113,7 @@ export function TodayTasksWidget({
             href="/tasks"
             className="text-xs text-[#10B981] hover:underline flex items-center gap-1"
           >
-            All Tasks <ArrowUpRight className="w-3.5 h-3.5" />
+            {dict.dashboard.actions.view_all_tasks} <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -108,7 +122,7 @@ export function TodayTasksWidget({
           <div className="relative">
             <input
               type="text"
-              placeholder="+ Quick add task and press Enter..."
+              placeholder={isUz ? "+ Vazifa qo‘shing va Enter bosing..." : "+ Quick add task and press Enter..."}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               disabled={isAdding}
@@ -170,7 +184,7 @@ export function TodayTasksWidget({
                           : "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30"
                       }`}
                     >
-                      {task.priority}
+                      {getPriorityLocalized(task.priority)}
                     </span>
                   </div>
 

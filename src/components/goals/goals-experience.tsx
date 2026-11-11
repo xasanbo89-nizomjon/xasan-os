@@ -18,6 +18,7 @@ import { CreateGoalModal } from "./create-goal-modal";
 import { GoalTimelineView } from "./goal-timeline-view";
 import { VisionBoard } from "./vision-board";
 import { useGoalsStore } from "@/stores/goals-store";
+import { useTranslation } from "@/stores/language-store";
 
 type GoalViewTab =
   | "all"
@@ -37,6 +38,7 @@ export function GoalsExperience({
   initialGoals,
   initialVisionItems,
 }: GoalsExperienceProps) {
+  const { isUz, dict } = useTranslation();
   const storeGoals = useGoalsStore((s) => s.goals);
   const storeVision = useGoalsStore((s) => s.visionItems);
   const addGoal = useGoalsStore((s) => s.addGoal);
@@ -52,14 +54,14 @@ export function GoalsExperience({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const categories = [
-    "ALL",
-    "Education",
-    "Career",
-    "Technology",
-    "Finance",
-    "Health",
-    "Personal Development",
-    "Travel",
+    { id: "ALL", label: isUz ? "Barchasi" : "ALL" },
+    { id: "Education", label: isUz ? "Ta'lim" : "Education" },
+    { id: "Career", label: isUz ? "Karyera" : "Career" },
+    { id: "Technology", label: isUz ? "Texnologiya" : "Technology" },
+    { id: "Finance", label: isUz ? "Moliya" : "Finance" },
+    { id: "Health", label: isUz ? "Salomatlik" : "Health" },
+    { id: "Personal Development", label: isUz ? "Shaxsiy rivojlanish" : "Personal Development" },
+    { id: "Travel", label: isUz ? "Sayohat" : "Travel" },
   ];
 
   // Tab counts
@@ -98,7 +100,6 @@ export function GoalsExperience({
 
   // Milestone checkoff handler
   const handleToggleMilestone = (milestoneId: string, _completed: boolean) => {
-    // Find parent goal
     const parentGoal = goals.find((g) => g.milestones?.some((m) => m.id === milestoneId));
     if (parentGoal) {
       toggleMilestone(parentGoal.id, milestoneId);
@@ -106,7 +107,7 @@ export function GoalsExperience({
   };
 
   const handleDeleteGoal = (goalId: string) => {
-    if (confirm("Delete this strategic goal?")) {
+    if (confirm(isUz ? "Ushbu strategik maqsadni o‘chirmoqchimisiz?" : "Delete this strategic goal?")) {
       deleteGoal(goalId);
     }
   };
@@ -131,7 +132,7 @@ export function GoalsExperience({
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            All Goals ({tabCounts.all})
+            {isUz ? "Barcha maqsadlar" : "All Goals"} ({tabCounts.all})
           </button>
 
           <button
@@ -143,7 +144,7 @@ export function GoalsExperience({
                 : "bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
-            Short-Term ({tabCounts.shortTerm})
+            {isUz ? "Qisqa muddatli" : "Short-Term"} ({tabCounts.shortTerm})
           </button>
 
           <button
@@ -155,7 +156,7 @@ export function GoalsExperience({
                 : "bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
-            Annual OKRs ({tabCounts.annual})
+            {isUz ? "Yillik OKR" : "Annual OKRs"} ({tabCounts.annual})
           </button>
 
           <button
@@ -167,7 +168,7 @@ export function GoalsExperience({
                 : "bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
-            Long-Term ({tabCounts.longTerm})
+            {isUz ? "Uzoq muddatli" : "Long-Term"} ({tabCounts.longTerm})
           </button>
 
           <button
@@ -180,7 +181,7 @@ export function GoalsExperience({
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Achieved ({tabCounts.completed})
+            {isUz ? "Erishilgan" : "Achieved"} ({tabCounts.completed})
           </button>
 
           <button
@@ -193,7 +194,7 @@ export function GoalsExperience({
             }`}
           >
             <Flag className="w-3.5 h-3.5 text-[#F59E0B]" />
-            Timeline Roadmap
+            {isUz ? "Xronologik xarita" : "Timeline Roadmap"}
           </button>
 
           <button
@@ -206,7 +207,7 @@ export function GoalsExperience({
             }`}
           >
             <Compass className="w-3.5 h-3.5 text-[#3B82F6]" />
-            Vision Board
+            {isUz ? "Vizual doska" : "Vision Board"}
           </button>
         </div>
 
@@ -217,7 +218,7 @@ export function GoalsExperience({
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer shrink-0 self-start lg:self-auto"
         >
           <Plus className="w-4 h-4" />
-          Establish Goal
+          {isUz ? "Yangi maqsad" : "Establish Goal"}
         </button>
       </div>
 
@@ -225,20 +226,20 @@ export function GoalsExperience({
       {activeTab !== "vision" && (
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-3 rounded-2xl bg-[#101915] border border-[#25352C]">
           <span className="text-[11px] font-mono text-[#98A69D] flex items-center gap-1 mr-1">
-            <Filter className="w-3 h-3 text-[#10B981]" /> Domain:
+            <Filter className="w-3 h-3 text-[#10B981]" /> {isUz ? "Soha:" : "Domain:"}
           </span>
           {categories.map((cat) => (
             <button
-              key={cat}
+              key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
-                selectedCategory === cat
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                selectedCategory === cat.id
                   ? "bg-[#142019] text-[#10B981] border border-[#10B981]/40 font-semibold"
                   : "bg-[#142019]/60 text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
               }`}
             >
-              {cat}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -261,18 +262,20 @@ export function GoalsExperience({
                   <Target className="w-6 h-6" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F3F7F4]">
-                  No Objectives In This View
+                  {isUz ? "Ushbu bo‘limda maqsadlar mavjud emas" : "No Objectives In This View"}
                 </h3>
                 <p className="text-xs text-[#98A69D] max-w-sm">
-                  Define strategic targets, measurable key results, and life aspirations.
+                  {isUz
+                    ? "Strategik vazifalar, aniq natijalar va hayotiy maqsadlarni belgilang."
+                    : "Define strategic targets, measurable key results, and life aspirations."}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5"
+                  className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  Define First Objective
+                  {isUz ? "Birinchi maqsadni belgilash" : "Define First Objective"}
                 </button>
               </div>
             ) : (

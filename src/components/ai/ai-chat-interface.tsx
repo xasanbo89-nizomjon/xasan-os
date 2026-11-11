@@ -46,8 +46,8 @@ import {
   sendAiMessageAction,
   confirmAiActionAction,
 } from "@/server/actions/ai-chat";
-import { AI_QUICK_DIRECTIVES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface AiChatInterfaceProps {
   conversations: AiConversationSummary[];
@@ -57,14 +57,6 @@ interface AiChatInterfaceProps {
   onConversationsChanged: (convs: AiConversationSummary[]) => void;
 }
 
-const CONTEXT_OPTIONS = [
-  { id: "TASKS", label: "Today's Active Tasks" },
-  { id: "STUDY", label: "IELTS & Arabic Progress" },
-  { id: "FINANCE", label: "Ledger & Financial Runway" },
-  { id: "PROJECTS", label: "Developer Ventures (Aurelius, etc.)" },
-  { id: "NOTES", label: "Second Brain Architecture Notes" },
-];
-
 export function AiChatInterface({
   conversations,
   activeConversation,
@@ -72,6 +64,7 @@ export function AiChatInterface({
   onSelectConversation,
   onConversationsChanged,
 }: AiChatInterfaceProps) {
+  const { isUz, dict } = useTranslation();
   const [messages, setMessages] = useState<AiMessageSummary[]>(initialMessages);
   const [inputPrompt, setInputPrompt] = useState("");
   const [selectedContext, setSelectedContext] = useState<string | null>(null);
@@ -84,6 +77,52 @@ export function AiChatInterface({
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const contextOptions = [
+    { id: "TASKS", label: isUz ? "Bugungi faol vazifalar" : "Today's Active Tasks" },
+    { id: "STUDY", label: isUz ? "IELTS va Arab tili progressi" : "IELTS & Arabic Progress" },
+    { id: "FINANCE", label: isUz ? "Moliya va keshflo holati" : "Ledger & Financial Runway" },
+    { id: "PROJECTS", label: isUz ? "Dasturchi loyihalari (Aurelius va h.k.)" : "Developer Ventures (Aurelius, etc.)" },
+    { id: "NOTES", label: isUz ? "Bilimlar bazasi va arxitektura qaydlari" : "Second Brain Architecture Notes" },
+  ];
+
+  const quickDirectives = [
+    {
+      id: "plan",
+      label: isUz ? "Kun tartibini tuzish" : "Plan My Day",
+      prompt: isUz
+        ? "Bugungi vazifalarim, o‘quv rejalarim va muhim maqsadlarimni hisobga olib optimal kun tartibini tuzib ber."
+        : "Create an optimal daily schedule based on my active tasks, study goals, and priorities.",
+    },
+    {
+      id: "ielts",
+      label: isUz ? "IELTS tahlili" : "Analyze IELTS",
+      prompt: isUz
+        ? "IELTS bo‘yicha mashg‘ulotlarim va mock natijalarimni tahlil qilib, 8.5 ballga erishish uchun tavsiyalar ber."
+        : "Analyze my recent IELTS practice sessions and mock exam scores. Give me targeted recommendations to reach Band 8.5.",
+    },
+    {
+      id: "finance",
+      label: isUz ? "Moliya hisoboti" : "Summarize Finance",
+      prompt: isUz
+        ? "Ushbu oydagi daromad, xarajat va byudjet ishlatilishini tahlil qilib, keshflo xulosasini ber."
+        : "Summarize my cashflow, expenses, and budget utilization for this month.",
+    },
+    {
+      id: "arabic",
+      label: isUz ? "Arab tili darsi" : "Explain Arabic Rule",
+      prompt: isUz
+        ? "Arab tili Nahv bo‘yicha 'Inna va uning opalarining I'robi' qoidasini tushuntirib ber."
+        : "Explain the Arabic syntax rule for Inna wa Akhawatuha with example sentences and grammatical analysis.",
+    },
+    {
+      id: "audit",
+      label: isUz ? "Loyihalar auditi" : "Audit Dev Hub",
+      prompt: isUz
+        ? "Dasturchi markazidagi faol loyihalar, ochiq xatoliklar va deploy holatini ko‘rib chiq."
+        : "Review active projects, open bugs, and monthly deployment velocity across all ventures.",
+    },
+  ];
 
   // Sync initial messages when active conversation changes
   useEffect(() => {
@@ -119,7 +158,12 @@ export function AiChatInterface({
       createdAt: new Date().toISOString(),
     };
 
-    const assistantMsgId = `ast-${Date.now()}`;
+    setMessages((prev) => [...prev, tempUserMsg]);
+    setInputPrompt("");
+    setSelectedContext(null);
+    setIsSubmitting(true);
+
+    const assistantMsgId = `assistant-${Date.now()}`;
     const initialAssistantMsg: AiMessageSummary = {
       id: assistantMsgId,
       conversationId: activeConversation.id,
@@ -129,12 +173,10 @@ export function AiChatInterface({
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, tempUserMsg, initialAssistantMsg]);
-    setInputPrompt("");
-    setSelectedContext(null);
-    setIsSubmitting(true);
+    setMessages((prev) => [...prev, initialAssistantMsg]);
 
     try {
+      // Use streaming API
       const response = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -145,29 +187,37 @@ export function AiChatInterface({
         }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error("Streaming endpoint unavailable, using sovereign engine");
+      if (!response.ok) {
+        throw new Error(`Chat API error: ${response.statusText}`);
+      }
+
+      if (!response.body) {
+        throw new Error("No response body received from streaming endpoint.");
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let streamedContent = "";
-      const toolCalls: AiToolCallInfo[] = [];
-      let proposedAction: AiProposedAction | null = null;
+      let toolCalls: AiToolCallInfo[] = [];
+      let proposedAction: AiProposedAction | undefined = undefined;
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n\n");
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
+            const rawData = line.slice(6).trim();
+            if (!rawData) continue;
+
             try {
-              const data = JSON.parse(line.replace("data: ", ""));
-              if (data.type === "delta") {
-                streamedContent += data.text;
+              const data = JSON.parse(rawData);
+
+              if (data.chunk) {
+                streamedContent += data.chunk;
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMsgId
@@ -175,7 +225,9 @@ export function AiChatInterface({
                       : m
                   )
                 );
-              } else if (data.type === "tool_call") {
+              }
+
+              if (data.toolCall) {
                 toolCalls.push(data.toolCall);
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -184,7 +236,9 @@ export function AiChatInterface({
                       : m
                   )
                 );
-              } else if (data.type === "proposed_action") {
+              }
+
+              if (data.proposedAction) {
                 proposedAction = data.proposedAction;
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -193,7 +247,9 @@ export function AiChatInterface({
                       : m
                   )
                 );
-              } else if (data.type === "done") {
+              }
+
+              if (data.done) {
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMsgId
@@ -218,7 +274,6 @@ export function AiChatInterface({
       }
     } catch (err) {
       console.warn("Falling back to server action:", err);
-      // Fallback directly to server action
       const res = await sendAiMessageAction(
         activeConversation.id,
         textToSend,
@@ -262,14 +317,13 @@ export function AiChatInterface({
     );
 
     if (res.success && confirmed) {
-      // Append confirmation receipt to messages
       setMessages((prev) => [
         ...prev,
         {
           id: `msg-confirm-${Date.now()}`,
           conversationId: activeConversation.id,
           role: "assistant",
-          content: `### Authorization Confirmed & Executed\n\n${res.resultMessage || "Operation written to database."}\n- **Security Invariant**: Explicit user cryptographic approval.`,
+          content: `### ${isUz ? "Harakat tasdiqlandi va bajarildi" : "Authorization Confirmed & Executed"}\n\n${res.resultMessage || (isUz ? "Amal muvaffaqiyatli amalga oshirildi." : "Operation written to database.")}\n- **${isUz ? "Xavfsizlik standarti" : "Security Invariant"}**: ${isUz ? "Foydalanuvchi roziligi bilan tasdiqlandi." : "Explicit user cryptographic approval."}`,
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -279,7 +333,7 @@ export function AiChatInterface({
   // Create new conversation
   const handleCreateNewConv = async () => {
     const res = await createAiConversationAction({
-      title: `Architectural Session #${conversations.length + 1}`,
+      title: `${isUz ? "Suhbat" : "Architectural Session"} #${conversations.length + 1}`,
       mode: "GENERAL",
     });
 
@@ -305,10 +359,10 @@ export function AiChatInterface({
   // Delete conversation
   const handleDeleteConv = async (id: string) => {
     if (conversations.length <= 1) {
-      alert("At least one conversation session must remain active.");
+      alert(isUz ? "Kamida bitta suhbat sessiyasi faol qolishi kerak." : "At least one conversation session must remain active.");
       return;
     }
-    if (confirm("Delete this conversation and all its memory logs?")) {
+    if (confirm(isUz ? "Ushbu suhbat va uning barcha xabarlarini o‘chirmoqchimisiz?" : "Delete this conversation and all its memory logs?")) {
       await deleteAiConversationAction(id);
       const remaining = conversations.filter((c) => c.id !== id);
       onConversationsChanged(remaining);
@@ -342,7 +396,7 @@ export function AiChatInterface({
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-[#F3F7F4] flex items-center gap-1.5">
                 <Terminal className="w-3.5 h-3.5 text-[#10B981]" />
-                Sovereign Sessions
+                {isUz ? "AI Suhbatlar" : "Sovereign Sessions"}
               </span>
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#142019] text-[#10B981] border border-[#10B981]/20">
                 {conversations.length}
@@ -351,10 +405,10 @@ export function AiChatInterface({
 
             <button
               onClick={handleCreateNewConv}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-sm"
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>New Conversation</span>
+              <span>{isUz ? "Yangi suhbat" : "New Conversation"}</span>
             </button>
 
             {/* Search sessions */}
@@ -364,7 +418,7 @@ export function AiChatInterface({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search sessions..."
+                placeholder={isUz ? "Suhbatlarni qidirish..." : "Search sessions..."}
                 className="w-full pl-8 pr-2.5 py-1 text-xs bg-[#142019] border border-[#25352C] rounded-lg text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
               />
             </div>
@@ -400,13 +454,13 @@ export function AiChatInterface({
                       />
                       <button
                         onClick={() => handleSaveRename(conv.id)}
-                        className="p-1 text-[#10B981] hover:text-[#059669]"
+                        className="p-1 text-[#10B981] hover:text-[#059669] cursor-pointer"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setEditingConvId(null)}
-                        className="p-1 text-[#98A69D] hover:text-[#F3F7F4]"
+                        className="p-1 text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -424,12 +478,12 @@ export function AiChatInterface({
                               e.stopPropagation();
                               handleTogglePin(conv.id, conv.pinned);
                             }}
-                            className={`p-0.5 rounded transition-colors ${
+                            className={`p-0.5 rounded transition-colors cursor-pointer ${
                               conv.pinned
                                 ? "text-[#10B981]"
                                 : "text-transparent group-hover:text-[#98A69D]"
                             }`}
-                            title={conv.pinned ? "Unpin session" : "Pin session"}
+                            title={conv.pinned ? (isUz ? "Qadashni bekor qilish" : "Unpin session") : (isUz ? "Qadash" : "Pin session")}
                           >
                             <Pin className="w-3 h-3 fill-current" />
                           </button>
@@ -440,8 +494,8 @@ export function AiChatInterface({
                               setEditingConvId(conv.id);
                               setRenameValue(conv.title);
                             }}
-                            className="p-0.5 text-transparent group-hover:text-[#98A69D] hover:text-[#F3F7F4] transition-colors"
-                            title="Rename"
+                            className="p-0.5 text-transparent group-hover:text-[#98A69D] hover:text-[#F3F7F4] transition-colors cursor-pointer"
+                            title={isUz ? "Nomini o‘zgartirish" : "Rename"}
                           >
                             <Edit2 className="w-3 h-3" />
                           </button>
@@ -451,8 +505,8 @@ export function AiChatInterface({
                               e.stopPropagation();
                               handleDeleteConv(conv.id);
                             }}
-                            className="p-0.5 text-transparent group-hover:text-[#98A69D] hover:text-[#EF4444] transition-colors"
-                            title="Delete"
+                            className="p-0.5 text-transparent group-hover:text-[#98A69D] hover:text-[#EF4444] transition-colors cursor-pointer"
+                            title={isUz ? "O‘chirish" : "Delete"}
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -468,11 +522,11 @@ export function AiChatInterface({
                       </h4>
 
                       <p className="text-[11px] text-[#98A69D] truncate mt-0.5 font-sans">
-                        {conv.lastMessageSnippet || "No messages yet"}
+                        {conv.lastMessageSnippet || (isUz ? "Xabarlar yo‘q" : "No messages yet")}
                       </p>
 
                       <div className="flex items-center justify-between text-[10px] text-[#98A69D]/80 font-mono mt-2 pt-1 border-t border-[#25352C]/40">
-                        <span>{conv.messageCount} turns</span>
+                        <span>{conv.messageCount} {isUz ? "muloqot" : "turns"}</span>
                         <span>{formatDate(conv.updatedAt)}</span>
                       </div>
                     </>
@@ -491,8 +545,8 @@ export function AiChatInterface({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen((prev) => !prev)}
-              className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors"
-              title={isSidebarOpen ? "Hide Sessions" : "Show Sessions"}
+              className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
+              title={isSidebarOpen ? (isUz ? "Sessiyalarni yashirish" : "Hide Sessions") : (isUz ? "Sessiyalarni ko‘rsatish" : "Show Sessions")}
             >
               {isSidebarOpen ? (
                 <ChevronLeft className="w-4 h-4" />
@@ -511,7 +565,9 @@ export function AiChatInterface({
                 </span>
               </div>
               <p className="text-[10px] text-[#98A69D] font-mono">
-                Model: Claude 3.7 Sonnet / Gemini 3.8 Flash &bull; Deterministic Invariants
+                {isUz
+                  ? "Model: OpenAI GPT-4o / Claude • Avtonom aqlli yordamchi"
+                  : "Model: Claude 3.7 Sonnet / Gemini 3.8 Flash • Deterministic Invariants"}
               </p>
             </div>
           </div>
@@ -519,7 +575,7 @@ export function AiChatInterface({
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1.5 text-[10px] font-mono px-2 py-1 rounded-lg bg-[#142019] text-[#10B981] border border-[#10B981]/20">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              ONLINE
+              {isUz ? "FAOL" : "ONLINE"}
             </span>
           </div>
         </div>
@@ -528,7 +584,6 @@ export function AiChatInterface({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((msg) => {
             const isUser = msg.role === "user";
-            const isAssistant = msg.role === "assistant";
 
             return (
               <div
@@ -560,50 +615,31 @@ export function AiChatInterface({
                         : "glass-card bg-[#101915]/90 text-[#F3F7F4] border-[#25352C] rounded-tl-none shadow-sm"
                     }`}
                   >
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+
                     {/* Copy button */}
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}
-                      className={`absolute top-3 right-3 p-1 rounded transition-colors ${
-                        isUser
-                          ? "text-[#080D0B]/60 hover:text-[#080D0B]"
-                          : "text-[#98A69D] hover:text-[#10B981]"
-                      }`}
-                      title="Copy to clipboard"
+                      className="absolute top-2 right-2 p-1 rounded bg-[#080D0B]/50 hover:bg-[#080D0B] text-[#98A69D] hover:text-[#F3F7F4] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      title={isUz ? "Nusxa olish" : "Copy"}
                     >
                       {copiedMsgId === msg.id ? (
-                        <Check className="w-3 h-3" />
+                        <Check className="w-3 h-3 text-[#10B981]" />
                       ) : (
                         <Copy className="w-3 h-3" />
                       )}
                     </button>
 
-                    {/* Markdown Body */}
-                    <div className="prose prose-invert max-w-none space-y-2 whitespace-pre-wrap font-sans pr-4">
-                      {msg.content ? (
-                        <>
-                          {msg.content}
-                          {isSubmitting && isAssistant && (
-                            <span className="inline-block w-1.5 h-3 ml-1 bg-[#10B981] animate-pulse align-middle" />
-                          )}
-                        </>
-                      ) : (
-                        <span className="flex items-center gap-2 text-[#10B981] font-mono text-[11px]">
-                          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-                          <span>Streaming sovereign reasoning & tool execution...</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Read-Only Tool Execution Badge */}
+                    {/* Controlled Tool Calls Badges */}
                     {msg.toolCalls && msg.toolCalls.length > 0 && (
-                      <div className="mt-3 pt-2.5 border-t border-[#25352C] flex flex-wrap gap-1.5">
+                      <div className="pt-2 mt-2 border-t border-[#25352C]/60 flex items-center gap-1.5 flex-wrap">
                         {msg.toolCalls.map((tc, idx) => (
                           <span
                             key={idx}
                             className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#080D0B] text-[#10B981] border border-[#10B981]/30 flex items-center gap-1"
                           >
                             <Terminal className="w-3 h-3" />
-                            Tool: {tc.name}() [Read-Only]
+                            Tool: {tc.name}() [{isUz ? "Faqat o‘qish" : "Read-Only"}]
                           </span>
                         ))}
                       </div>
@@ -617,7 +653,7 @@ export function AiChatInterface({
                         <div className="flex items-center gap-2">
                           <ShieldAlert className="w-4 h-4 text-[#10B981]" />
                           <h4 className="text-xs font-mono font-bold text-[#F3F7F4] uppercase tracking-wide">
-                            Explicit Action Authorization
+                            {isUz ? "Harakatni tasdiqlash talab etiladi" : "Explicit Action Authorization"}
                           </h4>
                         </div>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#080D0B] text-[#10B981] border border-[#10B981]/40 font-bold">
@@ -649,7 +685,7 @@ export function AiChatInterface({
                       {/* Confirmation Controls */}
                       <div className="pt-2 border-t border-[#25352C] flex items-center justify-between">
                         <span className="text-[10px] font-mono text-[#98A69D]">
-                          Zero arbitrary SQL &bull; User token signoff
+                          {isUz ? "Ixtiyoriy SQLsiz • Foydalanuvchi tasdig‘i" : "Zero arbitrary SQL • User token signoff"}
                         </span>
 
                         {msg.actionConfirmed === null ||
@@ -659,27 +695,27 @@ export function AiChatInterface({
                               onClick={() =>
                                 handleConfirmAction(msg.id, false)
                               }
-                              className="px-3 py-1.5 rounded-lg bg-[#142019] hover:bg-[#25352C] text-[#EF4444] text-xs font-semibold border border-[#25352C] transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-[#142019] hover:bg-[#25352C] text-[#EF4444] text-xs font-semibold border border-[#25352C] transition-colors cursor-pointer"
                             >
-                              Reject & Cancel
+                              {isUz ? "Rad etish" : "Reject & Cancel"}
                             </button>
                             <button
                               onClick={() => handleConfirmAction(msg.id, true)}
-                              className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
+                              className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
                             >
                               <ShieldCheck className="w-3.5 h-3.5" />
-                              Authorize & Execute
+                              {isUz ? "Tasdiqlash va Bajarish" : "Authorize & Execute"}
                             </button>
                           </div>
                         ) : msg.actionConfirmed ? (
                           <span className="text-xs font-mono font-bold text-[#10B981] flex items-center gap-1.5">
                             <Check className="w-4 h-4" />
-                            Authorized & Executed in DB
+                            {isUz ? "Tasdiqlandi va bazada bajarildi" : "Authorized & Executed in DB"}
                           </span>
                         ) : (
                           <span className="text-xs font-mono font-bold text-[#EF4444] flex items-center gap-1.5">
                             <X className="w-4 h-4" />
-                            Action Rejected & Cancelled
+                            {isUz ? "Harakat rad etildi va bekor qilindi" : "Action Rejected & Cancelled"}
                           </span>
                         )}
                       </div>
@@ -693,7 +729,7 @@ export function AiChatInterface({
                     }`}
                   >
                     <span>{formatDate(msg.createdAt)}</span>
-                    {msg.tokenCount && <span>&bull; {msg.tokenCount} tokens</span>}
+                    {msg.tokenCount && <span>&bull; {msg.tokenCount} {isUz ? "token" : "tokens"}</span>}
                   </div>
                 </div>
 
@@ -713,13 +749,13 @@ export function AiChatInterface({
         <div className="px-4 py-2 border-t border-[#25352C]/60 bg-[#101915]/40 flex items-center gap-2 overflow-x-auto">
           <span className="text-[10px] font-mono text-[#98A69D] uppercase tracking-wider shrink-0 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-[#10B981]" />
-            Directives:
+            {isUz ? "Ko‘rsatmalar:" : "Directives:"}
           </span>
-          {AI_QUICK_DIRECTIVES.map((d) => (
+          {quickDirectives.map((d) => (
             <button
               key={d.id}
               onClick={() => handleSendMessage(d.prompt)}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-[#142019] hover:bg-[#10B981]/15 text-[#98A69D] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-all shrink-0 flex items-center gap-1"
+              className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-[#142019] hover:bg-[#10B981]/15 text-[#98A69D] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-all shrink-0 flex items-center gap-1 cursor-pointer"
             >
               <span>{d.label}</span>
             </button>
@@ -731,10 +767,10 @@ export function AiChatInterface({
           {selectedContext && (
             <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-[#080D0B] border border-[#10B981]/30 text-[#10B981] text-xs font-mono w-fit">
               <Paperclip className="w-3.5 h-3.5" />
-              <span>Attached: {selectedContext}</span>
+              <span>{isUz ? "Biriktirilgan:" : "Attached:"} {selectedContext}</span>
               <button
                 onClick={() => setSelectedContext(null)}
-                className="hover:text-[#EF4444] ml-1"
+                className="hover:text-[#EF4444] ml-1 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -747,8 +783,8 @@ export function AiChatInterface({
               <button
                 type="button"
                 onClick={() => setIsContextDropdownOpen((prev) => !prev)}
-                className="p-2 rounded-xl text-[#98A69D] hover:text-[#10B981] hover:bg-[#142019] transition-colors"
-                title="Attach Context from System Database"
+                className="p-2 rounded-xl text-[#98A69D] hover:text-[#10B981] hover:bg-[#142019] transition-colors cursor-pointer"
+                title={isUz ? "Tizim ma'lumotlarini kontekst sifatida biriktirish" : "Attach Context from System Database"}
               >
                 <Paperclip className="w-4 h-4" />
               </button>
@@ -756,16 +792,16 @@ export function AiChatInterface({
               {isContextDropdownOpen && (
                 <div className="absolute bottom-12 left-0 w-64 bg-[#101915] border border-[#25352C] rounded-xl shadow-2xl p-1.5 z-50 space-y-1">
                   <div className="text-[10px] font-mono font-semibold text-[#98A69D] px-2 py-1 uppercase">
-                    Attach Context to Turn:
+                    {isUz ? "Kontekst biriktirish:" : "Attach Context to Turn:"}
                   </div>
-                  {CONTEXT_OPTIONS.map((opt) => (
+                  {contextOptions.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => {
                         setSelectedContext(opt.label);
                         setIsContextDropdownOpen(false);
                       }}
-                      className="w-full text-left px-2.5 py-1.5 text-xs text-[#F3F7F4] hover:text-[#10B981] hover:bg-[#142019] rounded-lg transition-colors flex items-center justify-between"
+                      className="w-full text-left px-2.5 py-1.5 text-xs text-[#F3F7F4] hover:text-[#10B981] hover:bg-[#142019] rounded-lg transition-colors flex items-center justify-between cursor-pointer"
                     >
                       <span>{opt.label}</span>
                       <Plus className="w-3 h-3 text-[#98A69D]" />
@@ -786,7 +822,7 @@ export function AiChatInterface({
                   handleSendMessage();
                 }
               }}
-              placeholder="Ask XASAN AI to plan tasks, evaluate IELTS writing, audit projects, or summarize treasury..."
+              placeholder={isUz ? "XASAN AI ga topshiriq bering, IELTS inshosini tekshirtiring yoki kunni rejalashtiring..." : "Ask XASAN AI to plan tasks, evaluate IELTS writing, audit projects, or summarize treasury..."}
               className="flex-1 bg-transparent text-xs text-[#F3F7F4] placeholder-[#98A69D] px-2 py-1.5 focus:outline-none resize-none max-h-32"
             />
 
@@ -794,8 +830,8 @@ export function AiChatInterface({
             <button
               onClick={() => handleSendMessage()}
               disabled={isSubmitting || !inputPrompt.trim()}
-              className="p-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] transition-colors disabled:opacity-40 disabled:hover:bg-[#10B981] shrink-0"
-              title="Send Directive"
+              className="p-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] transition-colors disabled:opacity-40 disabled:hover:bg-[#10B981] shrink-0 cursor-pointer"
+              title={isUz ? "Yuborish" : "Send Directive"}
             >
               <Send className="w-4 h-4" />
             </button>

@@ -3,40 +3,43 @@
 import React from "react";
 import Link from "next/link";
 import { Clock, Calendar, ArrowUpRight, AlertTriangle, ShieldCheck } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 export function UpcomingDeadlinesWidget() {
+  const { dict, isUz } = useTranslation();
+
   const deadlines = [
     {
       id: "dl-1",
-      title: "Whisper Fine-Tuned Speech Pipeline",
+      title: isUz ? "Whisper Fine-Tuned nutq tahlili" : "Whisper Fine-Tuned Speech Pipeline",
       project: "Aurelius IELTS",
-      countdown: "Tomorrow (18h)",
+      countdown: isUz ? "Ertaga (18s)" : "Tomorrow (18h)",
       urgent: true,
-      category: "Venture Milestone",
+      category: isUz ? "Loyiha marrasi" : "Venture Milestone",
     },
     {
       id: "dl-2",
-      title: "IELTS Speaking & Writing Mock #4",
-      project: "Study Center",
-      countdown: "In 3 days",
+      title: isUz ? "IELTS Speaking & Writing Mock #4" : "IELTS Speaking & Writing Mock #4",
+      project: isUz ? "O‘quv markazi" : "Study Center",
+      countdown: isUz ? "3 kundan so‘ng" : "In 3 days",
       urgent: false,
-      category: "Academic Exam",
+      category: isUz ? "Akademik imtihon" : "Academic Exam",
     },
     {
       id: "dl-3",
-      title: "Ravon Avto Dealer Inventory Webhooks",
+      title: isUz ? "Ravon Avto diler vebxuklari" : "Ravon Avto Dealer Inventory Webhooks",
       project: "Ravon Avto",
-      countdown: "In 7 days",
+      countdown: isUz ? "7 kundan so‘ng" : "In 7 days",
       urgent: false,
-      category: "Client Sprint",
+      category: isUz ? "Mijoz sprinti" : "Client Sprint",
     },
     {
       id: "dl-4",
-      title: "AWS Cloud GPU Compute Budget Review",
-      project: "Finance",
-      countdown: "Nov 25",
+      title: isUz ? "AWS Cloud GPU hisoblash byudjeti auditi" : "AWS Cloud GPU Compute Budget Review",
+      project: isUz ? "Moliya" : "Finance",
+      countdown: isUz ? "25-noyabr" : "Nov 25",
       urgent: false,
-      category: "Audit",
+      category: isUz ? "Audit tekshiruvi" : "Audit",
     },
   ];
 
@@ -50,10 +53,10 @@ export function UpcomingDeadlinesWidget() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Upcoming Deadlines
+                {dict.dashboard.widgets.upcoming_deadlines}
               </h3>
               <span className="text-[10px] text-[#98A69D]">
-                Chronological milestone horizon
+                {isUz ? "Xronologik muddatlar gorizonti" : "Chronological milestone horizon"}
               </span>
             </div>
           </div>
@@ -62,7 +65,7 @@ export function UpcomingDeadlinesWidget() {
             href="/calendar"
             className="text-xs text-[#10B981] hover:underline flex items-center gap-1"
           >
-            Calendar <ArrowUpRight className="w-3.5 h-3.5" />
+            {dict.nav.calendar} <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 

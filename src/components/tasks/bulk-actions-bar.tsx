@@ -3,6 +3,7 @@
 import React from "react";
 import { CheckCircle2, Clock, Trash2, X, AlertTriangle } from "lucide-react";
 import { TaskStatus, Priority } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface BulkActionsBarProps {
   selectedCount: number;
@@ -19,6 +20,7 @@ export function BulkActionsBar({
   onBulkDelete,
   isProcessing = false,
 }: BulkActionsBarProps) {
+  const { dict, isUz } = useTranslation();
   if (selectedCount === 0) return null;
 
   return (
@@ -29,7 +31,7 @@ export function BulkActionsBar({
             {selectedCount}
           </span>
           <span className="text-xs text-[#F3F7F4] font-medium hidden sm:inline">
-            selected
+            {isUz ? "ta tanlandi" : "selected"}
           </span>
         </div>
 
@@ -41,7 +43,7 @@ export function BulkActionsBar({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Mark</span> Done
+            <span>{dict.statuses.done}</span>
           </button>
 
           <button
@@ -51,7 +53,7 @@ export function BulkActionsBar({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#3B82F6]/20 text-[#3B82F6] border border-[#3B82F6]/30 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             <Clock className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">In</span> Progress
+            <span>{dict.statuses.in_progress}</span>
           </button>
 
           <button
@@ -61,7 +63,7 @@ export function BulkActionsBar({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Delete
+            <span>{dict.common.delete}</span>
           </button>
         </div>
 
@@ -69,7 +71,7 @@ export function BulkActionsBar({
           type="button"
           onClick={onClearSelection}
           className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] transition-colors cursor-pointer ml-1"
-          title="Deselect all"
+          title={isUz ? "Tanlovni bekor qilish" : "Deselect all"}
         >
           <X className="w-4 h-4" />
         </button>

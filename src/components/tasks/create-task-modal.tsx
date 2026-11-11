@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Priority, ProjectSummary } from "@/types";
 import { X, Plus, Calendar, Clock, Tag, ListChecks, Sparkles } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function CreateTaskModal({
   projects = [],
   onCreateTask,
 }: CreateTaskModalProps) {
+  const { dict, isUz } = useTranslation();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Dev");
@@ -109,16 +111,16 @@ export function CreateTaskModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-[#F3F7F4]">
-                Create Work Pipeline Item
+                {dict.tasks.modal.create_title}
               </h3>
               <p className="text-xs text-[#98A69D]">
-                Define actionable engineering or study deliverables
+                {isUz ? "Aniq muhandislik yoki ta'lim vazifasini belgilang" : "Define actionable engineering or study deliverables"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+            className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -127,27 +129,27 @@ export function CreateTaskModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Title <span className="text-[#EF4444]">*</span>
+              {dict.tasks.modal.task_title} <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Build WebSockets streaming layer"
+              placeholder={dict.tasks.modal.task_title_placeholder}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
             />
           </div>
 
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Description
+              {dict.common.description}
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Scope, acceptance criteria, or architectural considerations..."
+              placeholder={dict.tasks.modal.description_placeholder}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
             />
           </div>
@@ -155,47 +157,47 @@ export function CreateTaskModal({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Category
+                {dict.tasks.modal.category}
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
-                <option value="Dev">Dev / Software</option>
-                <option value="Study">Study / IELTS</option>
-                <option value="Work">Work / Client</option>
-                <option value="Health">Health</option>
-                <option value="Personal">Personal</option>
+                <option value="Dev">{isUz ? "Dasturlash / Software" : "Dev / Software"}</option>
+                <option value="Study">{isUz ? "Ta'lim / IELTS" : "Study / IELTS"}</option>
+                <option value="Work">{isUz ? "Ish / Mijoz" : "Work / Client"}</option>
+                <option value="Health">{isUz ? "Salomatlik" : "Health"}</option>
+                <option value="Personal">{isUz ? "Shaxsiy" : "Personal"}</option>
               </select>
             </div>
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Priority
+                {dict.tasks.modal.priority}
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value={Priority.LOW}>LOW</option>
-                <option value={Priority.NORMAL}>NORMAL</option>
-                <option value={Priority.HIGH}>HIGH</option>
-                <option value={Priority.URGENT}>URGENT</option>
+                <option value={Priority.LOW}>{dict.priorities.low}</option>
+                <option value={Priority.NORMAL}>{dict.priorities.normal}</option>
+                <option value={Priority.HIGH}>{dict.priorities.high}</option>
+                <option value={Priority.URGENT}>{dict.priorities.urgent}</option>
               </select>
             </div>
 
             <div className="col-span-2 sm:col-span-1">
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Project
+                {dict.tasks.modal.project}
               </label>
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-2.5 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
-                <option value="">No Project</option>
+                <option value="">{dict.tasks.modal.select_project}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -208,7 +210,7 @@ export function CreateTaskModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-[#10B981]" /> Due Date
+                <Calendar className="w-3 h-3 text-[#10B981]" /> {dict.tasks.modal.due_date}
               </label>
               <input
                 type="date"
@@ -220,7 +222,7 @@ export function CreateTaskModal({
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#10B981]" /> Est. Time (mins)
+                <Clock className="w-3 h-3 text-[#10B981]" /> {dict.tasks.modal.estimated_minutes}
               </label>
               <input
                 type="number"
@@ -236,7 +238,7 @@ export function CreateTaskModal({
           {/* Subtasks breakdown */}
           <div className="space-y-2">
             <label className="text-[11px] font-mono text-[#98A69D] uppercase flex items-center gap-1">
-              <ListChecks className="w-3 h-3 text-[#10B981]" /> Subtask Milestones
+              <ListChecks className="w-3 h-3 text-[#10B981]" /> {dict.tasks.modal.subtasks_title}
             </label>
 
             {subtasksInput.length > 0 && (
@@ -264,7 +266,7 @@ export function CreateTaskModal({
                 type="text"
                 value={newSubtask}
                 onChange={(e) => setNewSubtask(e.target.value)}
-                placeholder="Add subtask step..."
+                placeholder={dict.tasks.modal.subtask_placeholder}
                 className="flex-1 bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -279,9 +281,9 @@ export function CreateTaskModal({
               <button
                 type="button"
                 onClick={(e) => handleAddSubtask(e)}
-                className="px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 text-xs font-semibold"
+                className="px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 text-xs font-semibold cursor-pointer"
               >
-                + Add
+                + {dict.tasks.modal.add_subtask}
               </button>
             </div>
           </div>
@@ -289,13 +291,13 @@ export function CreateTaskModal({
           {/* Tags */}
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-              <Tag className="w-3 h-3 text-[#10B981]" /> Tags
+              <Tag className="w-3 h-3 text-[#10B981]" /> {dict.common.tags}
             </label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g. AI, Backend, Latency (comma-separated)"
+              placeholder="e.g. AI, Backend, Latency"
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
             />
           </div>
@@ -304,17 +306,17 @@ export function CreateTaskModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
+              className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors cursor-pointer"
             >
-              Cancel
+              {dict.common.cancel}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
-              className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
+              className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              {isSubmitting ? "Creating..." : "Create Task"}
+              {isSubmitting ? (isUz ? "Yaratilmoqda..." : "Creating...") : dict.tasks.modal.save_task}
             </button>
           </div>
         </form>

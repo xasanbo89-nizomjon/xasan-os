@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Flame, Check, ArrowUpRight, Plus, Sparkles } from "lucide-react";
 import { HabitSummary } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface HabitCompletionWidgetProps {
   initialHabits: HabitSummary[];
@@ -12,6 +13,7 @@ interface HabitCompletionWidgetProps {
 export function HabitCompletionWidget({
   initialHabits,
 }: HabitCompletionWidgetProps) {
+  const { dict, isUz } = useTranslation();
   const [habits, setHabits] = useState(
     initialHabits.map((h, i) => ({
       ...h,
@@ -43,10 +45,10 @@ export function HabitCompletionWidget({
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Discipline & Habit Matrix
+                {dict.dashboard.widgets.habit_tracker}
               </h3>
               <span className="text-[10px] text-[#98A69D]">
-                Daily rituals & active streaks
+                {isUz ? "Kunlik odatlar va davomiylik zanjirlari" : "Daily rituals & active streaks"}
               </span>
             </div>
           </div>
@@ -55,7 +57,7 @@ export function HabitCompletionWidget({
             href="/life-tracker"
             className="text-xs text-[#10B981] hover:underline flex items-center gap-1"
           >
-            Tracker <ArrowUpRight className="w-3.5 h-3.5" />
+            {isUz ? "Odatlar" : "Tracker"} <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -94,7 +96,7 @@ export function HabitCompletionWidget({
 
               <div className="flex items-center gap-1 text-xs font-bold text-[#F59E0B] font-mono">
                 <Flame className="w-3.5 h-3.5 fill-current" />
-                <span>{habit.streak}d</span>
+                <span>{habit.streak}{isUz ? " kun" : "d"}</span>
               </div>
             </div>
           ))}

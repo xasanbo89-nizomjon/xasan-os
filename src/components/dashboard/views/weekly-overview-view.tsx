@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { HabitSummary, TaskSummary } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface WeeklyOverviewViewProps {
   habits: HabitSummary[];
@@ -18,16 +19,18 @@ interface WeeklyOverviewViewProps {
 }
 
 export function WeeklyOverviewView({ habits, tasks }: WeeklyOverviewViewProps) {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const { dict, isUz } = useTranslation();
   const velocityData = [
-    { day: "Mon", hours: 7.2, target: 8 },
-    { day: "Tue", hours: 8.5, target: 8 },
-    { day: "Wed", hours: 6.8, target: 8 },
-    { day: "Thu", hours: 9.2, target: 8 },
-    { day: "Fri", hours: 8.0, target: 8 },
-    { day: "Sat", hours: 5.5, target: 6 },
-    { day: "Sun", hours: 4.5, target: 4 },
+    { day: isUz ? "Dush" : "Mon", hours: 7.2, target: 8 },
+    { day: isUz ? "Sesh" : "Tue", hours: 8.5, target: 8 },
+    { day: isUz ? "Chor" : "Wed", hours: 6.8, target: 8 },
+    { day: isUz ? "Pay" : "Thu", hours: 9.2, target: 8 },
+    { day: isUz ? "Juma" : "Fri", hours: 8.0, target: 8 },
+    { day: isUz ? "Shan" : "Sat", hours: 5.5, target: 6 },
+    { day: isUz ? "Yak" : "Sun", hours: 4.5, target: 4 },
   ];
+
+  const days = velocityData.map((d) => d.day);
 
   const totalHours = velocityData.reduce((acc, d) => acc + d.hours, 0);
 
@@ -36,24 +39,46 @@ export function WeeklyOverviewView({ habits, tasks }: WeeklyOverviewViewProps) {
       {/* 4 Telemetry Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 border border-[#25352C]">
-          <span className="text-[10px] font-mono text-[#98A69D]">TOTAL SPRINT VELOCITY</span>
-          <div className="text-2xl font-bold text-[#10B981] mt-1">{totalHours.toFixed(1)} hrs</div>
-          <span className="text-xs text-[#98A69D] mt-1 block">+14% vs previous sprint</span>
+          <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+            {isUz ? "Umumiy Sprint Te忧ligi" : "TOTAL SPRINT VELOCITY"}
+          </span>
+          <div className="text-2xl font-bold text-[#10B981] mt-1">
+            {totalHours.toFixed(1)} {isUz ? "soat" : "hrs"}
+          </div>
+          <span className="text-xs text-[#98A69D] mt-1 block">
+            {isUz ? "+14% oldingi sprintga nisbatan" : "+14% vs previous sprint"}
+          </span>
         </div>
         <div className="glass-card rounded-2xl p-5 border border-[#25352C]">
-          <span className="text-[10px] font-mono text-[#98A69D]">SPRINT TASKS CLOSED</span>
-          <div className="text-2xl font-bold text-[#F3F7F4] mt-1">26 Tasks</div>
-          <span className="text-xs text-[#10B981] mt-1 block">92% completion rate</span>
+          <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+            {isUz ? "Bajarilgan Vazifalar" : "SPRINT TASKS CLOSED"}
+          </span>
+          <div className="text-2xl font-bold text-[#F3F7F4] mt-1">
+            26 {isUz ? "ta" : "Tasks"}
+          </div>
+          <span className="text-xs text-[#10B981] mt-1 block">
+            {isUz ? "92% bajarilish darajasi" : "92% completion rate"}
+          </span>
         </div>
         <div className="glass-card rounded-2xl p-5 border border-[#25352C]">
-          <span className="text-[10px] font-mono text-[#98A69D]">IELTS PREPARATION</span>
-          <div className="text-2xl font-bold text-[#3B82F6] mt-1">16.5 hrs</div>
-          <span className="text-xs text-[#98A69D] mt-1 block">Speaking & Lexical modules</span>
+          <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+            {isUz ? "IELTS Tayyorgarlik" : "IELTS PREPARATION"}
+          </span>
+          <div className="text-2xl font-bold text-[#3B82F6] mt-1">
+            16.5 {isUz ? "soat" : "hrs"}
+          </div>
+          <span className="text-xs text-[#98A69D] mt-1 block">
+            {isUz ? "Nutq va leksika modullari" : "Speaking & Lexical modules"}
+          </span>
         </div>
         <div className="glass-card rounded-2xl p-5 border border-[#25352C]">
-          <span className="text-[10px] font-mono text-[#98A69D]">DISCIPLINE SCORE</span>
+          <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+            {isUz ? "Intizom Indeksi" : "DISCIPLINE SCORE"}
+          </span>
           <div className="text-2xl font-bold text-[#F59E0B] mt-1">96.4%</div>
-          <span className="text-xs text-[#98A69D] mt-1 block">Zero missed protocols</span>
+          <span className="text-xs text-[#98A69D] mt-1 block">
+            {isUz ? "Protokol qoldirilmadi" : "Zero missed protocols"}
+          </span>
         </div>
       </div>
 
@@ -63,10 +88,12 @@ export function WeeklyOverviewView({ habits, tasks }: WeeklyOverviewViewProps) {
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[#10B981]" />
             <h3 className="text-sm font-bold text-[#F3F7F4]">
-              Daily Deep Work Allocation (Hours)
+              {isUz ? "Kunlik chuqur ishlash taqsimoti (Soat)" : "Daily Deep Work Allocation (Hours)"}
             </h3>
           </div>
-          <span className="text-xs font-mono text-[#98A69D]">Target: 8.0 hrs/day</span>
+          <span className="text-xs font-mono text-[#98A69D]">
+            {isUz ? "Reja: 8.0 soat/kun" : "Target: 8.0 hrs/day"}
+          </span>
         </div>
 
         <div className="h-44 flex items-end gap-3 sm:gap-6 pt-4">
@@ -75,7 +102,7 @@ export function WeeklyOverviewView({ habits, tasks }: WeeklyOverviewViewProps) {
             return (
               <div key={d.day} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
                 <span className="text-[11px] font-mono font-bold text-[#10B981]">
-                  {d.hours}h
+                  {d.hours}{isUz ? "s" : "h"}
                 </span>
                 <div className="w-full max-w-[48px] bg-[#101915] rounded-t-xl overflow-hidden border border-[#25352C] flex items-end h-[120px]">
                   <div
@@ -96,16 +123,18 @@ export function WeeklyOverviewView({ habits, tasks }: WeeklyOverviewViewProps) {
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-[#F59E0B] fill-current" />
             <h3 className="text-sm font-bold text-[#F3F7F4]">
-              Weekly Habit Consistency Matrix
+              {isUz ? "Haftalik odatlar barqarorligi matritsasi" : "Weekly Habit Consistency Matrix"}
             </h3>
           </div>
-          <span className="text-xs text-[#10B981] font-mono">Current Week</span>
+          <span className="text-xs text-[#10B981] font-mono">
+            {isUz ? "Joriy hafta" : "Current Week"}
+          </span>
         </div>
 
         <div className="space-y-3">
           {/* Days Header */}
           <div className="grid grid-cols-12 gap-2 text-xs font-mono text-[#98A69D] pb-2 border-b border-[#25352C]">
-            <div className="col-span-5">Habit Protocol</div>
+            <div className="col-span-5">{isUz ? "Odat protokoli" : "Habit Protocol"}</div>
             <div className="col-span-7 grid grid-cols-7 gap-1 text-center">
               {days.map((d) => (
                 <span key={d}>{d}</span>

@@ -4,12 +4,15 @@ import React from "react";
 import Link from "next/link";
 import { Terminal, ArrowUpRight, Code2 } from "lucide-react";
 import { ProjectSummary } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface ActiveProjectsWidgetProps {
   projects: ProjectSummary[];
 }
 
 export function ActiveProjectsWidget({ projects }: ActiveProjectsWidgetProps) {
+  const { dict, isUz } = useTranslation();
+
   return (
     <div className="glass-card rounded-2xl p-6 border border-[#25352C] flex flex-col justify-between h-full">
       <div>
@@ -20,10 +23,10 @@ export function ActiveProjectsWidget({ projects }: ActiveProjectsWidgetProps) {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Active Developer Hub Projects
+                {dict.dashboard.widgets.project_status}
               </h3>
               <span className="text-[10px] text-[#98A69D]">
-                Ventures & core platforms
+                {isUz ? "Loyihalar va asosiy platformalar" : "Ventures & core platforms"}
               </span>
             </div>
           </div>
@@ -32,7 +35,7 @@ export function ActiveProjectsWidget({ projects }: ActiveProjectsWidgetProps) {
             href="/developer-hub"
             className="text-xs text-[#10B981] hover:underline flex items-center gap-1"
           >
-            Dev Hub <ArrowUpRight className="w-3.5 h-3.5" />
+            {isUz ? "Dasturchi markazi" : "Dev Hub"} <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 

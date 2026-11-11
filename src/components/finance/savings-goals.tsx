@@ -18,13 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SavingsGoalSummary } from "@/types";
-import {
-  createSavingsGoalAction,
-  contributeToSavingsGoalAction,
-  deleteSavingsGoalAction,
-} from "@/server/actions/finance";
 import { formatCurrency } from "@/lib/utils";
 import { useFinanceStore } from "@/stores/finance-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface SavingsGoalsProps {
   initialGoals: SavingsGoalSummary[];
@@ -32,6 +28,7 @@ interface SavingsGoalsProps {
 }
 
 export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps) {
+  const { isUz } = useTranslation();
   const storeGoals = useFinanceStore((s) => s.savingsGoals);
   const addSavingsGoal = useFinanceStore((s) => s.addSavingsGoal);
   const contributeToGoal = useFinanceStore((s) => s.contributeToGoal);
@@ -96,7 +93,8 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this savings goal?")) {
+    const confirmMsg = isUz ? "Ushbu jamg‘arma maqsadini o‘chirmoqchimisiz?" : "Delete this savings goal?";
+    if (confirm(confirmMsg)) {
       deleteSavingsGoal(id);
       onGoalUpdated?.();
     }
@@ -124,25 +122,29 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono uppercase tracking-wider text-[#98A69D]">
-              DISCIPLINED CAPITAL ACCUMULATION
+              {isUz ? "INTIZOMLI KAPITAL YIG‘ISH" : "DISCIPLINED CAPITAL ACCUMULATION"}
             </span>
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-[#10B981] border border-emerald-500/30">
-              {goals.length} ACTIVE TARGETS
+              {goals.length} {isUz ? "TA FAOL MAQSAD" : "ACTIVE TARGETS"}
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-[#F3F7F4]">Strategic Savings & Capital Reserves</h3>
+          <h3 className="text-2xl font-bold text-[#F3F7F4]">
+            {isUz ? "Strategik Jamg‘arma va Zaxira Mablag‘lari" : "Strategic Savings & Capital Reserves"}
+          </h3>
           <p className="text-xs text-[#98A69D] max-w-lg leading-relaxed">
-            Track earmarked capital allocations for workstation hardware, venture emergency buffers, and automotive tuning builds.
+            {isUz
+              ? "Qurilmalar, favqulodda xavfsizlik yostig‘i va shaxsiy loyihalar uchun maqsadli jamg‘armani kuzatib boring."
+              : "Track earmarked capital allocations for workstation hardware, venture emergency buffers, and automotive tuning builds."}
           </p>
         </div>
 
         <div className="w-full md:w-80 space-y-3 bg-[#080D0B]/80 p-5 rounded-2xl border border-[#25352C]">
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[#98A69D]">Total Accumulated</span>
+            <span className="text-[#98A69D]">{isUz ? "Jami to‘plangan" : "Total Accumulated"}</span>
             <span className="font-bold text-[#10B981]">{formatCurrency(totalSaved)}</span>
           </div>
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[#98A69D]">Total Objective Target</span>
+            <span className="text-[#98A69D]">{isUz ? "Umumiy rejalashtirilgan maqsad" : "Total Objective Target"}</span>
             <span className="font-bold text-[#F3F7F4]">{formatCurrency(totalTarget)}</span>
           </div>
 
@@ -154,8 +156,10 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
           </div>
 
           <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-            <span>{overallProgress}% of Target</span>
-            <span>{formatCurrency(Math.max(0, totalTarget - totalSaved))} remaining</span>
+            <span>{overallProgress}% {isUz ? "bajarildi" : "of Target"}</span>
+            <span>
+              {formatCurrency(Math.max(0, totalTarget - totalSaved))} {isUz ? "qoldi" : "remaining"}
+            </span>
           </div>
         </div>
       </div>
@@ -165,7 +169,7 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-[#10B981]" />
           <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-            Active Savings Portfolios
+            {isUz ? "Faol Jamg‘arma Portfellari" : "Active Savings Portfolios"}
           </h4>
         </div>
 
@@ -174,7 +178,7 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
           className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 shadow-md shadow-[#10B981]/20 font-bold"
         >
           <Plus className="w-4 h-4" />
-          <span>New Savings Goal</span>
+          <span>{isUz ? "Yangi maqsad qo‘yish" : "New Savings Goal"}</span>
         </button>
       </div>
 
@@ -201,7 +205,7 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
                     {g.isCompleted ? (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-[#10B981] border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
-                        <span>ACHIEVED</span>
+                        <span>{isUz ? "ERISHILDI" : "ACHIEVED"}</span>
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#101915] border border-[#25352C] text-[#98A69D]">
@@ -212,7 +216,7 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
                     <button
                       onClick={() => handleDelete(g.id)}
                       className="p-1 rounded text-[#98A69D] hover:text-red-400 transition-colors"
-                      title="Delete goal"
+                      title={isUz ? "Maqsadni o‘chirish" : "Delete goal"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -226,8 +230,8 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
                 {/* Numbers */}
                 <div className="space-y-1 mb-3">
                   <div className="flex items-center justify-between text-xs font-mono text-[#98A69D]">
-                    <span>Saved: <strong className="text-[#10B981]">{formatCurrency(g.currentAmount)}</strong></span>
-                    <span>Target: <strong className="text-[#F3F7F4]">{formatCurrency(g.targetAmount)}</strong></span>
+                    <span>{isUz ? "To‘plandi: " : "Saved: "}<strong className="text-[#10B981]">{formatCurrency(g.currentAmount)}</strong></span>
+                    <span>{isUz ? "Maqsad: " : "Target: "}<strong className="text-[#F3F7F4]">{formatCurrency(g.targetAmount)}</strong></span>
                   </div>
                 </div>
 
@@ -243,10 +247,12 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
               {/* Footer and Contribution CTA */}
               <div className="space-y-3 pt-3 border-t border-[#25352C]">
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-                  <span>{g.progressPercentage}% Completed</span>
+                  <span>{g.progressPercentage}% {isUz ? "Bajarildi" : "Completed"}</span>
                   {daysRemaining !== null && (
                     <span className={daysRemaining < 0 ? "text-amber-400" : "text-[#98A69D]"}>
-                      {daysRemaining < 0 ? "Target reached date" : `${daysRemaining}d target`}
+                      {daysRemaining < 0
+                        ? (isUz ? "Marra sanasi yetdi" : "Target reached date")
+                        : (isUz ? `${daysRemaining} kun qoldi` : `${daysRemaining}d target`)}
                     </span>
                   )}
                 </div>
@@ -260,7 +266,7 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
                     className="flex-1 py-2 rounded-xl text-xs font-semibold bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-[#F3F7F4] transition-all flex items-center justify-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5 text-[#10B981]" />
-                    <span>Deposit Funds</span>
+                    <span>{isUz ? "Mablag‘ qo‘shish" : "Deposit Funds"}</span>
                   </button>
                 </div>
               </div>
@@ -276,7 +282,9 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">New Savings Objective</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Yangi Jamg‘arma Maqsadi" : "New Savings Objective"}
+                </h3>
               </div>
               <button onClick={() => setIsCreateModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -285,20 +293,24 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
 
             <form onSubmit={handleCreateGoal} className="space-y-3.5">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Goal Name *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Maqsad nomi *" : "Goal Name *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  placeholder="e.g. M3 Max MacBook Pro"
+                  placeholder={isUz ? "Masalan: MacBook Pro M3 Max" : "e.g. M3 Max MacBook Pro"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Amount (USD) *</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Maqsad summa ($) *" : "Target Amount (USD) *"}
+                  </label>
                   <input
                     type="number"
                     step="10"
@@ -312,23 +324,27 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Category</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Kategoriya" : "Category"}
+                  </label>
                   <select
                     value={createForm.category}
                     onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   >
-                    <option value="Hardware">Hardware / Gear</option>
-                    <option value="Security">Security / Emergency</option>
-                    <option value="Automotive">Automotive</option>
-                    <option value="Travel">Travel / Pilgrimage</option>
-                    <option value="Education">Education</option>
+                    <option value="Hardware">{isUz ? "Qurilma va jihozlar" : "Hardware / Gear"}</option>
+                    <option value="Security">{isUz ? "Xavfsizlik yostig‘i" : "Security / Emergency"}</option>
+                    <option value="Automotive">{isUz ? "Avtomobil" : "Automotive"}</option>
+                    <option value="Travel">{isUz ? "Sayohat va Ziyorat" : "Travel / Pilgrimage"}</option>
+                    <option value="Education">{isUz ? "Ta’lim" : "Education"}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Completion Date</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Erishish sanasi" : "Target Completion Date"}
+                </label>
                 <input
                   type="date"
                   value={createForm.targetDate}
@@ -338,9 +354,11 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
+                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
                 <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
-                  Create Savings Goal
+                  {isUz ? "Maqsadni yaratish" : "Create Savings Goal"}
                 </button>
               </div>
             </form>
@@ -355,7 +373,9 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <PiggyBank className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Deposit to {selectedGoal.name}</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? `${selectedGoal.name} maqsadiga mablag‘ kiritish` : `Deposit to ${selectedGoal.name}`}
+                </h3>
               </div>
               <button onClick={() => setIsDepositModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -364,12 +384,18 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
 
             <form onSubmit={handleDeposit} className="space-y-3.5">
               <div className="p-3.5 rounded-xl bg-[#080D0B] border border-[#25352C] space-y-1 text-xs font-mono">
-                <div className="text-[#98A69D]">CURRENT BALANCE: {formatCurrency(selectedGoal.currentAmount)}</div>
-                <div className="text-[#10B981]">TARGET CEILING: {formatCurrency(selectedGoal.targetAmount)}</div>
+                <div className="text-[#98A69D]">
+                  {isUz ? "JORIY MABLAG‘: " : "CURRENT BALANCE: "}{formatCurrency(selectedGoal.currentAmount)}
+                </div>
+                <div className="text-[#10B981]">
+                  {isUz ? "MAQSAD SUMMA: " : "TARGET CEILING: "}{formatCurrency(selectedGoal.targetAmount)}
+                </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Deposit Amount (USD) *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Kiritilayotgan summa ($) *" : "Deposit Amount (USD) *"}
+                </label>
                 <input
                   type="number"
                   step="10"
@@ -383,20 +409,24 @@ export function SavingsGoals({ initialGoals, onGoalUpdated }: SavingsGoalsProps)
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Contribution Note</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Izoh (ixtiyoriy)" : "Contribution Note"}
+                </label>
                 <input
                   type="text"
                   value={depositNote}
                   onChange={(e) => setDepositNote(e.target.value)}
-                  placeholder="e.g. November consulting milestone allocation"
+                  placeholder={isUz ? "Masalan: Noyabr oyi konsalting daromadidan" : "e.g. November consulting milestone allocation"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsDepositModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
+                <button type="button" onClick={() => setIsDepositModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
                 <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
-                  Confirm Deposit
+                  {isUz ? "Mablag‘ni kiritish" : "Confirm Deposit"}
                 </button>
               </div>
             </form>

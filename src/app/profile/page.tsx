@@ -28,6 +28,7 @@ import {
   configurePinAction,
   getUserSecurityStatusAction,
 } from "@/server/actions/auth";
+import { useTranslation } from "@/stores/language-store";
 
 interface SessionItem {
   id: string;
@@ -41,6 +42,7 @@ interface SessionItem {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { dict, isUz } = useTranslation();
 
   // State
   const [activeTab, setActiveTab] = useState<"profile" | "security" | "sessions">("profile");
@@ -77,14 +79,22 @@ export default function ProfilePage() {
     try {
       if (pinEnabled && newPin) {
         if (newPin.length !== pinLength || !/^\d+$/.test(newPin)) {
-          throw new Error(`PIN must be exactly ${pinLength} numeric digits.`);
+          throw new Error(
+            isUz
+              ? `PIN-kod aynan ${pinLength} ta raqamdan iborat bo‘lishi shart.`
+              : `PIN must be exactly ${pinLength} numeric digits.`
+          );
         }
       }
 
       const res = await configurePinAction(pinEnabled, newPin || undefined, pinLength);
       if (!res.success) throw new Error(res.error || "Failed to update PIN config");
 
-      setStatusMessage("Passcode security settings updated successfully!");
+      setStatusMessage(
+        isUz
+          ? "PIN-kod va xavfsizlik sozlamalari muvaffaqiyatli saqlandi!"
+          : "Passcode security settings updated successfully!"
+      );
       setNewPin("");
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Error saving configuration");
@@ -96,7 +106,9 @@ export default function ProfilePage() {
   const handleRevokeSession = async (sessionId: string) => {
     await revokeSessionAction(sessionId);
     setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    setStatusMessage("Session revoked successfully.");
+    setStatusMessage(
+      isUz ? "Seans muvaffaqiyatli bekor qilindi." : "Session revoked successfully."
+    );
   };
 
   const handleLogout = async () => {
@@ -110,16 +122,20 @@ export default function ProfilePage() {
       <div className="space-y-6">
         <ModuleHeader
           icon={User}
-          badge="IDENTITY & SECURITY"
-          title="Architect Profile & Security Engine"
-          description="Manage credentials, configure App Passcode / PIN lock, monitor active device sessions, and handle secure logout."
+          badge={isUz ? "SHAXSIYAT VA XAVFSIZLIK" : "IDENTITY & SECURITY"}
+          title={isUz ? "Arxitektor Profili va Xavfsizlik Dvigateli" : "Architect Profile & Security Engine"}
+          description={
+            isUz
+              ? "Hisob ma'lumotlarini boshqarish, PIN-kod va biometriyani sozlash, faol seanslarni nazorat qilish va xavfsiz chiqish."
+              : "Manage credentials, configure App Passcode / PIN lock, monitor active device sessions, and handle secure logout."
+          }
         >
           <button
             onClick={handleLogout}
             className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444] hover:bg-[#EF4444] hover:text-[#080D0B] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Secure Logout</span>
+            <span>{isUz ? "Xavfsiz chiqish" : "Secure Logout"}</span>
           </button>
         </ModuleHeader>
 
@@ -127,33 +143,33 @@ export default function ProfilePage() {
         <div className="flex p-1 bg-[#101915] rounded-xl border border-[#25352C] max-w-md">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               activeTab === "profile"
                 ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow"
                 : "text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
           >
-            Identity & Bio
+            {isUz ? "Shaxsiy ma'lumotlar" : "Identity & Bio"}
           </button>
           <button
             onClick={() => setActiveTab("security")}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               activeTab === "security"
                 ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow"
                 : "text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
           >
-            PIN & Biometrics
+            {isUz ? "PIN va Biometriya" : "PIN & Biometrics"}
           </button>
           <button
             onClick={() => setActiveTab("sessions")}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               activeTab === "sessions"
                 ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow"
                 : "text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
           >
-            Active Sessions ({sessions.length})
+            {isUz ? `Faol seanslar (${sessions.length})` : `Active Sessions (${sessions.length})`}
           </button>
         </div>
 
@@ -183,7 +199,7 @@ export default function ProfilePage() {
                 {userDisplayName}
               </h2>
               <p className="text-xs text-[#10B981] font-mono mt-0.5 font-semibold">
-                Senior Software Architect & Creator
+                {isUz ? "Katta Dasturiy Ta'minot Arxitektori va Yaratuvchi" : "Senior Software Architect & Creator"}
               </p>
 
               <div className="w-full mt-6 space-y-3 text-xs text-left border-t border-[#25352C] pt-6">
@@ -193,11 +209,11 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2.5 text-[#98A69D]">
                   <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                  <span>System Authority: ROOT_ADMIN</span>
+                  <span>{isUz ? "Tizim huquqi: ROOT_ADMIN" : "System Authority: ROOT_ADMIN"}</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-[#98A69D]">
                   <Briefcase className="w-4 h-4 text-[#10B981]" />
-                  <span>Focus: Aurelius IELTS, LinguaHub, Ravon Avto</span>
+                  <span>{isUz ? "Asosiy e'tibor: Aurelius IELTS, LinguaHub, Ravon Avto" : "Focus: Aurelius IELTS, LinguaHub, Ravon Avto"}</span>
                 </div>
               </div>
             </div>
@@ -205,25 +221,26 @@ export default function ProfilePage() {
             <div className="lg:col-span-2 space-y-6">
               <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
                 <h3 className="text-base font-semibold text-[#F3F7F4] mb-3">
-                  Account Metadata & User Provisioning
+                  {isUz ? "Hisob metama'lumotlari va tizim sozlamalari" : "Account Metadata & User Provisioning"}
                 </h3>
                 <p className="text-xs text-[#98A69D] leading-relaxed mb-4">
-                  Authenticated via Firebase Auth with automatic PostgreSQL sync through Prisma ORM.
-                  Every query is strictly isolated by foreign key constraints against your unique UUID.
+                  {isUz
+                    ? "Firebase Auth orqali autentifikatsiya qilingan va mahalliy xotira bilan to‘liq integratsiyalashgan. Barcha ma'lumotlar shaxsiy brauzer xotirangizda xavfsiz saqlanadi."
+                    : "Authenticated via Firebase Auth with automatic local storage integration. Every record is strictly isolated."}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#25352C]">
                   <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C]">
-                    <span className="text-[10px] text-[#98A69D] font-mono">AUTH PROVIDER</span>
+                    <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "AUTENTIFIKATSIYA" : "AUTH PROVIDER"}</span>
                     <h4 className="text-xs font-bold text-[#10B981] mt-1">Firebase + Google</h4>
                   </div>
                   <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C]">
-                    <span className="text-[10px] text-[#98A69D] font-mono">DATA ISOLATION</span>
-                    <h4 className="text-xs font-bold text-[#3B82F6] mt-1">UUID Cascading</h4>
+                    <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "MA'LUMOTLAR XOTIRASI" : "DATA ISOLATION"}</span>
+                    <h4 className="text-xs font-bold text-[#3B82F6] mt-1">{isUz ? "Mahalliy Kesh" : "Local Storage"}</h4>
                   </div>
                   <div className="p-3.5 rounded-xl bg-[#101915] border border-[#25352C]">
-                    <span className="text-[10px] text-[#98A69D] font-mono">SESSION STATUS</span>
-                    <h4 className="text-xs font-bold text-[#10B981] mt-1">Authenticated (7d)</h4>
+                    <span className="text-[10px] text-[#98A69D] font-mono">{isUz ? "SEANS HOLATI" : "SESSION STATUS"}</span>
+                    <h4 className="text-xs font-bold text-[#10B981] mt-1">{isUz ? "Tasdiqlangan (Faol)" : "Authenticated (7d)"}</h4>
                   </div>
                 </div>
               </div>
@@ -240,10 +257,12 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h3 className="text-base font-semibold text-[#F3F7F4]">
-                  App Passcode / PIN Lock Engine
+                  {isUz ? "Ilova PIN-kod va Qulflash Dvigateli" : "App Passcode / PIN Lock Engine"}
                 </h3>
                 <p className="text-xs text-[#98A69D]">
-                  Hardware-like application lock requiring PIN entry or biometrics.
+                  {isUz
+                    ? "PIN-kod yoki biometriya talab qiluvchi xavfsiz qulflash mexanizmi."
+                    : "Hardware-like application lock requiring PIN entry or biometrics."}
                 </p>
               </div>
             </div>
@@ -253,10 +272,12 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between p-4 rounded-xl bg-[#101915] border border-[#25352C]">
                 <div>
                   <h4 className="text-xs font-bold text-[#F3F7F4]">
-                    Require Passcode on Inactivity / Session Start
+                    {isUz ? "Dastur ochilganda yoki seans boshlanganda PIN-kod so‘rash" : "Require Passcode on Inactivity / Session Start"}
                   </h4>
                   <p className="text-[11px] text-[#98A69D] mt-0.5">
-                    Redirects to `/lock` when app is opened or unlocked session expires.
+                    {isUz
+                      ? "Dastur ochilganda yoki qulf muddati tugaganda /lock sahifasiga yo‘naltiradi."
+                      : "Redirects to `/lock` when app is opened or unlocked session expires."}
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -275,42 +296,48 @@ export default function ProfilePage() {
                 <div className="space-y-4 p-4 rounded-xl bg-[#101915] border border-[#25352C]">
                   <div>
                     <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                      Passcode Length
+                      {isUz ? "PIN-kod uzunligi" : "Passcode Length"}
                     </label>
                     <div className="flex gap-3">
                       <button
                         type="button"
                         onClick={() => setPinLength(4)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold border transition-all ${
+                        className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold border transition-all cursor-pointer ${
                           pinLength === 4
                             ? "bg-[#142019] text-[#10B981] border-[#10B981]"
                             : "bg-[#101915] text-[#98A69D] border-[#25352C]"
                         }`}
                       >
-                        4 Digits (Standard)
+                        {isUz ? "4 raqamli (Standart)" : "4 Digits (Standard)"}
                       </button>
                       <button
                         type="button"
                         onClick={() => setPinLength(6)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold border transition-all ${
+                        className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold border transition-all cursor-pointer ${
                           pinLength === 6
                             ? "bg-[#142019] text-[#10B981] border-[#10B981]"
                             : "bg-[#101915] text-[#98A69D] border-[#25352C]"
                         }`}
                       >
-                        6 Digits (High Security)
+                        {isUz ? "6 raqamli (Yuqori xavfsizlik)" : "6 Digits (High Security)"}
                       </button>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                      New Passcode (Leave empty to keep current / default &quot;1234&quot;)
+                      {isUz
+                        ? "Yangi PIN-kod (O‘zgartirmaslik uchun bo‘sh qoldiring, standart \"1234\")"
+                        : "New Passcode (Leave empty to keep current / default \"1234\")"}
                     </label>
                     <input
                       type="password"
                       maxLength={pinLength}
-                      placeholder={`Enter ${pinLength}-digit numeric code`}
+                      placeholder={
+                        isUz
+                          ? `${pinLength} xonali raqamli kod kiriting`
+                          : `Enter ${pinLength}-digit numeric code`
+                      }
                       value={newPin}
                       onChange={(e) => setNewPin(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-xs font-mono text-[#F3F7F4] placeholder-[#98A69D]/50 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -320,11 +347,11 @@ export default function ProfilePage() {
                   <div className="p-3 rounded-lg bg-[#142019] border border-[#25352C] text-[11px] text-[#98A69D] space-y-1 font-mono">
                     <div className="flex items-center gap-1.5 text-[#10B981]">
                       <Fingerprint className="w-3.5 h-3.5" />
-                      <span>Biometric TouchID / FaceID Simulator: ACTIVE</span>
+                      <span>{isUz ? "Biometrik TouchID / FaceID Simulyatori: FAOL" : "Biometric TouchID / FaceID Simulator: ACTIVE"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-[#F59E0B]">
                       <ShieldAlert className="w-3.5 h-3.5" />
-                      <span>Lockout Threshold: 3 failed attempts triggers 30s lockout</span>
+                      <span>{isUz ? "Qulflash chegarasi: 3 marta xato kiritish 30 soniyalik blokirovkaga sabab bo‘ladi" : "Lockout Threshold: 3 failed attempts triggers 30s lockout"}</span>
                     </div>
                   </div>
                 </div>
@@ -335,7 +362,7 @@ export default function ProfilePage() {
                 disabled={savingPin}
                 className="px-5 py-2.5 rounded-xl bg-[#10B981] text-[#080D0B] font-bold text-xs hover:bg-[#059669] transition-all shadow-md shadow-[#10B981]/25 disabled:opacity-50 cursor-pointer"
               >
-                {savingPin ? "Saving..." : "Save Security Policy"}
+                {savingPin ? (isUz ? "Saqlanmoqda..." : "Saving...") : (isUz ? "Xavfsizlik siyosatini saqlash" : "Save Security Policy")}
               </button>
             </form>
           </div>
@@ -347,10 +374,12 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-semibold text-[#F3F7F4]">
-                  Active Devices & Security Sessions
+                  {isUz ? "Faol qurilmalar va Xavfsizlik Seanslari" : "Active Devices & Security Sessions"}
                 </h3>
                 <p className="text-xs text-[#98A69D]">
-                  Inspect recognized logins across your workstations and mobile nodes.
+                  {isUz
+                    ? "Kompyuter va mobil qurilmalaringizdagi faol kirishlarni tekshiring."
+                    : "Inspect recognized logins across your workstations and mobile nodes."}
                 </p>
               </div>
             </div>
@@ -376,7 +405,7 @@ export default function ProfilePage() {
                         </h4>
                         {sess.isCurrent && (
                           <span className="text-[9px] font-mono px-2 py-0.2 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-semibold">
-                            THIS DEVICE
+                            {isUz ? "USHBU QURILMA" : "THIS DEVICE"}
                           </span>
                         )}
                       </div>
@@ -384,7 +413,7 @@ export default function ProfilePage() {
                         {sess.browser} • {sess.os} • {sess.ipAddress}
                       </p>
                       <span className="text-[10px] text-[#98A69D]/70 font-mono mt-1 block">
-                        Last Active: {new Date(sess.lastActiveAt).toLocaleString()}
+                        {isUz ? "Oxirgi faollik: " : "Last Active: "}{new Date(sess.lastActiveAt).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -395,7 +424,7 @@ export default function ProfilePage() {
                       className="px-3 py-1.5 rounded-lg bg-[#142019] border border-[#EF4444]/30 text-[#EF4444] hover:bg-[#EF4444] hover:text-[#080D0B] text-xs font-medium transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span>Revoke</span>
+                      <span>{isUz ? "Bekor qilish" : "Revoke"}</span>
                     </button>
                   )}
                 </div>

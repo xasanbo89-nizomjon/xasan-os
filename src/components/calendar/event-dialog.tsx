@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { CalendarEventSummary, ProjectSummary } from "@/types";
 import { X, Calendar, Clock, MapPin, Tag, Plus, Trash2, Repeat, Bell } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function EventDialog({
   onDeleteEvent,
   defaultDate,
 }: EventDialogProps) {
+  const { dict, isUz } = useTranslation();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("WORK");
@@ -111,7 +113,7 @@ export function EventDialog({
 
   const handleDelete = async () => {
     if (!eventToEdit?.id || !onDeleteEvent) return;
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!confirm(isUz ? "Haqiqatan ham ushbu tadbirni o‘chirmoqchimisiz?" : "Are you sure you want to delete this event?")) return;
     await onDeleteEvent(eventToEdit.id);
     onClose();
   };
@@ -126,10 +128,18 @@ export function EventDialog({
             </div>
             <div>
               <h3 className="text-base font-bold text-[#F3F7F4]">
-                {eventToEdit ? "Edit Calendar Block" : "Schedule New Event"}
+                {eventToEdit
+                  ? isUz
+                    ? "Tadbirni tahrirlash"
+                    : "Edit Calendar Block"
+                  : isUz
+                  ? "Yangi tadbir rejalashtirish"
+                  : "Schedule New Event"}
               </h3>
               <p className="text-xs text-[#98A69D]">
-                Time architecture block & milestone deadlines
+                {isUz
+                  ? "Vaqt bloki va muhim muddatlar"
+                  : "Time architecture block & milestone deadlines"}
               </p>
             </div>
           </div>
@@ -144,14 +154,14 @@ export function EventDialog({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Event Title <span className="text-[#EF4444]">*</span>
+              {isUz ? "Tadbir nomi" : "Event Title"} <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Whisper Model Architecture Review"
+              placeholder={isUz ? "Masalan: Whisper modeli tahlili yoki Deep Work" : "e.g. Whisper Model Architecture Review"}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
             />
           </div>
@@ -159,30 +169,30 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Category
+                {isUz ? "Kategoriya" : "Category"}
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value="WORK">WORK</option>
-                <option value="EDUCATION">EDUCATION / IELTS</option>
-                <option value="PROJECT">PROJECT DEV</option>
-                <option value="PERSONAL">PERSONAL / HEALTH</option>
+                <option value="WORK">{isUz ? "Ish / Faoliyat" : "WORK"}</option>
+                <option value="EDUCATION">{isUz ? "Ta'lim / IELTS" : "EDUCATION / IELTS"}</option>
+                <option value="PROJECT">{isUz ? "Dasturlash / Loyiha" : "PROJECT DEV"}</option>
+                <option value="PERSONAL">{isUz ? "Shaxsiy / Salomatlik" : "PERSONAL / HEALTH"}</option>
               </select>
             </div>
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Project (Optional)
+                {isUz ? "Tegishli loyiha (Ixtiyoriy)" : "Project (Optional)"}
               </label>
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
-                <option value="">No Project</option>
+                <option value="">{isUz ? "Loyihasiz" : "No Project"}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -205,7 +215,7 @@ export function EventDialog({
               htmlFor="allDayCheckbox"
               className="text-xs text-[#F3F7F4] cursor-pointer"
             >
-              All-Day Event
+              {isUz ? "Butun kunlik tadbir" : "All-Day Event"}
             </label>
           </div>
 
@@ -213,7 +223,7 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block">
-                Start Time
+                {isUz ? "Boshlanish vaqti" : "Start Time"}
               </label>
               <input
                 type="date"
@@ -234,7 +244,7 @@ export function EventDialog({
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block">
-                End Time
+                {isUz ? "Tugash vaqti" : "End Time"}
               </label>
               <input
                 type="date"
@@ -257,32 +267,32 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-[#10B981]" /> Location / Link
+                <MapPin className="w-3 h-3 text-[#10B981]" /> {isUz ? "Manzil / Havola" : "Location / Link"}
               </label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Google Meet or Lab Room"
+                placeholder={isUz ? "Google Meet yoki xona raqami" : "Google Meet or Lab Room"}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-                <Bell className="w-3 h-3 text-[#10B981]" /> Reminder Alert
+                <Bell className="w-3 h-3 text-[#10B981]" /> {isUz ? "Eslatma bildirishnomasi" : "Reminder Alert"}
               </label>
               <select
                 value={reminderMin}
                 onChange={(e) => setReminderMin(Number(e.target.value))}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value={0}>At time of event</option>
-                <option value={5}>5 minutes before</option>
-                <option value={10}>10 minutes before</option>
-                <option value={15}>15 minutes before</option>
-                <option value={30}>30 minutes before</option>
-                <option value={60}>1 hour before</option>
+                <option value={0}>{isUz ? "Tadbir vaqtida" : "At time of event"}</option>
+                <option value={5}>{isUz ? "5 daqiqa oldin" : "5 minutes before"}</option>
+                <option value={10}>{isUz ? "10 daqiqa oldin" : "10 minutes before"}</option>
+                <option value={15}>{isUz ? "15 daqiqa oldin" : "15 minutes before"}</option>
+                <option value={30}>{isUz ? "30 daqiqa oldin" : "30 minutes before"}</option>
+                <option value={60}>{isUz ? "1 soat oldin" : "1 hour before"}</option>
               </select>
             </div>
           </div>
@@ -291,7 +301,7 @@ export function EventDialog({
           <div className="p-3 rounded-xl bg-[#142019] border border-[#25352C] space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#F3F7F4] flex items-center gap-1.5 font-medium">
-                <Repeat className="w-3.5 h-3.5 text-[#10B981]" /> Recurring Event
+                <Repeat className="w-3.5 h-3.5 text-[#10B981]" /> {isUz ? "Takrorlanuvchi tadbir" : "Recurring Event"}
               </span>
               <input
                 type="checkbox"
@@ -308,9 +318,9 @@ export function EventDialog({
                   onChange={(e) => setRecurrence(e.target.value)}
                   className="w-full bg-[#101915] border border-[#25352C] rounded-lg px-2.5 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
                 >
-                  <option value="DAILY">Daily</option>
-                  <option value="WEEKLY">Weekly</option>
-                  <option value="MONTHLY">Monthly</option>
+                  <option value="DAILY">{isUz ? "Har kuni" : "Daily"}</option>
+                  <option value="WEEKLY">{isUz ? "Har hafta" : "Weekly"}</option>
+                  <option value="MONTHLY">{isUz ? "Har oy" : "Monthly"}</option>
                 </select>
               </div>
             )}
@@ -318,13 +328,13 @@ export function EventDialog({
 
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Description / Agenda Notes
+              {isUz ? "Tavsif / Kun tartibi qaydlari" : "Description / Agenda Notes"}
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Meeting agenda, key talking points, or prep notes..."
+              placeholder={isUz ? "Uchrashuv maqsadi, asosiy mavzular yoki tayyorgarlik..." : "Meeting agenda, key talking points, or prep notes..."}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
             />
           </div>
@@ -337,7 +347,7 @@ export function EventDialog({
                 className="px-3 py-2 rounded-xl bg-[#142019] hover:bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30 text-xs font-medium transition-colors flex items-center gap-1"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Delete
+                {dict.common.delete || (isUz ? "O‘chirish" : "Delete")}
               </button>
             ) : (
               <div />
@@ -349,14 +359,18 @@ export function EventDialog({
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
               >
-                Cancel
+                {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !title.trim()}
                 className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
               >
-                {isSubmitting ? "Saving..." : eventToEdit ? "Update Block" : "Schedule Event"}
+                {isSubmitting
+                  ? (isUz ? "Saqlanmoqda..." : "Saving...")
+                  : eventToEdit
+                  ? (isUz ? "O‘zgarishlarni saqlash" : "Update Block")
+                  : (isUz ? "Tadbirni rejalashtirish" : "Schedule Event")}
               </button>
             </div>
           </div>

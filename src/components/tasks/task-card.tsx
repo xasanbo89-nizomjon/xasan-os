@@ -16,6 +16,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface TaskCardProps {
   task: TaskSummary;
@@ -36,6 +37,7 @@ export function TaskCard({
   onDragStart,
   compact = false,
 }: TaskCardProps) {
+  const { dict, isUz } = useTranslation();
   const isCompleted = task.status === TaskStatus.COMPLETED;
   const isInProgress = task.status === TaskStatus.IN_PROGRESS;
 
@@ -54,22 +56,22 @@ export function TaskCard({
     URGENT: {
       color: "text-[#EF4444]",
       bg: "bg-[#EF4444]/15 border-[#EF4444]/30",
-      label: "URGENT",
+      label: dict.priorities.urgent,
     },
     HIGH: {
       color: "text-[#F59E0B]",
       bg: "bg-[#F59E0B]/15 border-[#F59E0B]/30",
-      label: "HIGH",
+      label: dict.priorities.high,
     },
     NORMAL: {
       color: "text-[#10B981]",
       bg: "bg-[#10B981]/15 border-[#10B981]/30",
-      label: "NORMAL",
+      label: dict.priorities.normal,
     },
     LOW: {
       color: "text-[#98A69D]",
       bg: "bg-[#142019] border-[#25352C]",
-      label: "LOW",
+      label: dict.priorities.low,
     },
   }[task.priority || "NORMAL"];
 
@@ -163,7 +165,7 @@ export function TaskCard({
               <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono">
                 <span className="flex items-center gap-1">
                   <ListChecks className="w-3.5 h-3.5 text-[#10B981]" />
-                  {subtasksDone}/{subtasksCount} subtasks
+                  {subtasksDone}/{subtasksCount} {isUz ? "kichik vazifa" : "subtasks"}
                 </span>
                 <span>{subtaskProgress}%</span>
               </div>

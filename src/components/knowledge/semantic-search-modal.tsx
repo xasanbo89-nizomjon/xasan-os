@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { SemanticSearchResult, KnowledgeNoteSummary } from "@/types";
 import { semanticSearchNotesAction } from "@/server/actions/knowledge";
+import { useTranslation } from "@/stores/language-store";
 
 interface SemanticSearchModalProps {
   isOpen: boolean;
@@ -22,23 +23,32 @@ interface SemanticSearchModalProps {
   onSelectNote: (note: KnowledgeNoteSummary) => void;
 }
 
-const SAMPLE_QUERIES = [
-  "Distributed consensus Raft vs Paxos invariants",
-  "IELTS Band 8.5 Task 2 lexical cohesion & hedging",
-  "Multi-tenant PostgreSQL schema isolation",
-  "Arabic CEFR B2 root-and-pattern morphology",
-  "High-performance write-ahead logging (WAL)",
-];
-
 export function SemanticSearchModal({
   isOpen,
   onClose,
   onSelectNote,
 }: SemanticSearchModalProps) {
+  const { isUz } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SemanticSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const sampleQueries = isUz
+    ? [
+        "Raft va Paxos konsensus protokollari invariantlari",
+        "IELTS Band 8.5 Task 2 leksik bog‘liqlik va hedging",
+        "PostgreSQL ko‘p foydalanuvchili sxema izolyatsiyasi",
+        "Arab tili CEFR B2 o‘zak va vaznlar morfologiyasi",
+        "Yuqori unumdorlikdagi Write-Ahead Logging (WAL)",
+      ]
+    : [
+        "Distributed consensus Raft vs Paxos invariants",
+        "IELTS Band 8.5 Task 2 lexical cohesion & hedging",
+        "Multi-tenant PostgreSQL schema isolation",
+        "Arabic CEFR B2 root-and-pattern morphology",
+        "High-performance write-ahead logging (WAL)",
+      ];
 
   useEffect(() => {
     if (isOpen) {
@@ -100,7 +110,11 @@ export function SemanticSearchModal({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask a question or describe a concept (semantic retrieval)..."
+              placeholder={
+                isUz
+                  ? "Savol bering yoki konsepsiyani yozing (semantik qidiruv)..."
+                  : "Ask a question or describe a concept (semantic retrieval)..."
+              }
               className="w-full bg-transparent text-sm text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none"
             />
           </div>
@@ -122,10 +136,10 @@ export function SemanticSearchModal({
           {query.trim().length === 0 ? (
             <div className="p-4 space-y-3">
               <p className="text-[11px] font-mono font-semibold text-[#98A69D] uppercase tracking-wider">
-                Semantic Query Suggestions:
+                {isUz ? "Tavsiya etilgan semantik so‘rovlar:" : "Semantic Query Suggestions:"}
               </p>
               <div className="space-y-2">
-                {SAMPLE_QUERIES.map((sq, idx) => (
+                {sampleQueries.map((sq, idx) => (
                   <button
                     key={idx}
                     onClick={() => setQuery(sq)}
@@ -141,10 +155,12 @@ export function SemanticSearchModal({
             <div className="space-y-3">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D] px-1">
                 <span>
-                  Found {results.length} relevant note{results.length > 1 ? "s" : ""}
+                  {isUz
+                    ? `${results.length} ta mos keluvchi qayd topildi`
+                    : `Found ${results.length} relevant note${results.length > 1 ? "s" : ""}`}
                 </span>
                 <span className="text-[#10B981]">
-                  Confidence threshold &ge; 45%
+                  {isUz ? "Ishonchlilik ko‘rsatkichi ≥ 45%" : "Confidence threshold ≥ 45%"}
                 </span>
               </div>
 
@@ -171,7 +187,7 @@ export function SemanticSearchModal({
 
                       <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] text-[10px] font-mono font-bold border border-[#10B981]/30">
                         <Sparkles className="w-3 h-3" />
-                        <span>{percent}% Match</span>
+                        <span>{percent}% {isUz ? "Moslik" : "Match"}</span>
                       </div>
                     </div>
 
@@ -188,7 +204,7 @@ export function SemanticSearchModal({
                         {res.relevanceReason}
                       </span>
                       <span className="group-hover:text-[#F3F7F4] flex items-center gap-1">
-                        Open Note <ArrowRight className="w-3 h-3" />
+                        {isUz ? "Qaydni ochish" : "Open Note"} <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
                   </div>
@@ -199,10 +215,12 @@ export function SemanticSearchModal({
             <div className="p-8 text-center space-y-2">
               <AlertCircle className="w-8 h-8 text-[#98A69D] mx-auto" />
               <p className="text-sm font-semibold text-[#F3F7F4]">
-                No High-Confidence Conceptual Matches
+                {isUz ? "Yetarli darajada mos qayd topilmadi" : "No High-Confidence Conceptual Matches"}
               </p>
               <p className="text-xs text-[#98A69D] max-w-sm mx-auto">
-                No notes matched query &ldquo;{query}&rdquo; with confidence &ge; 45%. Try broader system or study terms.
+                {isUz
+                  ? `"${query}" so‘rovi bo‘yicha 45% dan yuqori moslikdagi qayd topilmadi. Kengroq tushunchalarni izlab ko‘ring.`
+                  : `No notes matched query "${query}" with confidence ≥ 45%. Try broader system or study terms.`}
               </p>
             </div>
           ) : null}
@@ -210,8 +228,14 @@ export function SemanticSearchModal({
 
         {/* Modal Footer */}
         <div className="p-3 border-t border-[#25352C] bg-[#080D0B] flex items-center justify-between text-[10px] font-mono text-[#98A69D]">
-          <span>Tip: Press ESC to close &bull; Click card to load into editor</span>
-          <span className="text-[#10B981]">XASAN OS Neural Retrieval v1.0</span>
+          <span>
+            {isUz
+              ? "Maslahat: Yopish uchun ESC bosing • Muharrirda ochish uchun kartani bosing"
+              : "Tip: Press ESC to close • Click card to load into editor"}
+          </span>
+          <span className="text-[#10B981]">
+            {isUz ? "XASAN OS Neyron Qidiruv v1.0" : "XASAN OS Neural Retrieval v1.0"}
+          </span>
         </div>
       </div>
     </div>

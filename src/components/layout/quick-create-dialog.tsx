@@ -17,6 +17,7 @@ import { useDeveloperStore } from "@/stores/developer-store";
 import { useFinanceStore } from "@/stores/finance-store";
 import { useKnowledgeStore } from "@/stores/knowledge-store";
 import { Priority, TransactionType } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface QuickCreateDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function QuickCreateDialog({
   onOpenChange,
   initialType = "task",
 }: QuickCreateDialogProps) {
+  const { dict, isUz } = useTranslation();
   const [activeTab, setActiveTab] = useState<ActionCategory>(
     (initialType as ActionCategory) || "task"
   );
@@ -71,7 +73,7 @@ export function QuickCreateDialog({
 
     try {
       if (activeTab === "task") {
-        if (!taskTitle.trim()) throw new Error("Task title is required");
+        if (!taskTitle.trim()) throw new Error(isUz ? "Vazifa sarlavhasini kiriting" : "Task title is required");
         useTasksStore.getState().addTask({
           title: taskTitle,
           description: taskDescription,
@@ -80,9 +82,9 @@ export function QuickCreateDialog({
         });
         setTaskTitle("");
         setTaskDescription("");
-        setSuccessMessage("Task created successfully!");
+        setSuccessMessage(dict.toast.task_created);
       } else if (activeTab === "habit") {
-        if (!habitName.trim()) throw new Error("Habit name is required");
+        if (!habitName.trim()) throw new Error(isUz ? "Odat nomini kiriting" : "Habit name is required");
         useHabitsStore.getState().addHabit({
           name: habitName,
           description: habitDescription,
@@ -90,9 +92,9 @@ export function QuickCreateDialog({
         });
         setHabitName("");
         setHabitDescription("");
-        setSuccessMessage("Habit registered!");
+        setSuccessMessage(dict.toast.habit_logged);
       } else if (activeTab === "project") {
-        if (!projectName.trim()) throw new Error("Project name is required");
+        if (!projectName.trim()) throw new Error(isUz ? "Loyiha nomini kiriting" : "Project name is required");
         useDeveloperStore.getState().addProject({
           name: projectName,
           slug: projectName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -102,9 +104,9 @@ export function QuickCreateDialog({
         setProjectName("");
         setProjectDescription("");
         setProjectTechStack("");
-        setSuccessMessage("Project created!");
+        setSuccessMessage(isUz ? "Loyiha muvaffaqiyatli yaratildi!" : "Project created!");
       } else if (activeTab === "transaction") {
-        if (!txTitle.trim() || !txAmount) throw new Error("Title and amount are required");
+        if (!txTitle.trim() || !txAmount) throw new Error(isUz ? "Sarlavha va summa kiritilishi shart" : "Title and amount are required");
         useFinanceStore.getState().addTransaction({
           title: txTitle,
           amount: parseFloat(txAmount),
@@ -113,9 +115,9 @@ export function QuickCreateDialog({
         });
         setTxTitle("");
         setTxAmount("");
-        setSuccessMessage("Transaction recorded!");
+        setSuccessMessage(isUz ? "Tranzaksiya muvaffaqiyatli saqlandi!" : "Transaction recorded!");
       } else if (activeTab === "note") {
-        if (!noteTitle.trim()) throw new Error("Note title is required");
+        if (!noteTitle.trim()) throw new Error(isUz ? "Qayd sarlavhasini kiriting" : "Note title is required");
         useKnowledgeStore.getState().addNote({
           title: noteTitle,
           content: noteContent,
@@ -123,7 +125,7 @@ export function QuickCreateDialog({
         });
         setNoteTitle("");
         setNoteContent("");
-        setSuccessMessage("Knowledge Note saved!");
+        setSuccessMessage(isUz ? "Bilim qaydi saqlandi!" : "Knowledge Note saved!");
       }
 
       setTimeout(() => {
@@ -131,7 +133,7 @@ export function QuickCreateDialog({
         setSuccessMessage(null);
       }, 700);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An error occurred";
+      const message = err instanceof Error ? err.message : (isUz ? "Xatolik yuz berdi" : "An error occurred");
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -139,11 +141,11 @@ export function QuickCreateDialog({
   };
 
   const tabs = [
-    { id: "task", label: "Task", icon: CheckSquare },
-    { id: "habit", label: "Habit", icon: Sparkles },
-    { id: "project", label: "Project", icon: Layers },
-    { id: "transaction", label: "Transaction", icon: CircleDollarSign },
-    { id: "note", label: "Note", icon: BookOpen },
+    { id: "task", label: dict.quick_create.task, icon: CheckSquare },
+    { id: "habit", label: dict.quick_create.habit, icon: Sparkles },
+    { id: "project", label: dict.quick_create.project, icon: Layers },
+    { id: "transaction", label: dict.quick_create.transaction, icon: CircleDollarSign },
+    { id: "note", label: dict.quick_create.note, icon: BookOpen },
   ] as const;
 
   return (
@@ -160,7 +162,7 @@ export function QuickCreateDialog({
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
             <h2 className="text-base font-semibold text-[#F3F7F4]">
-              Quick Create
+              {dict.quick_create.dialog_title}
             </h2>
           </div>
           <button
@@ -218,12 +220,12 @@ export function QuickCreateDialog({
             <>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Task Title *
+                  {isUz ? "Vazifa sarlavhasi *" : "Task Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Deploy Whisper speech model endpoint"
+                  placeholder={isUz ? "Masalan: Whisper modelini sozlash" : "e.g. Deploy Whisper speech model endpoint"}
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -232,11 +234,11 @@ export function QuickCreateDialog({
 
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Description
+                  {dict.common.description}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Additional context or acceptance criteria..."
+                  placeholder={dict.quick_create.description_placeholder}
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors resize-none"
@@ -246,22 +248,22 @@ export function QuickCreateDialog({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Priority
+                    {isUz ? "Muhimlik" : "Priority"}
                   </label>
                   <select
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value as Priority)}
                     className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="LOW">LOW</option>
-                    <option value="NORMAL">NORMAL</option>
-                    <option value="HIGH">HIGH</option>
-                    <option value="URGENT">URGENT</option>
+                    <option value="LOW">{dict.priorities.low}</option>
+                    <option value="NORMAL">{dict.priorities.normal}</option>
+                    <option value="HIGH">{dict.priorities.high}</option>
+                    <option value="URGENT">{dict.priorities.urgent}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Due Date
+                    {isUz ? "Muddati" : "Due Date"}
                   </label>
                   <input
                     type="date"
@@ -278,12 +280,12 @@ export function QuickCreateDialog({
             <>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Habit Name *
+                  {isUz ? "Odat nomi *" : "Habit Name *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. IELTS Academic Reading 45m"
+                  placeholder={isUz ? "Masalan: IELTS Academic Reading 45 daq" : "e.g. IELTS Academic Reading 45m"}
                   value={habitName}
                   onChange={(e) => setHabitName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -292,27 +294,27 @@ export function QuickCreateDialog({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Category
+                    {dict.common.category}
                   </label>
                   <select
                     value={habitCategory}
                     onChange={(e) => setHabitCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="DISCIPLINE">DISCIPLINE</option>
-                    <option value="CODE">CODE</option>
-                    <option value="STUDY">STUDY</option>
-                    <option value="HEALTH">HEALTH</option>
+                    <option value="DISCIPLINE">{isUz ? "Intizom" : "DISCIPLINE"}</option>
+                    <option value="CODE">{isUz ? "Dasturlash" : "CODE"}</option>
+                    <option value="STUDY">{isUz ? "Ta'lim" : "STUDY"}</option>
+                    <option value="HEALTH">{isUz ? "Salomatlik" : "HEALTH"}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Target
+                    {isUz ? "Davriylik" : "Target"}
                   </label>
                   <input
                     type="text"
                     disabled
-                    value="Daily (7 days/week)"
+                    value={isUz ? "Har kuni (Haftada 7 kun)" : "Daily (7 days/week)"}
                     className="w-full px-3 py-2 bg-[#142019]/50 border border-[#25352C] rounded-xl text-xs text-[#98A69D]"
                   />
                 </div>
@@ -324,12 +326,12 @@ export function QuickCreateDialog({
             <>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Project Name *
+                  {isUz ? "Loyiha nomi *" : "Project Name *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Aurelius IELTS, LinguaHub, Ravon Avto"
+                  placeholder={isUz ? "Masalan: Aurelius IELTS, LinguaHub, Ravon Avto" : "e.g. Aurelius IELTS, LinguaHub, Ravon Avto"}
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -337,11 +339,11 @@ export function QuickCreateDialog({
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Tech Stack (comma-separated)
+                  {isUz ? "Texnologiyalar (vergul bilan)" : "Tech Stack (comma-separated)"}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Next.js 16, TypeScript, PostgreSQL, Tailwind"
+                  placeholder="e.g. Next.js 16, TypeScript, Tailwind"
                   value={projectTechStack}
                   onChange={(e) => setProjectTechStack(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -354,12 +356,12 @@ export function QuickCreateDialog({
             <>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Transaction Title *
+                  {isUz ? "Tranzaksiya nomi *" : "Transaction Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. AWS Cloud GPU instances"
+                  placeholder={isUz ? "Masalan: AWS Cloud GPU hisobi" : "e.g. AWS Cloud GPU instances"}
                   value={txTitle}
                   onChange={(e) => setTxTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -368,7 +370,7 @@ export function QuickCreateDialog({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Amount ($) *
+                    {dict.common.amount} ($) *
                   </label>
                   <input
                     type="number"
@@ -382,16 +384,16 @@ export function QuickCreateDialog({
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                    Type
+                    {dict.common.type}
                   </label>
                   <select
                     value={txType}
                     onChange={(e) => setTxType(e.target.value as TransactionType)}
                     className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="EXPENSE">EXPENSE</option>
-                    <option value="INCOME">INCOME</option>
-                    <option value="TRANSFER">TRANSFER</option>
+                    <option value="EXPENSE">{isUz ? "Xarajat (Expense)" : "EXPENSE"}</option>
+                    <option value="INCOME">{isUz ? "Daromad (Income)" : "INCOME"}</option>
+                    <option value="TRANSFER">{isUz ? "O‘tkazma (Transfer)" : "TRANSFER"}</option>
                   </select>
                 </div>
               </div>
@@ -402,12 +404,12 @@ export function QuickCreateDialog({
             <>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Note Title *
+                  {isUz ? "Qayd sarlavhasi *" : "Note Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. System Design: Event-Driven Kafka architecture"
+                  placeholder={isUz ? "Masalan: Event-Driven Kafka arxitekturasi" : "e.g. System Design: Event-Driven Kafka architecture"}
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
@@ -415,11 +417,11 @@ export function QuickCreateDialog({
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
-                  Content (Markdown / Notes)
+                  {isUz ? "Mazmuni (Markdown / Qaydlar)" : "Content (Markdown / Notes)"}
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Key concepts, architecture notes, equations..."
+                  placeholder={isUz ? "Asosiy tushunchalar, arxitektura diagrammalari..." : "Key concepts, architecture notes, equations..."}
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors resize-none"
@@ -434,14 +436,14 @@ export function QuickCreateDialog({
               onClick={() => onOpenChange(false)}
               className="px-4 py-2 rounded-xl text-xs font-medium text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
             >
-              Cancel
+              {dict.quick_create.cancel_button}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-md shadow-[#10B981]/20 disabled:opacity-50 cursor-pointer"
             >
-              {isSubmitting ? "Creating..." : "Confirm & Save"}
+              {isSubmitting ? (isUz ? "Yaratilmoqda..." : "Creating...") : dict.quick_create.submit_button}
             </button>
           </div>
         </form>

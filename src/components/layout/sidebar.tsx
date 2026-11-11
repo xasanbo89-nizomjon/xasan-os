@@ -13,6 +13,7 @@ import {
 import { NAVIGATION_ITEMS } from "@/config/navigation";
 import { DynamicIcon } from "../icons";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -28,9 +29,62 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const { dict, isUz } = useTranslation();
 
   // Group items by section
   const sections = ["Core", "Growth & Focus", "Intelligence", "System"] as const;
+
+  const getSectionTitle = (sec: string) => {
+    switch (sec) {
+      case "Core":
+        return dict.nav.sections.core;
+      case "Growth & Focus":
+        return dict.nav.sections.growth_focus;
+      case "Intelligence":
+        return dict.nav.sections.intelligence;
+      case "System":
+        return dict.nav.sections.system;
+      default:
+        return sec;
+    }
+  };
+
+  const getItemLocalized = (itemId: string, fallbackName: string, fallbackDesc: string) => {
+    switch (itemId) {
+      case "overview":
+        return { name: dict.nav.overview, desc: dict.nav.overview_desc };
+      case "my-day":
+        return { name: dict.nav.my_day, desc: dict.nav.my_day_desc };
+      case "tasks":
+        return { name: dict.nav.tasks, desc: dict.nav.tasks_desc };
+      case "calendar":
+        return { name: dict.nav.calendar, desc: dict.nav.calendar_desc };
+      case "life-tracker":
+        return { name: dict.nav.life_tracker, desc: dict.nav.life_tracker_desc };
+      case "study-center":
+        return { name: dict.nav.study_center, desc: dict.nav.study_center_desc };
+      case "developer-hub":
+        return { name: dict.nav.developer_hub, desc: dict.nav.developer_hub_desc };
+      case "finance":
+        return { name: dict.nav.finance, desc: dict.nav.finance_desc };
+      case "xasan-ai":
+        return { name: dict.nav.xasan_ai, desc: dict.nav.xasan_ai_desc };
+      case "knowledge-base":
+        return { name: dict.nav.knowledge_base, desc: dict.nav.knowledge_base_desc };
+      case "goals":
+        return { name: dict.nav.goals, desc: dict.nav.goals_desc };
+      case "analytics":
+        return { name: dict.nav.analytics, desc: dict.nav.analytics_desc };
+      case "notifications":
+        return { name: dict.nav.notifications, desc: dict.nav.notifications_desc };
+      case "profile":
+        return { name: dict.nav.profile, desc: dict.nav.profile_desc };
+      case "settings":
+        return { name: dict.nav.settings, desc: dict.nav.settings_desc };
+      default:
+        return { name: fallbackName, desc: fallbackDesc };
+    }
+  };
 
   return (
     <>
@@ -70,7 +124,7 @@ export function Sidebar({
                   </span>
                 </span>
                 <span className="text-[10px] text-[#98A69D] tracking-tight">
-                  Personal Executive System
+                  {dict.app.subtitle}
                 </span>
               </div>
             )}
@@ -102,7 +156,7 @@ export function Sidebar({
               <div key={section} className="space-y-1">
                 {!collapsed && (
                   <div className="px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-[#98A69D]/70 font-mono">
-                    {section}
+                    {getSectionTitle(section)}
                   </div>
                 )}
                 {items.map((item) => {
@@ -110,13 +164,14 @@ export function Sidebar({
                     item.href === "/"
                       ? pathname === "/"
                       : pathname.startsWith(item.href);
+                  const loc = getItemLocalized(item.id, item.name, item.description);
 
                   return (
                     <Link
                       key={item.id}
                       href={item.href}
                       onClick={onCloseMobile}
-                      title={collapsed ? `${item.name} — ${item.description}` : undefined}
+                      title={collapsed ? `${loc.name} — ${loc.desc}` : undefined}
                       className={cn(
                         "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-150",
                         isActive
@@ -143,7 +198,7 @@ export function Sidebar({
 
                       {!collapsed && (
                         <div className="flex-1 flex items-center justify-between min-w-0">
-                          <span className="truncate">{item.name}</span>
+                          <span className="truncate">{loc.name}</span>
                           {item.badge && (
                             <span
                               className={cn(
@@ -195,7 +250,7 @@ export function Sidebar({
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[10px] text-[#98A69D] font-mono">
-                    ONLINE
+                    {isUz ? "FAOL" : "ONLINE"}
                   </span>
                   <span className="w-1 h-1 rounded-full bg-[#10B981]" />
                   <span className="text-[9px] text-[#10B981] font-mono">

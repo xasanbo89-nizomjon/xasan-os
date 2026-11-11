@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { KnowledgeFolderSummary, KnowledgeNoteSummary, NoteContentType } from "@/types";
 import { createKnowledgeFolderAction, deleteKnowledgeFolderAction } from "@/server/actions/knowledge";
+import { useTranslation } from "@/stores/language-store";
 
 interface NotesSidebarProps {
   folders: KnowledgeFolderSummary[];
@@ -42,18 +43,6 @@ interface NotesSidebarProps {
   onFolderCreated?: (folder: KnowledgeFolderSummary) => void;
 }
 
-const CONTENT_TYPES: { id: string; label: string; icon: any }[] = [
-  { id: "ALL", label: "All Formats", icon: Layers },
-  { id: "NOTE", label: "Quick Notes", icon: FileText },
-  { id: "IDEA", label: "Ideas & Concepts", icon: Lightbulb },
-  { id: "ARTICLE", label: "Articles", icon: BookOpen },
-  { id: "BOOK_SUMMARY", label: "Book Syntheses", icon: BookMarked },
-  { id: "PROGRAMMING_DOC", label: "Code & APIs", icon: Code2 },
-  { id: "STUDY_NOTE", label: "Study & IELTS", icon: GraduationCap },
-  { id: "PERSONAL_JOURNAL", label: "Personal Journal", icon: Compass },
-  { id: "RESEARCH", label: "Research Material", icon: Microscope },
-];
-
 export function NotesSidebar({
   folders,
   notes,
@@ -67,12 +56,25 @@ export function NotesSidebar({
   onSelectTag,
   onFolderCreated,
 }: NotesSidebarProps) {
+  const { isUz } = useTranslation();
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     "fold-1": true,
   });
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderParentId, setFolderParentId] = useState<string>("");
+
+  const contentTypes = [
+    { id: "ALL", label: isUz ? "Barcha formatlar" : "All Formats", icon: Layers },
+    { id: "NOTE", label: isUz ? "Tezkor qaydlar" : "Quick Notes", icon: FileText },
+    { id: "IDEA", label: isUz ? "G‘oyalar va Konseptsiyalar" : "Ideas & Concepts", icon: Lightbulb },
+    { id: "ARTICLE", label: isUz ? "Maqolalar va Sharhlar" : "Articles", icon: BookOpen },
+    { id: "BOOK_SUMMARY", label: isUz ? "Kitob tahlillari" : "Book Syntheses", icon: BookMarked },
+    { id: "PROGRAMMING_DOC", label: isUz ? "Dasturlash va API" : "Code & APIs", icon: Code2 },
+    { id: "STUDY_NOTE", label: isUz ? "O‘qish va IELTS" : "Study & IELTS", icon: GraduationCap },
+    { id: "PERSONAL_JOURNAL", label: isUz ? "Shaxsiy kundalik" : "Personal Journal", icon: Compass },
+    { id: "RESEARCH", label: isUz ? "Tadqiqot materiallari" : "Research Material", icon: Microscope },
+  ];
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
@@ -125,7 +127,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4" />
-            <span>All Knowledge Notes</span>
+            <span>{isUz ? "Barcha bilim qaydlari" : "All Knowledge Notes"}</span>
           </div>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-black/20">
             {totalActiveNotes}
@@ -146,7 +148,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-400" />
-            <span>Starred Favorites</span>
+            <span>{isUz ? "Saralangan qaydlar" : "Starred Favorites"}</span>
           </div>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-black/20">
             {favoritesCount}
@@ -167,7 +169,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Pin className="w-4 h-4 text-[#10B981]" />
-            <span>Pinned Invariants</span>
+            <span>{isUz ? "Qadalgan invariantlar" : "Pinned Invariants"}</span>
           </div>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-black/20">
             {pinnedCount}
@@ -188,7 +190,7 @@ export function NotesSidebar({
         >
           <div className="flex items-center gap-2">
             <Archive className="w-4 h-4" />
-            <span>Archived Notes</span>
+            <span>{isUz ? "Arxivlangan qaydlar" : "Archived Notes"}</span>
           </div>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-black/20">
             {archivedCount}
@@ -199,11 +201,11 @@ export function NotesSidebar({
       {/* Folders & Nested Collections */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-2 text-[11px] font-mono uppercase tracking-wider text-[#98A69D]">
-          <span>Notebook Folders</span>
+          <span>{isUz ? "Papka va Bo‘limlar" : "Notebook Folders"}</span>
           <button
             onClick={() => setIsFolderModalOpen(true)}
             className="p-1 hover:text-[#10B981] transition-colors"
-            title="Create Folder"
+            title={isUz ? "Yangi papka yaratish" : "Create Folder"}
           >
             <FolderPlus className="w-3.5 h-3.5" />
           </button>
@@ -288,10 +290,10 @@ export function NotesSidebar({
       {/* Content Formats */}
       <div className="space-y-2">
         <div className="px-2 text-[11px] font-mono uppercase tracking-wider text-[#98A69D]">
-          Content Formats
+          {isUz ? "Kontent Formatlari" : "Content Formats"}
         </div>
         <div className="space-y-0.5">
-          {CONTENT_TYPES.map((type) => {
+          {contentTypes.map((type) => {
             const Icon = type.icon;
             const isSelected = selectedContentType === type.id;
             const count =
@@ -323,7 +325,7 @@ export function NotesSidebar({
       {/* Tags Cloud */}
       <div className="space-y-2">
         <div className="px-2 text-[11px] font-mono uppercase tracking-wider text-[#98A69D]">
-          Semantic Tags
+          {isUz ? "Semantik Teglar" : "Semantic Tags"}
         </div>
         <div className="flex flex-wrap gap-1 px-1">
           {allTags.map((t) => (
@@ -349,7 +351,9 @@ export function NotesSidebar({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <FolderPlus className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Create Knowledge Folder</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Yangi bilimlar papkasi" : "Create Knowledge Folder"}
+                </h3>
               </div>
               <button onClick={() => setIsFolderModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -358,25 +362,29 @@ export function NotesSidebar({
 
             <form onSubmit={handleCreateFolder} className="space-y-3.5">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Folder Name *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Papka nomi *" : "Folder Name *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
-                  placeholder="e.g. System Design, IELTS Speaking"
+                  placeholder={isUz ? "Masalan: Tizim Arxitekturasi, IELTS Speaking" : "e.g. System Design, IELTS Speaking"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Parent Folder (Optional)</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Asosiy papka (ixtiyoriy)" : "Parent Folder (Optional)"}
+                </label>
                 <select
                   value={folderParentId}
                   onChange={(e) => setFolderParentId(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 >
-                  <option value="">No Parent (Root Level)</option>
+                  <option value="">{isUz ? "Asosiy daraja (Ildiz)" : "No Parent (Root Level)"}</option>
                   {rootFolders.map((f) => (
                     <option key={f.id} value={f.id}>
                       {f.name}
@@ -387,10 +395,10 @@ export function NotesSidebar({
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
                 <button type="button" onClick={() => setIsFolderModalOpen(false)} className="text-xs text-[#98A69D]">
-                  Cancel
+                  {isUz ? "Bekor qilish" : "Cancel"}
                 </button>
                 <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
-                  Create Folder
+                  {isUz ? "Papka yaratish" : "Create Folder"}
                 </button>
               </div>
             </form>

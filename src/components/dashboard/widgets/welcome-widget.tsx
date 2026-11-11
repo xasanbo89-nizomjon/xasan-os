@@ -12,6 +12,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useDashboardStore } from "@/stores/dashboard-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface WelcomeWidgetProps {
   completedTasksCount: number;
@@ -30,6 +31,7 @@ export function WelcomeWidget({
   onOpenQuickCreate,
   onOpenCustomizer,
 }: WelcomeWidgetProps) {
+  const { dict, isUz } = useTranslation();
   const [time, setTime] = useState("");
   const [dateStr, setDateStr] = useState("");
   const { focusSessionActive, startFocusSession, stopFocusSession } = useDashboardStore();
@@ -44,7 +46,7 @@ export function WelcomeWidget({
         })
       );
       setDateStr(
-        now.toLocaleDateString([], {
+        now.toLocaleDateString(isUz ? "uz-UZ" : "en-US", {
           weekday: "long",
           month: "short",
           day: "numeric",
@@ -55,7 +57,7 @@ export function WelcomeWidget({
     updateDateTime();
     const interval = setInterval(updateDateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isUz]);
 
   // Compute daily execution progress
   const totalItems = totalTasksCount + totalHabitsCount;
@@ -73,11 +75,11 @@ export function WelcomeWidget({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-              SYSTEM OPTIMAL
+              {isUz ? "TIZIM OPTIMAL" : "SYSTEM OPTIMAL"}
             </span>
             <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
               <CalendarIcon className="w-3.5 h-3.5 text-[#10B981]" />
-              {dateStr || "Tuesday, Nov 10, 2026"}
+              {dateStr || (isUz ? "Seshanba, 10-noyabr, 2026" : "Tuesday, Nov 10, 2026")}
             </span>
             <span className="text-xs text-[#98A69D] flex items-center gap-1 font-mono">
               <Clock className="w-3.5 h-3.5 text-[#10B981]" />
@@ -86,13 +88,21 @@ export function WelcomeWidget({
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#F3F7F4]">
-            Welcome Back, <span className="text-[#10B981]">Architect Xasan</span>
+            {isUz ? "Xush kelibsiz, " : "Welcome Back, "}<span className="text-[#10B981]">{isUz ? "Arxitektor Xasan" : "Architect Xasan"}</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-[#98A69D] max-w-xl leading-relaxed">
-            All pipelines synchronized. You have completed{" "}
-            <span className="text-[#F3F7F4] font-semibold">{completedItems}</span> of{" "}
-            <span className="text-[#F3F7F4] font-semibold">{totalItems}</span> daily targets. Deep work blocks are prepared.
+            {isUz ? (
+              <>
+                Barcha tizimlar sinxronlangan. Siz bugungi <span className="text-[#F3F7F4] font-semibold">{totalItems}</span> ta maqsaddan <span className="text-[#F3F7F4] font-semibold">{completedItems}</span> tasini bajardingiz. Chuqur diqqat bloklari tayyor.
+              </>
+            ) : (
+              <>
+                All pipelines synchronized. You have completed{" "}
+                <span className="text-[#F3F7F4] font-semibold">{completedItems}</span> of{" "}
+                <span className="text-[#F3F7F4] font-semibold">{totalItems}</span> daily targets. Deep work blocks are prepared.
+              </>
+            )}
           </p>
         </div>
 
@@ -124,9 +134,13 @@ export function WelcomeWidget({
               </span>
             </div>
             <div>
-              <div className="text-xs font-bold text-[#F3F7F4]">Daily Progress</div>
+              <div className="text-xs font-bold text-[#F3F7F4]">
+                {isUz ? "Kunlik Rivojlanish" : "Daily Progress"}
+              </div>
               <div className="text-[10px] text-[#98A69D]">
-                {completedTasksCount} tasks • {completedHabitsCount} habits
+                {isUz
+                  ? `${completedTasksCount} ta vazifa • ${completedHabitsCount} ta odat`
+                  : `${completedTasksCount} tasks • ${completedHabitsCount} habits`}
               </div>
             </div>
           </div>
@@ -139,7 +153,7 @@ export function WelcomeWidget({
                 className="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#EF4444]/20 border border-[#EF4444]/40 text-[#EF4444] hover:bg-[#EF4444] hover:text-[#080D0B] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
               >
                 <Clock className="w-3.5 h-3.5 animate-spin" />
-                <span>End Focus Session</span>
+                <span>{isUz ? "Sessiyani yakunlash" : "End Focus Session"}</span>
               </button>
             ) : (
               <button
@@ -147,13 +161,13 @@ export function WelcomeWidget({
                 className="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-[#10B981]/25 active:scale-95"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Focus (50m)</span>
+                <span>{isUz ? "Diqqat (50 daq)" : "Focus (50m)"}</span>
               </button>
             )}
 
             <button
               onClick={onOpenCustomizer}
-              title="Customize Layout"
+              title={isUz ? "Ko‘rinishni sozlash" : "Customize Layout"}
               className="p-2.5 rounded-xl bg-[#101915] border border-[#25352C] hover:border-[#10B981]/50 text-[#98A69D] hover:text-[#F3F7F4] transition-all cursor-pointer"
             >
               <Sliders className="w-4 h-4" />

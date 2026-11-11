@@ -12,13 +12,14 @@ import {
   Legend,
 } from "recharts";
 import { TimeTrendPoint } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface ComparisonBarChartProps {
   data: TimeTrendPoint[];
   type?: "STUDY" | "FINANCE";
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, isUz }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-[#101915] border border-[#25352C] rounded-xl p-3 shadow-2xl text-xs space-y-1">
@@ -32,9 +33,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               {entry.name}:
             </span>
             <span className="font-mono font-semibold text-[#F3F7F4]">
-              {entry.name.includes("Amount") || entry.name.includes("Income") || entry.name.includes("Expenses")
+              {entry.name.includes("Amount") || entry.name.includes("Income") || entry.name.includes("Expenses") || entry.name.includes("Daromad") || entry.name.includes("Xarajat")
                 ? `$${entry.value.toLocaleString()}`
-                : `${entry.value} hrs`}
+                : `${entry.value} ${isUz ? "soat" : "hrs"}`}
             </span>
           </div>
         ))}
@@ -45,6 +46,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ComparisonBarChart({ data, type = "STUDY" }: ComparisonBarChartProps) {
+  const { isUz } = useTranslation();
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
@@ -65,7 +68,7 @@ export function ComparisonBarChart({ data, type = "STUDY" }: ComparisonBarChartP
             tickLine={false}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip isUz={isUz} />} />
           <Legend
             wrapperStyle={{ fontSize: "11px", paddingTop: "10px", fontFamily: "monospace" }}
           />
@@ -74,13 +77,13 @@ export function ComparisonBarChart({ data, type = "STUDY" }: ComparisonBarChartP
             <>
               <Bar
                 dataKey="targetHours"
-                name="Target Hours"
+                name={isUz ? "Rejadagi Soatlar" : "Target Hours"}
                 fill="#25352C"
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="studyHours"
-                name="Actual Hours"
+                name={isUz ? "Haqiqiy Soatlar" : "Actual Hours"}
                 fill="#10B981"
                 radius={[4, 4, 0, 0]}
               />
@@ -89,13 +92,13 @@ export function ComparisonBarChart({ data, type = "STUDY" }: ComparisonBarChartP
             <>
               <Bar
                 dataKey="income"
-                name="Income"
+                name={isUz ? "Daromad" : "Income"}
                 fill="#10B981"
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="expenses"
-                name="Expenses"
+                name={isUz ? "Xarajatlar" : "Expenses"}
                 fill="#EF4444"
                 radius={[4, 4, 0, 0]}
               />

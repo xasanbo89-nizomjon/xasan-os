@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AiUserMemorySummary } from "@/types";
 import { saveAiMemoryAction, deleteAiMemoryAction } from "@/server/actions/ai-chat";
+import { useTranslation } from "@/stores/language-store";
 
 interface AiMemoryModalProps {
   isOpen: boolean;
@@ -22,20 +23,26 @@ interface AiMemoryModalProps {
   onMemoriesUpdated: (updated: AiUserMemorySummary[]) => void;
 }
 
-const CATEGORIES = ["PREFERENCE", "GOAL", "CONSTRAINT", "STYLE"];
-
 export function AiMemoryModal({
   isOpen,
   onClose,
   memories,
   onMemoriesUpdated,
 }: AiMemoryModalProps) {
+  const { isUz } = useTranslation();
   const [newKey, setNewKey] = useState("");
   const [newValue, setNewValue] = useState("");
   const [newCategory, setNewCategory] = useState("PREFERENCE");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
+
+  const categories = [
+    { id: "PREFERENCE", label: isUz ? "Afzallik" : "PREFERENCE" },
+    { id: "GOAL", label: isUz ? "Maqsad" : "GOAL" },
+    { id: "CONSTRAINT", label: isUz ? "Cheklov" : "CONSTRAINT" },
+    { id: "STYLE", label: isUz ? "Uslub" : "STYLE" },
+  ];
 
   const handleAddMemory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,17 +104,19 @@ export function AiMemoryModal({
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
-                AI Cognitive Memory & Preferences
+                {isUz ? "AI kognitiv xotirasi va afzalliklari" : "AI Cognitive Memory & Preferences"}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Persistent sovereign context injected into every autonomous reasoning turn.
+                {isUz
+                  ? "Har bir avtonom muloqotga avtomatik qo‘shiladigan doimiy shaxsiy kontekst."
+                  : "Persistent sovereign context injected into every autonomous reasoning turn."}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+            className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -123,15 +132,15 @@ export function AiMemoryModal({
             <div className="flex items-center justify-between text-xs font-mono font-semibold text-[#10B981]">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                Add Persistent Context Invariant
+                {isUz ? "Doimiy parametr qo‘shish" : "Add Persistent Context Invariant"}
               </span>
-              <span className="text-[10px] text-[#98A69D]">Encrypted &bull; User Isolated</span>
+              <span className="text-[10px] text-[#98A69D]">{isUz ? "Shifrlangan • Alohida xotirada" : "Encrypted • User Isolated"}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input
                 type="text"
-                placeholder="Key / Topic (e.g. Target Band)"
+                placeholder={isUz ? "Kalit so‘z (Masalan: Maqsadli ball)" : "Key / Topic (e.g. Target Band)"}
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
                 className="bg-[#142019] text-xs text-[#F3F7F4] placeholder-[#98A69D] px-3 py-2 rounded-lg border border-[#25352C] focus:outline-none focus:border-[#10B981]"
@@ -142,24 +151,24 @@ export function AiMemoryModal({
                 onChange={(e) => setNewCategory(e.target.value)}
                 className="bg-[#142019] text-xs text-[#F3F7F4] px-3 py-2 rounded-lg border border-[#25352C] focus:outline-none focus:border-[#10B981]"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.label}
                   </option>
                 ))}
               </select>
               <button
                 type="submit"
                 disabled={isSubmitting || !newKey.trim() || !newValue.trim()}
-                className="bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Save Invariant</span>
+                <span>{isUz ? "Saqlash" : "Save Invariant"}</span>
               </button>
             </div>
 
             <textarea
-              placeholder="Value / Constraint (e.g. 'Target overall 8.5 with strict lexical hedging in Academic Writing Task 2.')"
+              placeholder={isUz ? "Qiymat / Qoida (Masalan: 'Writing Task 2 da qat'iy akademik uslubda yozish')" : "Value / Constraint (e.g. 'Target overall 8.5 with strict lexical hedging in Academic Writing Task 2.')"}
               value={newValue}
               onChange={(e) => setNewValue(e.target.value)}
               rows={2}
@@ -171,12 +180,12 @@ export function AiMemoryModal({
           {/* Active Memories List */}
           <div className="space-y-2">
             <h4 className="text-[11px] font-mono font-semibold text-[#98A69D] uppercase tracking-wider px-1">
-              Active Stored Memories ({memories.length})
+              {isUz ? "Faol saqlangan xotiralar" : "Active Stored Memories"} ({memories.length})
             </h4>
 
             {memories.length === 0 ? (
               <div className="p-6 text-center text-xs text-[#98A69D]">
-                No memory invariants defined yet.
+                {isUz ? "Hozircha saqlangan xotiralar mavjud emas." : "No memory invariants defined yet."}
               </div>
             ) : (
               memories.map((mem) => (
@@ -187,7 +196,7 @@ export function AiMemoryModal({
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#080D0B] text-[#10B981] border border-[#10B981]/30">
-                        {mem.category}
+                        {categories.find((c) => c.id === mem.category)?.label || mem.category}
                       </span>
                       <span className="text-xs font-bold text-[#F3F7F4]">
                         {mem.key}
@@ -200,8 +209,8 @@ export function AiMemoryModal({
 
                   <button
                     onClick={() => handleDelete(mem.id)}
-                    className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#EF4444] hover:bg-[#142019] transition-colors"
-                    title="Delete Memory"
+                    className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#EF4444] hover:bg-[#142019] transition-colors cursor-pointer"
+                    title={isUz ? "O‘chirish" : "Delete Memory"}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -215,13 +224,13 @@ export function AiMemoryModal({
         <div className="p-3 border-t border-[#25352C] bg-[#080D0B] flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
           <span className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-[#10B981]" />
-            Stored strictly in PostgreSQL &bull; Scoped to your User UUID
+            {isUz ? "Xavfsiz xotira • Foydalanuvchi UUID profiliga bog‘langan" : "Stored strictly in PostgreSQL • Scoped to your User UUID"}
           </span>
           <button
             onClick={onClose}
-            className="px-3 py-1 bg-[#142019] text-[#F3F7F4] hover:bg-[#25352C] rounded-lg transition-colors text-xs font-medium"
+            className="px-3 py-1 bg-[#142019] text-[#F3F7F4] hover:bg-[#25352C] rounded-lg transition-colors text-xs font-medium cursor-pointer"
           >
-            Close
+            {isUz ? "Yopish" : "Close"}
           </button>
         </div>
       </div>

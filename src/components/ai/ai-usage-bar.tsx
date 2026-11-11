@@ -11,6 +11,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { AiUsageSummary } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface AiUsageBarProps {
   usage: AiUsageSummary;
@@ -18,6 +19,7 @@ interface AiUsageBarProps {
 }
 
 export function AiUsageBar({ usage, onOpenMemoryModal }: AiUsageBarProps) {
+  const { isUz } = useTranslation();
   const isHighUsage = usage.percentageUsed > 80;
 
   return (
@@ -26,17 +28,17 @@ export function AiUsageBar({ usage, onOpenMemoryModal }: AiUsageBarProps) {
       <div className="flex items-center gap-2 overflow-x-auto py-0.5">
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#080D0B] border border-[#10B981]/30 text-[#10B981] font-mono text-[10px] font-semibold shrink-0">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Read-Only by Default</span>
+          <span>{isUz ? "Standart: Faqat o‘qish rejimi" : "Read-Only by Default"}</span>
         </div>
 
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#080D0B] border border-[#25352C] text-[#98A69D] font-mono text-[10px] shrink-0">
           <Lock className="w-3 h-3 text-[#10B981]" />
-          <span>Explicit Authorization for Writes</span>
+          <span>{isUz ? "Yozish uchun ruxsat talab" : "Explicit Authorization for Writes"}</span>
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#080D0B] border border-[#25352C] text-[#98A69D] font-mono text-[10px] shrink-0">
           <Database className="w-3 h-3 text-[#10B981]" />
-          <span>User Data Isolated (UUID)</span>
+          <span>{isUz ? "Foydalanuvchi ma'lumotlari ajratilgan" : "User Data Isolated (UUID)"}</span>
         </div>
       </div>
 
@@ -46,7 +48,7 @@ export function AiUsageBar({ usage, onOpenMemoryModal }: AiUsageBarProps) {
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-mono text-[#98A69D]">
-              Tokens:{" "}
+              {isUz ? "Tokenlar:" : "Tokens:"}{" "}
               <strong className="text-[#F3F7F4] font-semibold">
                 {usage.tokensUsedToday.toLocaleString()}
               </strong>{" "}
@@ -70,11 +72,11 @@ export function AiUsageBar({ usage, onOpenMemoryModal }: AiUsageBarProps) {
         {/* Memory Trigger */}
         <button
           onClick={onOpenMemoryModal}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#142019] hover:bg-[#10B981]/15 text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-all font-mono text-[11px]"
-          title="Manage AI Cognitive Memory & Saved Preferences"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#142019] hover:bg-[#10B981]/15 text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-all font-mono text-[11px] cursor-pointer"
+          title={isUz ? "AI kognitiv xotirasi va saqlangan parametrlar" : "Manage AI Cognitive Memory & Saved Preferences"}
         >
           <Brain className="w-3.5 h-3.5 text-[#10B981]" />
-          <span className="hidden md:inline">Memory</span>
+          <span className="hidden md:inline">{isUz ? "Xotira" : "Memory"}</span>
         </button>
       </div>
     </div>

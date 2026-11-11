@@ -31,6 +31,7 @@ import {
   disconnectGitHubAction,
   triggerLiveSyncAction,
 } from "@/server/actions/developer";
+import { useTranslation } from "@/stores/language-store";
 
 interface GitHubIntegrationProps {
   initialSetting: DevIntegrationSettingSummary;
@@ -47,6 +48,7 @@ export function GitHubIntegration({
   initialPRs,
   initialIssues,
 }: GitHubIntegrationProps) {
+  const { isUz } = useTranslation();
   const [setting, setSetting] = useState<DevIntegrationSettingSummary>(initialSetting);
   const [repos] = useState<GitHubRepoMetadata[]>(initialRepos);
   const [commits] = useState<GitHubCommitSummary[]>(initialCommits);
@@ -88,7 +90,10 @@ export function GitHubIntegration({
   };
 
   const handleDisconnect = async () => {
-    if (confirm("Disconnect GitHub account from XASAN OS?")) {
+    const confirmMsg = isUz
+      ? "GitHub hisobini XASAN OS dan uzmoqchimisiz?"
+      : "Disconnect GitHub account from XASAN OS?";
+    if (confirm(confirmMsg)) {
       const res = await disconnectGitHubAction();
       if (res.success) {
         setSetting((prev) => ({
@@ -111,25 +116,39 @@ export function GitHubIntegration({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#F3F7F4]">GitHub OAuth Integration</h3>
+              <h3 className="text-base font-bold text-[#F3F7F4]">
+                {isUz ? "GitHub Integratsiyasi" : "GitHub OAuth Integration"}
+              </h3>
               {setting.githubConnected ? (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-[#10B981] border border-emerald-500/30 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>CONNECTED</span>
+                  <span>{isUz ? "ULANGAN" : "CONNECTED"}</span>
                 </span>
               ) : (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#98A69D] bg-[#101915] border border-[#25352C]">
-                  NOT CONNECTED
+                  {isUz ? "ULANMAGAN" : "NOT CONNECTED"}
                 </span>
               )}
             </div>
             <p className="text-xs text-[#98A69D] mt-0.5">
               {setting.githubConnected ? (
                 <span>
-                  Authenticated as <strong className="text-[#F3F7F4]">@{setting.githubUsername}</strong> with full repository telemetry.
+                  {isUz ? (
+                    <>
+                      <strong className="text-[#F3F7F4]">@{setting.githubUsername}</strong> sifatida autentifikatsiyadan o‘tgan, barcha ombor telemetriyasi faol.
+                    </>
+                  ) : (
+                    <>
+                      Authenticated as <strong className="text-[#F3F7F4]">@{setting.githubUsername}</strong> with full repository telemetry.
+                    </>
+                  )}
                 </span>
               ) : (
-                <span>Connect your GitHub token or OAuth account to stream commit activity, issues, and PR statuses.</span>
+                <span>
+                  {isUz
+                    ? "Kommitlar, masalalar va PR holatlarini kuzatish uchun GitHub hisobingizni ulang."
+                    : "Connect your GitHub token or OAuth account to stream commit activity, issues, and PR statuses."}
+                </span>
               )}
             </p>
           </div>
@@ -144,22 +163,22 @@ export function GitHubIntegration({
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-[#F3F7F4] transition-all flex items-center gap-2"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-[#10B981] ${isSyncing ? "animate-spin" : ""}`} />
-                <span>{isSyncing ? "Syncing API..." : "Sync Now"}</span>
+                <span>{isSyncing ? (isUz ? "Sinxronlanmoqda..." : "Syncing API...") : (isUz ? "Sinxronlash" : "Sync Now")}</span>
               </button>
               <button
                 onClick={handleDisconnect}
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all"
               >
-                Disconnect
+                {isUz ? "Uzish" : "Disconnect"}
               </button>
             </>
           ) : (
             <button
               onClick={() => setIsConnectModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-lg shadow-[#10B981]/20 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-lg shadow-[#10B981]/20 flex items-center gap-2 font-bold"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Connect GitHub</span>
+              <span>{isUz ? "GitHub-ni ulash" : "Connect GitHub"}</span>
             </button>
           )}
         </div>
@@ -176,7 +195,7 @@ export function GitHubIntegration({
           }`}
         >
           <GitBranch className="w-3.5 h-3.5" />
-          <span>Repositories</span>
+          <span>{isUz ? "Omborlar" : "Repositories"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {repos.length}
           </span>
@@ -191,7 +210,7 @@ export function GitHubIntegration({
           }`}
         >
           <GitCommit className="w-3.5 h-3.5" />
-          <span>Recent Commits</span>
+          <span>{isUz ? "So‘nggi kommitlar" : "Recent Commits"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {commits.length}
           </span>
@@ -206,7 +225,7 @@ export function GitHubIntegration({
           }`}
         >
           <GitPullRequest className="w-3.5 h-3.5" />
-          <span>Pull Requests</span>
+          <span>{isUz ? "Pull Requestlar" : "Pull Requests"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {prs.length}
           </span>
@@ -221,7 +240,7 @@ export function GitHubIntegration({
           }`}
         >
           <AlertCircle className="w-3.5 h-3.5" />
-          <span>Issues</span>
+          <span>{isUz ? "Masalalar" : "Issues"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {issues.length}
           </span>
@@ -252,7 +271,7 @@ export function GitHubIntegration({
                 </div>
 
                 <p className="text-xs text-[#98A69D] leading-relaxed">
-                  {repo.description || "No repository description provided."}
+                  {repo.description || (isUz ? "Ombor tavsifi mavjud emas." : "No repository description provided.")}
                 </p>
               </div>
 
@@ -272,7 +291,7 @@ export function GitHubIntegration({
                   </span>
                 </div>
 
-                <span>{repo.openIssuesCount} issues</span>
+                <span>{repo.openIssuesCount} {isUz ? "ta masala" : "issues"}</span>
               </div>
             </div>
           ))}
@@ -284,10 +303,10 @@ export function GitHubIntegration({
         <div className="glass-card rounded-2xl border border-[#25352C] overflow-hidden">
           <div className="p-4 border-b border-[#25352C] bg-[#101915] flex items-center justify-between">
             <span className="text-xs font-mono font-semibold text-[#F3F7F4]">
-              RECENT COMMIT STREAM
+              {isUz ? "SO‘NGGI KOMMITLAR OQIMI" : "RECENT COMMIT STREAM"}
             </span>
             <span className="text-[11px] font-mono text-[#10B981]">
-              Live verified signatures
+              {isUz ? "Jonli tasdiqlangan imzolar" : "Live verified signatures"}
             </span>
           </div>
 
@@ -305,12 +324,12 @@ export function GitHubIntegration({
                     <span className="font-semibold text-[#F3F7F4]">{c.message}</span>
                     {c.verified && (
                       <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-[#10B981] border border-emerald-500/30">
-                        Verified
+                        {isUz ? "Tasdiqlangan" : "Verified"}
                       </span>
                     )}
                   </div>
                   <div className="text-[11px] font-mono text-[#98A69D] flex items-center gap-2">
-                    <span>by {c.author}</span>
+                    <span>{isUz ? "muallif: " : "by "}{c.author}</span>
                     <span>•</span>
                     <span>{new Date(c.date).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
                   </div>
@@ -322,7 +341,7 @@ export function GitHubIntegration({
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-[#98A69D] hover:text-[#10B981] transition-all font-mono text-[11px] flex items-center gap-1 shrink-0"
                 >
-                  <span>View Diff</span>
+                  <span>{isUz ? "Diffni ko‘rish" : "View Diff"}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -352,11 +371,18 @@ export function GitHubIntegration({
                         : "bg-red-500/20 text-red-400"
                     }`}
                   >
-                    {pr.status}
+                    {isUz
+                      ? pr.status === "OPEN"
+                        ? "OCHIQ"
+                        : pr.status === "MERGED"
+                        ? "BIRIKTIRILGAN"
+                        : "YOPILGAN"
+                      : pr.status}
                   </span>
                 </div>
                 <div className="text-[11px] font-mono text-[#98A69D]">
-                  Branch: <span className="text-[#10B981]">{pr.branch}</span> • Author: {pr.author}
+                  {isUz ? "Tarmoq: " : "Branch: "}
+                  <span className="text-[#10B981]">{pr.branch}</span> • {isUz ? "Muallif: " : "Author: "}{pr.author}
                 </div>
               </div>
 
@@ -390,7 +416,7 @@ export function GitHubIntegration({
                       iss.status === "OPEN" ? "bg-emerald-500/20 text-[#10B981]" : "bg-neutral-500/20 text-neutral-400"
                     }`}
                   >
-                    {iss.status}
+                    {isUz ? (iss.status === "OPEN" ? "OCHIQ" : "YOPILGAN") : iss.status}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -425,7 +451,9 @@ export function GitHubIntegration({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <GitBranch className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Connect GitHub Account</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "GitHub Ish Maydonini Ulash" : "Connect GitHub Account"}
+                </h3>
               </div>
               <button onClick={() => setIsConnectModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -434,7 +462,9 @@ export function GitHubIntegration({
 
             <form onSubmit={handleConnect} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">GitHub Username</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "GitHub foydalanuvchi nomi" : "GitHub Username"}
+                </label>
                 <input
                   type="text"
                   required
@@ -446,7 +476,9 @@ export function GitHubIntegration({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Personal Access Token (PAT) / Key</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Shaxsiy kirish tokeni (PAT) / Kalit" : "Personal Access Token (PAT) / Key"}
+                </label>
                 <input
                   type="password"
                   required
@@ -456,13 +488,19 @@ export function GitHubIntegration({
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
                 <span className="text-[10px] text-[#98A69D] mt-1 block">
-                  Encrypted and securely held in user settings.
+                  {isUz
+                    ? "Shifrlangan holda xavfsiz saqlanadi."
+                    : "Encrypted and securely held in user settings."}
                 </span>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsConnectModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Authorize & Connect</button>
+                <button type="button" onClick={() => setIsConnectModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Hisobni ulash" : "Authorize & Connect"}
+                </button>
               </div>
             </form>
           </div>

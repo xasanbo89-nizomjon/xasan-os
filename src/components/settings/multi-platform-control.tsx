@@ -40,8 +40,10 @@ import {
   importSovereignBackupAction,
   verifySystemIntegrityAction,
 } from "@/server/actions/backup";
+import { useTranslation } from "@/stores/language-store";
 
 export function MultiPlatformControl() {
+  const { dict, isUz } = useTranslation();
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(getPendingQueue().length);
   const [isExporting, setIsExporting] = useState(false);
@@ -61,7 +63,7 @@ export function MultiPlatformControl() {
   };
 
   const handleClearQueue = () => {
-    if (confirm("Clear all pending offline mutations?")) {
+    if (confirm(isUz ? "Barcha navbatdagi oflayn amallarni tozalamoqchimisiz?" : "Clear all pending offline mutations?")) {
       clearPendingQueue();
       setPendingCount(0);
       triggerHaptic("LIGHT");
@@ -70,8 +72,8 @@ export function MultiPlatformControl() {
 
   const handleTestNotification = async () => {
     await sendDesktopNotification(
-      "XASAN OS Sovereign Telemetry",
-      "Desktop & Mobile multi-platform notification channel operational."
+      isUz ? "XASAN OS Bildirishnomasi" : "XASAN OS Sovereign Telemetry",
+      isUz ? "Ko‘p platformali bildirishnoma kanali faol va soz holatda." : "Desktop & Mobile multi-platform notification channel operational."
     );
     triggerHaptic("LIGHT");
   };
@@ -79,10 +81,10 @@ export function MultiPlatformControl() {
   const handleTestBiometrics = async () => {
     const res = await authenticateWithDeviceBiometrics();
     if (res.success) {
-      alert(`Biometric Verified: Platform Authenticator (${res.biometryType}) active.`);
+      alert(isUz ? `Biometrik tasdiqlandi: Platforma autentifikatori (${res.biometryType}) faol.` : `Biometric Verified: Platform Authenticator (${res.biometryType}) active.`);
       triggerHaptic("SUCCESS");
     } else {
-      alert(`Biometric Error: ${res.error}`);
+      alert(isUz ? `Biometrik xatolik: ${res.error}` : `Biometric Error: ${res.error}`);
     }
   };
 
@@ -100,7 +102,7 @@ export function MultiPlatformControl() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setImportStatus("Backup exported successfully from local storage.");
+      setImportStatus(dict.toast.backup_exported);
       triggerHaptic("SUCCESS");
     } catch (e: any) {
       setImportStatus(`Export error: ${e.message}`);
@@ -119,10 +121,10 @@ export function MultiPlatformControl() {
         const content = event.target?.result as string;
         const res = importLocalBackup(content);
         if (res.success) {
-          setImportStatus("Backup verified and restored into local storage successfully.");
+          setImportStatus(dict.toast.backup_restored);
           triggerHaptic("SUCCESS");
         } else {
-          setImportStatus(`Verification Failed: ${res.error}`);
+          setImportStatus(`${isUz ? "Tekshiruv xatosi" : "Verification Failed"}: ${res.error}`);
         }
       } catch (err: any) {
         setImportStatus(`Import Error: ${err.message}`);
@@ -134,11 +136,13 @@ export function MultiPlatformControl() {
   const handlePurgeAllLocalData = () => {
     if (
       confirm(
-        "DANGER: Are you sure you want to permanently erase ALL local data from browser localStorage? All tasks, notes, habits, projects and finance logs will be deleted immediately."
+        isUz
+          ? "DIQQAT: Brauzer xotirasidagi BARCHA mahalliy ma'lumotlarni butunlay o‘chirib tashlamoqchimisiz? Barcha vazifalar, qaydlar, odatlar, loyihalar va moliya jurnallari o‘chib ketadi."
+          : "DANGER: Are you sure you want to permanently erase ALL local data from browser localStorage? All tasks, notes, habits, projects and finance logs will be deleted immediately."
       )
     ) {
       clearAllLocalData();
-      setImportStatus("All local storage has been completely purged.");
+      setImportStatus(dict.toast.storage_cleared);
       triggerHaptic("HEAVY");
     }
   };
@@ -146,11 +150,13 @@ export function MultiPlatformControl() {
   const handleResetDefaults = () => {
     if (
       confirm(
-        "Reset all 12 modules to default PRD seed data? Any custom local records will be restored to initial state."
+        isUz
+          ? "Barcha 12 modulni dastlabki PRD standart ma'lumotlariga qaytarmoqchimisiz? Barcha yangi yozuvlar tiklanadi."
+          : "Reset all 12 modules to default PRD seed data? Any custom local records will be restored to initial state."
       )
     ) {
       resetAllLocalData();
-      setImportStatus("All local data restored to factory PRD seed defaults.");
+      setImportStatus(dict.toast.storage_reset);
       triggerHaptic("SUCCESS");
     }
   };
@@ -179,15 +185,17 @@ export function MultiPlatformControl() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Multi-Platform Runtime Engines (PRD Phase 12)
+                {dict.settings.multi_platform.title}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Unified sovereign experience across Web PWA, Desktop Tauri, and Mobile Capacitor.
+                {isUz
+                  ? "Veb PWA, Ish stoli Tauri va Mobil Capacitor bo‘ylab yagona tizim tajribasi."
+                  : "Unified sovereign experience across Web PWA, Desktop Tauri, and Mobile Capacitor."}
               </p>
             </div>
           </div>
           <span className="text-xs font-mono px-2 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
-            ALL ENGINES CONFIGURED
+            {isUz ? "BARCHA DVIGATELLAR FAOL" : "ALL ENGINES CONFIGURED"}
           </span>
         </div>
 
@@ -197,14 +205,16 @@ export function MultiPlatformControl() {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#F3F7F4] flex items-center gap-1.5 font-bold">
                 <Globe className="w-4 h-4 text-[#10B981]" />
-                Web PWA Engine
+                {dict.settings.multi_platform.pwa_engine}
               </span>
               <span className="text-[10px] text-[#10B981] px-1.5 py-0.5 rounded bg-[#142019] border border-[#10B981]/20">
-                ACTIVE
+                {isUz ? "FAOL" : "ACTIVE"}
               </span>
             </div>
             <p className="text-[11px] text-[#98A69D] leading-relaxed">
-              Service Worker pre-caching, web manifest, background synchronization & offline fallback.
+              {isUz
+                ? "Service Worker keshlanishi, veb manifest, fonda sinxronlash va oflayn rejim."
+                : "Service Worker pre-caching, web manifest, background synchronization & offline fallback."}
             </p>
           </div>
 
@@ -213,21 +223,23 @@ export function MultiPlatformControl() {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#F3F7F4] flex items-center gap-1.5 font-bold">
                 <Monitor className="w-4 h-4 text-[#3B82F6]" />
-                Desktop Tauri v2
+                {dict.settings.multi_platform.tauri_engine}
               </span>
               <span className="text-[10px] text-[#3B82F6] px-1.5 py-0.5 rounded bg-[#142019] border border-[#3B82F6]/20">
-                {isDesktop ? "NATIVE RUNTIME" : "CONFIGURED"}
+                {isDesktop ? (isUz ? "MAHALLIY RUNTIME" : "NATIVE RUNTIME") : (isUz ? "SOZLANGAN" : "CONFIGURED")}
               </span>
             </div>
             <p className="text-[11px] text-[#98A69D] leading-relaxed">
-              Windows, macOS & Linux wrappers, System Tray icon, desktop notifications, global shortcuts.
+              {isUz
+                ? "Windows, macOS va Linux ilovasi, Tray belgisi, ish stoli bildirishnomalari va global tugmalar."
+                : "Windows, macOS & Linux wrappers, System Tray icon, desktop notifications, global shortcuts."}
             </p>
             <button
               onClick={handleTestNotification}
               className="text-[10px] font-mono text-[#10B981] hover:underline flex items-center gap-1 pt-1"
             >
               <Bell className="w-3 h-3" />
-              <span>Test Desktop Notification</span>
+              <span>{isUz ? "Ish stoli bildirishnomasini sinash" : "Test Desktop Notification"}</span>
             </button>
           </div>
 
@@ -236,21 +248,23 @@ export function MultiPlatformControl() {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#F3F7F4] flex items-center gap-1.5 font-bold">
                 <Smartphone className="w-4 h-4 text-purple-400" />
-                Mobile Capacitor
+                {dict.settings.multi_platform.capacitor_engine}
               </span>
               <span className="text-[10px] text-purple-400 px-1.5 py-0.5 rounded bg-[#142019] border border-purple-400/20">
-                {isMobile ? "NATIVE DEVICE" : "CONFIGURED"}
+                {isMobile ? (isUz ? "MAHALLIY QURILMA" : "NATIVE DEVICE") : (isUz ? "SOZLANGAN" : "CONFIGURED")}
               </span>
             </div>
             <p className="text-[11px] text-[#98A69D] leading-relaxed">
-              Android & iOS binaries, hardware biometrics, dark status bar, haptic pulses & push notifications.
+              {isUz
+                ? "Android va iOS ilovalari, apparat biometriyasi, haptik javoblar va push-bildirishnomalar."
+                : "Android & iOS binaries, hardware biometrics, dark status bar, haptic pulses & push notifications."}
             </p>
             <button
               onClick={handleTestBiometrics}
               className="text-[10px] font-mono text-purple-400 hover:underline flex items-center gap-1 pt-1"
             >
               <Fingerprint className="w-3 h-3" />
-              <span>Test Biometric Authentication</span>
+              <span>{isUz ? "Biometrik tekshiruvni sinash" : "Test Biometric Authentication"}</span>
             </button>
           </div>
         </div>
@@ -265,10 +279,12 @@ export function MultiPlatformControl() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Offline-First Architecture & Conflict Resolution
+                {isUz ? "Oflayn-Birinchi Arxitektura va Konfliktlarni Hal Qilish" : "Offline-First Architecture & Conflict Resolution"}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Server-Authoritative sync tracking <code className="text-[#10B981]">updatedAt</code> and version stamps.
+                {isUz ? "Server-Authoritative sinxronlash " : "Server-Authoritative sync tracking "}
+                <code className="text-[#10B981]">updatedAt</code>
+                {isUz ? " va versiya shtamplari orqali amalga oshiriladi." : " and version stamps."}
               </p>
             </div>
           </div>
@@ -280,7 +296,7 @@ export function MultiPlatformControl() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#10B981] text-[#080D0B] hover:bg-[#059669] text-xs font-bold transition-colors disabled:opacity-40"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-              <span>Force Sync Now</span>
+              <span>{isUz ? "Hozir Sinxronlash" : "Force Sync Now"}</span>
             </button>
 
             {pendingCount > 0 && (
@@ -288,7 +304,7 @@ export function MultiPlatformControl() {
                 onClick={handleClearQueue}
                 className="px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#25352C] text-[#EF4444] text-xs font-medium border border-[#25352C]"
               >
-                Clear Queue
+                {isUz ? "Navbatni tozalash" : "Clear Queue"}
               </button>
             )}
           </div>
@@ -296,15 +312,21 @@ export function MultiPlatformControl() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
           <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C]">
-            <span className="text-[#98A69D] text-[10px]">PENDING MUTATIONS QUEUE</span>
+            <span className="text-[#98A69D] text-[10px]">
+              {isUz ? "NAVBTDAGI AMALLAR" : "PENDING MUTATIONS QUEUE"}
+            </span>
             <div className="text-xl font-bold text-[#F3F7F4] mt-1">
               {pendingCount}{" "}
-              <span className="text-xs text-[#98A69D] font-normal">operations</span>
+              <span className="text-xs text-[#98A69D] font-normal">
+                {isUz ? "ta amal" : "operations"}
+              </span>
             </div>
           </div>
 
           <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C]">
-            <span className="text-[#98A69D] text-[10px]">CONFLICT RESOLUTION PROTOCOL</span>
+            <span className="text-[#98A69D] text-[10px]">
+              {isUz ? "ZIDDIYATLARNI HAL QILISH" : "CONFLICT RESOLUTION PROTOCOL"}
+            </span>
             <div className="text-xs font-bold text-[#10B981] mt-1 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               Server-Authoritative (LWW)
@@ -312,7 +334,9 @@ export function MultiPlatformControl() {
           </div>
 
           <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C]">
-            <span className="text-[#98A69D] text-[10px]">LOCAL PERSISTENCE LAYER</span>
+            <span className="text-[#98A69D] text-[10px]">
+              {isUz ? "MAHALLIY XOTIRA QATLAMI" : "LOCAL PERSISTENCE LAYER"}
+            </span>
             <div className="text-xs font-bold text-[#F3F7F4] mt-1">
               IndexedDB & localStorage
             </div>
@@ -329,10 +353,12 @@ export function MultiPlatformControl() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Disaster Recovery & Cryptographic Backup
+                {isUz ? "Avariyadan Tiklash va Shifrlangan Zaxira" : "Disaster Recovery & Cryptographic Backup"}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Export complete JSON snapshot with SHA-256 integrity verification across all 12 modules.
+                {isUz
+                  ? "Barcha 12 modul uchun SHA-256 yaxlitlik tekshiruviga ega to‘liq JSON zaxira nusxasi."
+                  : "Export complete JSON snapshot with SHA-256 integrity verification across all 12 modules."}
               </p>
             </div>
           </div>
@@ -341,15 +367,15 @@ export function MultiPlatformControl() {
             <button
               onClick={handleExportBackup}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#10B981] border border-[#10B981]/40 text-xs font-bold transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#10B981] border border-[#10B981]/40 text-xs font-bold transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>{isExporting ? "Packaging..." : "Export Full JSON Backup"}</span>
+              <span>{isExporting ? (isUz ? "Tayyorlanmoqda..." : "Packaging...") : dict.settings.storage_card.export_backup}</span>
             </button>
 
             <label className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#25352C] text-[#F3F7F4] border border-[#25352C] text-xs font-medium cursor-pointer transition-colors">
               <Upload className="w-3.5 h-3.5" />
-              <span>Restore from File</span>
+              <span>{dict.settings.storage_card.restore_backup}</span>
               <input
                 type="file"
                 accept=".json"
@@ -377,10 +403,10 @@ export function MultiPlatformControl() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Local Storage Sovereign State (0-Database Mode)
+                {dict.settings.storage_card.title}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Data persists in browser localStorage with zero server database dependency.
+                {dict.settings.storage_card.description}
               </p>
             </div>
           </div>
@@ -388,24 +414,24 @@ export function MultiPlatformControl() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={handleResetDefaults}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#25352C] text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] text-xs font-mono font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#25352C] text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] text-xs font-mono font-medium transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset to Seed Defaults</span>
+              <span>{dict.settings.storage_card.reset_defaults}</span>
             </button>
 
             <button
               onClick={handlePurgeAllLocalData}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EF4444]/15 hover:bg-[#EF4444]/25 text-[#EF4444] border border-[#EF4444]/30 text-xs font-mono font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EF4444]/15 hover:bg-[#EF4444]/25 text-[#EF4444] border border-[#EF4444]/30 text-xs font-mono font-medium transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Purge All Local Storage</span>
+              <span>{dict.settings.storage_card.purge_storage}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 4. Full System Integrity Audit Diagnostic */}
+      {/* 5. Full System Integrity Audit Diagnostic */}
       <div className="glass-card rounded-2xl p-6 border border-[#25352C] space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -414,10 +440,12 @@ export function MultiPlatformControl() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4]">
-                Subsystem Integrity Audit (All 12 Modules)
+                {isUz ? "Tizim Butunligi Auditi (Barcha 12 Modul)" : "Subsystem Integrity Audit (All 12 Modules)"}
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Empirical verification of foreign key invariants, latency, and zero unhandled errors.
+                {isUz
+                  ? "Barcha modullar o‘rtasidagi bog‘liqlik, kechikish va xatoliksiz ishlash ko‘rsatkichlari tekshiruvi."
+                  : "Empirical verification of foreign key invariants, latency, and zero unhandled errors."}
               </p>
             </div>
           </div>
@@ -425,10 +453,10 @@ export function MultiPlatformControl() {
           <button
             onClick={handleRunIntegrityAudit}
             disabled={isRunningAudit}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] text-xs font-mono font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#F3F7F4] hover:text-[#10B981] border border-[#25352C] text-xs font-mono font-bold transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRunningAudit ? "animate-spin" : ""}`} />
-            <span>Run Integrity Audit</span>
+            <span>{isUz ? "Auditni Boshlash" : "Run Integrity Audit"}</span>
           </button>
         </div>
 
@@ -436,10 +464,10 @@ export function MultiPlatformControl() {
           <div className="p-4 rounded-xl bg-[#080D0B] border border-[#25352C] space-y-3 font-mono text-xs">
             <div className="flex items-center justify-between pb-2 border-b border-[#25352C] text-[11px]">
               <span className="text-[#10B981] font-bold">
-                12/12 Subsystems Online & Verified
+                {isUz ? "12/12 Quyi tizimlar Faol va Tasdiqlangan" : "12/12 Subsystems Online & Verified"}
               </span>
               <span className="text-[#98A69D]">
-                Audited: {new Date(auditReport.verifiedAt).toLocaleTimeString()}
+                {isUz ? "Tekshirildi:" : "Audited:"} {new Date(auditReport.verifiedAt).toLocaleTimeString()}
               </span>
             </div>
 

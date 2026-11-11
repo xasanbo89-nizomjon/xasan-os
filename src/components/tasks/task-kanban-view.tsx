@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { TaskStatus, Priority, TaskSummary } from "@/types";
 import { TaskCard } from "./task-card";
 import { Plus, ArrowLeft, ArrowRight, Clock, CheckCircle2, Circle } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface TaskKanbanViewProps {
   tasks: TaskSummary[];
@@ -24,6 +25,7 @@ export function TaskKanbanView({
   onOpenCreateTask,
   onUpdateTaskStatus,
 }: TaskKanbanViewProps) {
+  const { dict, isUz } = useTranslation();
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
   const columns: {
@@ -34,19 +36,19 @@ export function TaskKanbanView({
   }[] = [
     {
       status: TaskStatus.PENDING,
-      title: "To Do / Backlog",
+      title: isUz ? "Rejada / Bajarilishi kerak" : "To Do / Backlog",
       badgeColor: "bg-[#98A69D]/15 text-[#98A69D] border-[#25352C]",
       accentBorder: "border-[#25352C]",
     },
     {
       status: TaskStatus.IN_PROGRESS,
-      title: "In Execution",
+      title: isUz ? "Ijro jarayonida" : "In Execution",
       badgeColor: "bg-[#3B82F6]/15 text-[#3B82F6] border-[#3B82F6]/30",
       accentBorder: "border-[#3B82F6]/40",
     },
     {
       status: TaskStatus.COMPLETED,
-      title: "Completed",
+      title: dict.statuses.completed,
       badgeColor: "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30",
       accentBorder: "border-[#10B981]/40",
     },
@@ -143,8 +145,8 @@ export function TaskKanbanView({
                       : "border-[#25352C] text-[#98A69D]"
                   }`}
                 >
-                  <p className="text-xs font-mono">Drop tasks here</p>
-                  <p className="text-[10px] opacity-70 mt-1">or create a new task</p>
+                  <p className="text-xs font-mono">{isUz ? "Vazifalarni bu yerga suring" : "Drop tasks here"}</p>
+                  <p className="text-[10px] opacity-70 mt-1">{isUz ? "yoki yangi vazifa qo‘shing" : "or create a new task"}</p>
                 </div>
               ) : (
                 columnTasks.map((task) => (

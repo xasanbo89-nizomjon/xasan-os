@@ -18,12 +18,14 @@ import {
 import { FinancialReportSummary } from "@/types";
 import { getFinancialReportAction } from "@/server/actions/finance";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface FinancialReportsProps {
   initialReport: FinancialReportSummary;
 }
 
 export function FinancialReports({ initialReport }: FinancialReportsProps) {
+  const { isUz } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<"DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY">(initialReport.period);
   const [report, setReport] = useState<FinancialReportSummary>(initialReport);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,9 +41,25 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
     }
   };
 
+  const getPeriodLabel = (p: string) => {
+    if (!isUz) return p;
+    switch (p) {
+      case "DAILY":
+        return "Kunlik";
+      case "WEEKLY":
+        return "Haftalik";
+      case "MONTHLY":
+        return "Oylik";
+      case "YEARLY":
+        return "Yillik";
+      default:
+        return p;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Strict Safety Assurance Banner (PRD Requirement 5) */}
+      {/* Strict Safety Assurance Banner */}
       <div className="glass-card rounded-2xl p-5 border border-emerald-500/30 bg-emerald-500/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-[#10B981] flex items-center justify-center shrink-0 border border-emerald-500/30">
@@ -49,20 +67,22 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
           </div>
           <div>
             <h4 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
-              <span>Deterministic Financial Safety Engine</span>
+              <span>{isUz ? "Deterministik Moliyaviy Xavfsizlik Dvigateli" : "Deterministic Financial Safety Engine"}</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-[#10B981] font-bold">
-                VERIFIED LOCAL LEDGER
+                {isUz ? "TASDIQLANGAN LOKAL JURNAL" : "VERIFIED LOCAL LEDGER"}
               </span>
             </h4>
             <p className="text-xs text-[#98A69D] mt-0.5">
-              All financial reports, cashflow velocity, and tax balances are computed strictly from stored, user-verified transactions. Zero third-party banking credentials or simulated sync scripts are assumed.
+              {isUz
+                ? "Barcha moliyaviy hisobotlar, pul oqimi va jamg‘armalar faqat foydalanuvchi kiritgan tasdiqlangan yozuvlar asosida hisoblanadi. Hech qanday tashqi bank xavfi mavjud emas."
+                : "All financial reports, cashflow velocity, and tax balances are computed strictly from stored, user-verified transactions. Zero third-party banking credentials or simulated sync scripts are assumed."}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0 text-xs font-mono text-[#10B981] bg-[#101915] px-3 py-1.5 rounded-xl border border-[#25352C]">
           <Lock className="w-3.5 h-3.5" />
-          <span>Client Isolation: Active</span>
+          <span>{isUz ? "Klient izolyatsiyasi: Faol" : "Client Isolation: Active"}</span>
         </div>
       </div>
 
@@ -71,7 +91,7 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-[#10B981]" />
           <span className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-            Reporting Window:
+            {isUz ? "HISOBOT DAVRI:" : "Reporting Window:"}
           </span>
           <span className="text-xs font-mono text-[#98A69D]">
             {report.startDate} → {report.endDate}
@@ -89,7 +109,7 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
             >
-              {period}
+              {getPeriodLabel(period)}
             </button>
           ))}
         </div>
@@ -99,29 +119,33 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono mb-2">
-            <span>TOTAL REVENUE</span>
+            <span>{isUz ? "JAMI DAROMAD" : "TOTAL REVENUE"}</span>
             <TrendingUp className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#10B981]">
             {formatCurrency(report.totalIncome)}
           </div>
-          <p className="text-xs text-[#98A69D] mt-1">Recorded income items</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "Kiritilgan daromad moddalari" : "Recorded income items"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono mb-2">
-            <span>TOTAL EXPENSES</span>
+            <span>{isUz ? "JAMI XARAJATLAR" : "TOTAL EXPENSES"}</span>
             <TrendingDown className="w-4 h-4 text-[#EF4444]" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#EF4444]">
             {formatCurrency(report.totalExpenses)}
           </div>
-          <p className="text-xs text-[#98A69D] mt-1">Disbursed cashflow out</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "Chiqim qilingan mablag‘lar" : "Disbursed cashflow out"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono mb-2">
-            <span>NET CASHFLOW</span>
+            <span>{isUz ? "SOF PUL OQIMI" : "NET CASHFLOW"}</span>
             <DollarSign className="w-4 h-4 text-cyan-400" />
           </div>
           <div
@@ -132,19 +156,23 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
             {report.netCashflow >= 0 ? "+" : ""}
             {formatCurrency(report.netCashflow)}
           </div>
-          <p className="text-xs text-[#98A69D] mt-1">Retained treasury profit</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "Saqlab qolingan sof foyda" : "Retained treasury profit"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono mb-2">
-            <span>SAVINGS RATE</span>
+            <span>{isUz ? "JAMG‘ARMA ULUSHI" : "SAVINGS RATE"}</span>
             <Percent className="w-4 h-4 text-amber-400" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#F3F7F4]">
             {report.savingsRate}%
           </div>
           <p className="text-xs text-[#98A69D] mt-1">
-            {report.transactionCount} transactions processed
+            {isUz
+              ? `${report.transactionCount} ta tranzaksiya qayta ishlandi`
+              : `${report.transactionCount} transactions processed`}
           </p>
         </div>
       </div>
@@ -157,11 +185,11 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
             <div className="flex items-center gap-2">
               <PieChart className="w-4 h-4 text-[#EF4444]" />
               <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-                Expense Distribution by Category
+                {isUz ? "Kategoriyalar bo‘yicha xarajatlar taqsimoti" : "Expense Distribution by Category"}
               </h4>
             </div>
             <span className="text-[11px] font-mono text-[#98A69D]">
-              {report.topExpenseCategories.length} categories
+              {report.topExpenseCategories.length} {isUz ? "ta kategoriya" : "categories"}
             </span>
           </div>
 
@@ -186,7 +214,9 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
 
             {report.topExpenseCategories.length === 0 && (
               <div className="text-center py-8 text-xs text-[#98A69D]">
-                Zero expenses logged for this reporting period.
+                {isUz
+                  ? "Ushbu hisobot davrida hech qanday xarajat kiritilmagan."
+                  : "Zero expenses logged for this reporting period."}
               </div>
             )}
           </div>
@@ -198,11 +228,11 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#10B981]" />
               <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-                Revenue Inflow Sources
+                {isUz ? "Daromad manbalari va oqimlari" : "Revenue Inflow Sources"}
               </h4>
             </div>
             <span className="text-[11px] font-mono text-[#98A69D]">
-              {report.topIncomeSources.length} streams
+              {report.topIncomeSources.length} {isUz ? "ta manba" : "streams"}
             </span>
           </div>
 
@@ -227,7 +257,9 @@ export function FinancialReports({ initialReport }: FinancialReportsProps) {
 
             {report.topIncomeSources.length === 0 && (
               <div className="text-center py-8 text-xs text-[#98A69D]">
-                No revenue entries recorded during this window.
+                {isUz
+                  ? "Ushbu davrda hech qanday daromad qayd etilmagan."
+                  : "No revenue entries recorded during this window."}
               </div>
             )}
           </div>

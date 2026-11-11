@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Play, Pause, RotateCcw, X, Maximize2, Minimize2, CheckCircle2, Volume2, VolumeX, Sparkles, FileText, Check } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface DistractionFreeFocusProps {
   isOpen: boolean;
@@ -34,9 +35,9 @@ export function DistractionFreeFocus({
   onChangeNotes,
   onCompleteSession,
 }: DistractionFreeFocusProps) {
+  const { isUz } = useTranslation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ambientSound, setAmbientSound] = useState<string>("off"); // off, binaural, rain
-  const [copiedNote, setCopiedNote] = useState(false);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -81,11 +82,11 @@ export function DistractionFreeFocus({
         <div className="flex items-center gap-3">
           <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping" />
           <span className="text-xs font-mono uppercase tracking-widest text-[#10B981] font-bold">
-            DISTRACTION-FREE PROTOCOL
+            {isUz ? "CHALG‘ITUVCHILARSIZ PROTOKOL" : "DISTRACTION-FREE PROTOCOL"}
           </span>
           {taskTitle && (
             <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#101915] text-[#98A69D] border border-[#25352C] hidden sm:inline">
-              Task: {taskTitle}
+              {isUz ? "Vazifa: " : "Task: "}{taskTitle}
             </span>
           )}
         </div>
@@ -96,7 +97,7 @@ export function DistractionFreeFocus({
             <button
               type="button"
               onClick={() => setAmbientSound(ambientSound === "off" ? "binaural" : "off")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1 transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1 transition-colors cursor-pointer ${
                 ambientSound !== "off"
                   ? "bg-[#142019] text-[#10B981]"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
@@ -108,7 +109,9 @@ export function DistractionFreeFocus({
                 <VolumeX className="w-3.5 h-3.5" />
               )}
               <span className="hidden sm:inline">
-                {ambientSound === "off" ? "Ambient Off" : "432Hz Focus"}
+                {ambientSound === "off"
+                  ? (isUz ? "Fon Ovozi O‘chiq" : "Ambient Off")
+                  : "432Hz Focus"}
               </span>
             </button>
           </div>
@@ -117,8 +120,8 @@ export function DistractionFreeFocus({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-            title="Toggle Fullscreen"
+            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+            title={isUz ? "To‘liq ekranga o‘tish" : "Toggle Fullscreen"}
           >
             {isFullscreen ? (
               <Minimize2 className="w-4 h-4" />
@@ -131,8 +134,8 @@ export function DistractionFreeFocus({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors"
-            title="Exit Distraction-Free Mode"
+            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors cursor-pointer"
+            title={isUz ? "Rejimdan chiqish" : "Exit Distraction-Free Mode"}
           >
             <X className="w-4 h-4" />
           </button>
@@ -143,10 +146,10 @@ export function DistractionFreeFocus({
       <div className="max-w-xl mx-auto w-full text-center space-y-8 my-auto">
         <div className="space-y-2">
           <span className="text-xs font-mono text-[#98A69D] uppercase tracking-wider">
-            Current Single-Task Focus
+            {isUz ? "Hozirgi Yagona Diqqat Vazifasi" : "Current Single-Task Focus"}
           </span>
           <h2 className="text-xl sm:text-3xl font-extrabold text-[#F3F7F4] tracking-tight">
-            {subject || "Deep Architecture & Engineering Work"}
+            {subject || (isUz ? "Chuqur Muhandislik va Arxitektura Ishi" : "Deep Architecture & Engineering Work")}
           </h2>
         </div>
 
@@ -163,7 +166,7 @@ export function DistractionFreeFocus({
             />
           </div>
           <div className="text-xs font-mono text-[#98A69D] mt-2">
-            {progressPercent}% completed ({Math.round((totalSeconds - secondsRemaining) / 60)}m of {Math.round(totalSeconds / 60)}m)
+            {progressPercent}% {isUz ? "bajarildi" : "completed"} ({Math.round((totalSeconds - secondsRemaining) / 60)}{isUz ? "d" : "m"} / {Math.round(totalSeconds / 60)}{isUz ? "d" : "m"})
           </div>
         </div>
 
@@ -172,9 +175,9 @@ export function DistractionFreeFocus({
           <button
             type="button"
             onClick={() => onAddMinutes(5)}
-            className="px-3.5 py-2 rounded-xl bg-[#101915] hover:bg-[#142019] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] text-xs font-mono transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-[#101915] hover:bg-[#142019] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] text-xs font-mono transition-colors cursor-pointer"
           >
-            +5m
+            {isUz ? "+5d" : "+5m"}
           </button>
 
           <button
@@ -196,8 +199,8 @@ export function DistractionFreeFocus({
           <button
             type="button"
             onClick={onReset}
-            className="p-3 rounded-xl bg-[#101915] hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-            title="Reset interval"
+            className="p-3 rounded-xl bg-[#101915] hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+            title={isUz ? "Intervalni qayta boshlash" : "Reset interval"}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -205,10 +208,10 @@ export function DistractionFreeFocus({
           <button
             type="button"
             onClick={onCompleteSession}
-            className="px-4 py-2.5 rounded-xl bg-[#10B981]/15 hover:bg-[#10B981]/25 text-[#10B981] border border-[#10B981]/40 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-[#10B981]/15 hover:bg-[#10B981]/25 text-[#10B981] border border-[#10B981]/40 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4" />
-            Finish & Log
+            {isUz ? "Yakunlash va Saqlash" : "Finish & Log"}
           </button>
         </div>
       </div>
@@ -218,10 +221,12 @@ export function DistractionFreeFocus({
         <div className="p-4 rounded-2xl bg-[#101915]/90 border border-[#25352C] space-y-2 backdrop-blur-md">
           <div className="flex items-center justify-between text-xs font-mono text-[#98A69D]">
             <span className="flex items-center gap-1.5 text-[#10B981] font-semibold">
-              <FileText className="w-3.5 h-3.5" /> Session Scratchpad
+              <FileText className="w-3.5 h-3.5" /> {isUz ? "Seans Qaydnomasi" : "Session Scratchpad"}
             </span>
             <span className="text-[10px]">
-              Jot notes & breakthroughs without breaking flow
+              {isUz
+                ? "Ish oqimini buzmasdan tezkor fikrlarni yozib boring"
+                : "Jot notes & breakthroughs without breaking flow"}
             </span>
           </div>
 
@@ -229,7 +234,11 @@ export function DistractionFreeFocus({
             rows={2}
             value={notes}
             onChange={(e) => onChangeNotes(e.target.value)}
-            placeholder="Record insights, latency numbers, or immediate next steps..."
+            placeholder={
+              isUz
+                ? "Muhim fikrlar, natijalar yoki keyingi qadamlarni yozing..."
+                : "Record insights, latency numbers, or immediate next steps..."
+            }
             className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] resize-none leading-relaxed"
           />
         </div>

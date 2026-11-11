@@ -26,6 +26,7 @@ import { CreateTaskModal } from "./create-task-modal";
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { useDashboardStore } from "@/stores/dashboard-store";
 import { useTasksStore } from "@/stores/tasks-store";
+import { useTranslation } from "@/stores/language-store";
 
 export type TaskTabMode =
   | "all"
@@ -43,6 +44,7 @@ interface TaskManagerViewProps {
 }
 
 export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps) {
+  const { dict, isUz } = useTranslation();
   const storeTasks = useTasksStore((s) => s.tasks);
   const addTask = useTasksStore((s) => s.addTask);
   const updateTask = useTasksStore((s) => s.updateTask);
@@ -231,7 +233,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            All Tasks
+            {dict.tasks.tabs.all}
             <span className="font-mono text-[10px] opacity-80">({tabCounts.all})</span>
           </button>
 
@@ -245,7 +247,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             }`}
           >
             <Sun className="w-3.5 h-3.5 text-[#F59E0B]" />
-            My Day
+            {dict.nav.my_day}
             {tabCounts.myDay > 0 && (
               <span className="font-mono text-[10px] px-1 rounded bg-[#F59E0B]/20 text-[#F59E0B]">
                 {tabCounts.myDay}
@@ -263,7 +265,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             }`}
           >
             <Clock className="w-3.5 h-3.5 text-[#3B82F6]" />
-            Upcoming
+            {dict.tasks.tabs.upcoming}
             <span className="font-mono text-[10px] opacity-80">({tabCounts.upcoming})</span>
           </button>
 
@@ -277,7 +279,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             }`}
           >
             <AlertCircle className="w-3.5 h-3.5 text-[#EF4444]" />
-            Overdue
+            {isUz ? "Muddati o‘tgan" : "Overdue"}
             {tabCounts.overdue > 0 && (
               <span className="font-mono text-[10px] px-1 rounded bg-[#EF4444]/20 text-[#EF4444]">
                 {tabCounts.overdue}
@@ -295,7 +297,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-            Completed
+            {dict.tasks.tabs.completed}
             <span className="font-mono text-[10px] opacity-80">({tabCounts.completed})</span>
           </button>
         </div>
@@ -306,36 +308,36 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             <button
               type="button"
               onClick={() => setActiveTab("list")}
-              className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`p-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === "list" || activeTab === "all" || activeTab === "my-day" || activeTab === "upcoming" || activeTab === "overdue" || activeTab === "completed"
                   ? "bg-[#101915] text-[#10B981]"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
-              title="List View"
+              title={isUz ? "Ro‘yxat ko‘rinishi" : "List View"}
             >
               <List className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("kanban")}
-              className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`p-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === "kanban"
                   ? "bg-[#101915] text-[#10B981]"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
-              title="Kanban Board View"
+              title={isUz ? "Kanban taxtasi" : "Kanban Board View"}
             >
               <Columns3 className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("calendar")}
-              className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`p-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === "calendar"
                   ? "bg-[#101915] text-[#10B981]"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
-              title="Calendar Schedule View"
+              title={isUz ? "Kalendar jadvali" : "Calendar Schedule View"}
             >
               <CalendarIcon className="w-4 h-4" />
             </button>
@@ -347,7 +349,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            New Task
+            {isUz ? "Yangi vazifa" : "New Task"}
           </button>
         </div>
       </div>
@@ -361,7 +363,7 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tasks, descriptions, or tags..."
+            placeholder={isUz ? "Vazifalar, tavsif yoki teglarni qidirish..." : "Search tasks, descriptions, or tags..."}
             className="w-full bg-[#142019] border border-[#25352C] rounded-xl pl-9 pr-3 py-1.5 text-xs text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
           />
         </div>
@@ -369,39 +371,52 @@ export function TaskManagerView({ initialTasks, projects }: TaskManagerViewProps
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           <span className="text-[11px] font-mono text-[#98A69D] flex items-center gap-1 mr-1">
-            <Filter className="w-3 h-3 text-[#10B981]" /> Domain:
+            <Filter className="w-3 h-3 text-[#10B981]" /> {isUz ? "Soha:" : "Domain:"}
           </span>
-          {["ALL", "Dev", "Study", "Work", "Health", "Personal"].map((cat) => (
+          {[
+            { id: "ALL", label: dict.common.all },
+            { id: "Dev", label: isUz ? "Dasturlash" : "Dev" },
+            { id: "Study", label: isUz ? "Ta'lim" : "Study" },
+            { id: "Work", label: isUz ? "Ish" : "Work" },
+            { id: "Health", label: isUz ? "Salomatlik" : "Health" },
+            { id: "Personal", label: isUz ? "Shaxsiy" : "Personal" },
+          ].map((cat) => (
             <button
-              key={cat}
+              key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
-                selectedCategory === cat
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                selectedCategory === cat.id
                   ? "bg-[#142019] text-[#10B981] border border-[#10B981]/40 font-semibold"
                   : "bg-[#142019]/60 text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
               }`}
             >
-              {cat}
+              {cat.label}
             </button>
           ))}
         </div>
 
         {/* Priority Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-mono text-[#98A69D]">Priority:</span>
-          {["ALL", "URGENT", "HIGH", "NORMAL", "LOW"].map((pri) => (
+          <span className="text-[11px] font-mono text-[#98A69D]">{isUz ? "Muhimlik:" : "Priority:"}</span>
+          {[
+            { id: "ALL", label: dict.common.all },
+            { id: "URGENT", label: dict.priorities.urgent },
+            { id: "HIGH", label: dict.priorities.high },
+            { id: "NORMAL", label: dict.priorities.normal },
+            { id: "LOW", label: dict.priorities.low },
+          ].map((pri) => (
             <button
-              key={pri}
+              key={pri.id}
               type="button"
-              onClick={() => setSelectedPriority(pri)}
-              className={`px-2 py-1 rounded-lg text-[10px] font-mono transition-colors ${
-                selectedPriority === pri
+              onClick={() => setSelectedPriority(pri.id)}
+              className={`px-2 py-1 rounded-lg text-[10px] font-mono transition-colors cursor-pointer ${
+                selectedPriority === pri.id
                   ? "bg-[#142019] text-[#10B981] border border-[#10B981]/40 font-bold"
                   : "bg-[#142019]/60 text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
               }`}
             >
-              {pri}
+              {pri.label}
             </button>
           ))}
         </div>

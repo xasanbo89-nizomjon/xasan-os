@@ -6,6 +6,7 @@ import { PomodoroTimer } from "./pomodoro-timer";
 import { FocusHistory } from "./focus-history";
 import { Clock, History, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/stores/language-store";
 
 interface FocusExperienceProps {
   tasks: TaskSummary[];
@@ -22,6 +23,7 @@ export function FocusExperience({
   initialSessions,
   stats,
 }: FocusExperienceProps) {
+  const { isUz } = useTranslation();
   const [activeTab, setActiveTab] = useState<"timer" | "history">("timer");
   const [sessions, setSessions] = useState<FocusSessionSummary[]>(initialSessions);
   const router = useRouter();
@@ -45,7 +47,7 @@ export function FocusExperience({
             }`}
           >
             <Clock className="w-4 h-4" />
-            Pomodoro & Focus Timer
+            {isUz ? "Pomodoro va Diqqat Taymeri" : "Pomodoro & Focus Timer"}
           </button>
 
           <button
@@ -58,13 +60,21 @@ export function FocusExperience({
             }`}
           >
             <History className="w-4 h-4" />
-            Focus Telemetry & Log ({sessions.length})
+            {isUz
+              ? `Diqqat Telemetriyasi va Jurnal (${sessions.length})`
+              : `Focus Telemetry & Log (${sessions.length})`}
           </button>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-[#98A69D] bg-[#101915] px-3.5 py-2 rounded-xl border border-[#25352C]">
           <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />
-          <span>Today: <strong className="text-[#F3F7F4]">{stats.totalMinutesToday}m</strong> deep work</span>
+          <span>
+            {isUz ? (
+              <>Bugun: <strong className="text-[#F3F7F4]">{stats.totalMinutesToday} daqiqa</strong> chuqur ishlash</>
+            ) : (
+              <>Today: <strong className="text-[#F3F7F4]">{stats.totalMinutesToday}m</strong> deep work</>
+            )}
+          </span>
         </div>
       </div>
 

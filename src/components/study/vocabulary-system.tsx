@@ -21,12 +21,14 @@ import {
 } from "lucide-react";
 import { VocabularyCardSummary } from "@/types";
 import { useStudyStore } from "@/stores/study-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface VocabularySystemProps {
   initialCards: VocabularyCardSummary[];
 }
 
 export function VocabularySystem({ initialCards }: VocabularySystemProps) {
+  const { isUz, dict } = useTranslation();
   const storeCards = useStudyStore((s) => s.vocabCards);
   const addVocabCard = useStudyStore((s) => s.addVocabCard);
   const reviewVocabCard = useStudyStore((s) => s.reviewVocabCard);
@@ -62,12 +64,10 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
   // Filter cards due for review or in learning queue
   const reviewQueue = useMemo(() => {
     const now = new Date();
-    // Prioritize cards due today or earlier, or cards in NEW/LEARNING/REVIEWING state
     const due = cards.filter((c) => {
       if (selectedLanguage !== "ALL" && c.language !== selectedLanguage) return false;
       return new Date(c.nextReviewDate) <= now || c.status === "NEW" || c.status === "LEARNING";
     });
-    // If no overdue cards, allow practicing all non-mastered or all cards in deck
     if (due.length === 0) {
       return cards.filter((c) => {
         if (selectedLanguage !== "ALL" && c.language !== selectedLanguage) return false;
@@ -161,7 +161,7 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
   };
 
   const handleDeleteCard = (id: string) => {
-    if (confirm("Are you sure you want to delete this vocabulary card?")) {
+    if (confirm(isUz ? "Ushbu lug‘at kartochkasini o‘chirmoqchimisiz?" : "Are you sure you want to delete this vocabulary card?")) {
       deleteVocabCard(id);
     }
   };
@@ -172,38 +172,46 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-            <span>DUE REVIEWS</span>
+            <span>{isUz ? "QAYTARISH KERAK" : "DUE REVIEWS"}</span>
             <Flame className="w-4 h-4 text-amber-400" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#F3F7F4]">{dueCount}</div>
-          <p className="text-xs text-[#98A69D] mt-1">Cards requiring recall verification today</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "Bugun takrorlanishi lozim bo‘lgan so‘zlar" : "Cards requiring recall verification today"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-            <span>IN PROGRESS</span>
+            <span>{isUz ? "O‘RGANILMOQDA" : "IN PROGRESS"}</span>
             <RotateCw className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-3xl font-bold font-mono text-emerald-400">{learningCount}</div>
-          <p className="text-xs text-[#98A69D] mt-1">Cards in SM-2 learning/review loop</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "SM-2 tizimida o‘rganilayotgan kartalar" : "Cards in SM-2 learning/review loop"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-            <span>MASTERED</span>
+            <span>{isUz ? "O‘ZLASHTIRILDI" : "MASTERED"}</span>
             <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#10B981]">{masteredCount}</div>
-          <p className="text-xs text-[#98A69D] mt-1">Retained cards with repetition &gt;= 4</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "4 tadan ko‘p qaytarilgan mustahkam so‘zlar" : "Retained cards with repetition >= 4"}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-            <span>TOTAL LEXICON</span>
+            <span>{isUz ? "JAMI LUG‘AT" : "TOTAL LEXICON"}</span>
             <Languages className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="text-3xl font-bold font-mono text-[#F3F7F4]">{cards.length}</div>
-          <p className="text-xs text-[#98A69D] mt-1">Across English C1/C2 & Arabic B2/C1</p>
+          <p className="text-xs text-[#98A69D] mt-1">
+            {isUz ? "Ingliz tili C1/C2 va Arab tili B2/C1 bo‘yicha" : "Across English C1/C2 & Arabic B2/C1"}
+          </p>
         </div>
       </div>
 
@@ -216,14 +224,14 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
               setIsFlipped(false);
               setSessionCompleted(false);
             }}
-            className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "REVIEW"
-                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20"
+                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
                 : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Spaced Repetition Drill</span>
+            <span>{isUz ? "SM-2 Takrorlash seansi" : "Spaced Repetition Drill"}</span>
             {dueCount > 0 && (
               <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-mono">
                 {dueCount}
@@ -233,14 +241,14 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
 
           <button
             onClick={() => setActiveTab("LIBRARY")}
-            className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 md:flex-initial px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "LIBRARY"
-                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20"
+                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
                 : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Vocabulary Library</span>
+            <span>{isUz ? "Lug‘at kutubxonasi" : "Vocabulary Library"}</span>
             <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[#142019] text-[#98A69D] font-mono">
               {cards.length}
             </span>
@@ -258,23 +266,29 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                   setCurrentIndex(0);
                   setIsFlipped(false);
                 }}
-                className={`px-3 py-1 rounded-lg font-mono text-[11px] transition-all ${
+                className={`px-3 py-1 rounded-lg font-mono text-[11px] transition-all cursor-pointer ${
                   selectedLanguage === lang
                     ? "bg-[#142019] text-[#10B981] font-semibold border border-[#25352C]"
                     : "text-[#98A69D] hover:text-[#F3F7F4]"
                 }`}
               >
-                {lang}
+                {isUz
+                  ? lang === "ALL"
+                    ? "Barchasi"
+                    : lang === "ENGLISH"
+                    ? "Inglizcha"
+                    : "Arabcha"
+                  : lang}
               </button>
             ))}
           </div>
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Card</span>
+            <span>{isUz ? "So‘z qo‘shish" : "Add Card"}</span>
           </button>
         </div>
       </div>
@@ -288,9 +302,13 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-[#F3F7F4]">All Caught Up!</h3>
+                <h3 className="text-xl font-bold text-[#F3F7F4]">
+                  {isUz ? "Barcha takrorlashlar yakunlandi!" : "All Caught Up!"}
+                </h3>
                 <p className="text-xs text-[#98A69D] max-w-md mx-auto leading-relaxed">
-                  You have reviewed {reviewedSessionCount} card{reviewedSessionCount === 1 ? "" : "s"} in this session. The SM-2 algorithm has dynamically adjusted the review intervals.
+                  {isUz
+                    ? `Ushbu seansda ${reviewedSessionCount} ta so‘z qaytarildi. SM-2 algoritmi intervalni muvaffaqiyatli moslashtirdi.`
+                    : `You have reviewed ${reviewedSessionCount} card${reviewedSessionCount === 1 ? "" : "s"} in this session. The SM-2 algorithm has dynamically adjusted the review intervals.`}
                 </p>
               </div>
 
@@ -302,17 +320,17 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                     setSessionCompleted(false);
                     setReviewedSessionCount(0);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#142019] border border-[#25352C] hover:border-[#10B981] text-[#F3F7F4] flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#142019] border border-[#25352C] hover:border-[#10B981] text-[#F3F7F4] flex items-center gap-2 cursor-pointer"
                 >
                   <RotateCw className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span>Restart Drill</span>
+                  <span>{isUz ? "Qayta boshlash" : "Restart Drill"}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("LIBRARY")}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-2 cursor-pointer"
                 >
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>Explore Library</span>
+                  <span>{isUz ? "Lug‘at kutubxonasini ko‘rish" : "Explore Library"}</span>
                 </button>
               </div>
             </div>
@@ -321,10 +339,10 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
               {/* Progress counter */}
               <div className="flex items-center justify-between text-xs text-[#98A69D] font-mono px-1">
                 <span>
-                  Card {currentIndex + 1} of {reviewQueue.length}
+                  {isUz ? `Karta: ${currentIndex + 1} / ${reviewQueue.length}` : `Card ${currentIndex + 1} of ${reviewQueue.length}`}
                 </span>
                 <span className="text-emerald-400">
-                  {Math.round(((currentIndex + 1) / reviewQueue.length) * 100)}% Complete
+                  {Math.round(((currentIndex + 1) / reviewQueue.length) * 100)}% {isUz ? "Bajarildi" : "Complete"}
                 </span>
               </div>
               <div className="w-full h-1 bg-[#101915] rounded-full overflow-hidden border border-[#25352C]">
@@ -361,7 +379,7 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                         handlePronounce(currentCard.word, currentCard.language);
                       }}
                       className="p-1.5 rounded-lg bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981] transition-colors"
-                      title="Pronounce"
+                      title={isUz ? "Talaffuz qilish" : "Pronounce"}
                     >
                       <Volume2 className="w-3.5 h-3.5" />
                     </button>
@@ -381,7 +399,7 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                       </div>
                       <p className="text-xs text-[#98A69D] flex items-center justify-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />
-                        <span>Click card to reveal definition & examples</span>
+                        <span>{isUz ? "Tarjima va misollarni ko‘rish uchun bosing" : "Click card to reveal definition & examples"}</span>
                       </p>
                     </div>
                   ) : (
@@ -419,12 +437,12 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D] pt-4 border-t border-[#25352C]/60">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>Interval: {currentCard.interval}d</span>
+                    <span>{isUz ? "Oraliq:" : "Interval:"} {currentCard.interval} {isUz ? "kun" : "d"}</span>
                     <span>•</span>
-                    <span>Repetition #{currentCard.repetition}</span>
+                    <span>{isUz ? "Takrorlash #" : "Repetition #"}{currentCard.repetition}</span>
                   </div>
                   <div>
-                    <span>Status: {currentCard.status}</span>
+                    <span>{isUz ? "Holat:" : "Status:"} {currentCard.status}</span>
                   </div>
                 </div>
               </div>
@@ -435,53 +453,53 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                   <button
                     onClick={() => handleReview(0)}
                     disabled={isSubmitting}
-                    className="p-3.5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/30 hover:border-[#EF4444] text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group"
+                    className="p-3.5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/30 hover:border-[#EF4444] text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-red-400 group-hover:scale-105 transition-transform">
-                      Again (0)
+                      {isUz ? "Qayta (0)" : "Again (0)"}
                     </span>
-                    <span className="text-[10px] text-[#98A69D] font-mono">&lt; 10 min (1d)</span>
+                    <span className="text-[10px] text-[#98A69D] font-mono">&lt; 10 {isUz ? "daq" : "min"} (1{isUz ? "k" : "d"})</span>
                   </button>
 
                   <button
                     onClick={() => handleReview(1)}
                     disabled={isSubmitting}
-                    className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group"
+                    className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-amber-400 group-hover:scale-105 transition-transform">
-                      Hard (1)
+                      {isUz ? "Qiyin (1)" : "Hard (1)"}
                     </span>
-                    <span className="text-[10px] text-[#98A69D] font-mono">2 days</span>
+                    <span className="text-[10px] text-[#98A69D] font-mono">2 {isUz ? "kun" : "days"}</span>
                   </button>
 
                   <button
                     onClick={() => handleReview(2)}
                     disabled={isSubmitting}
-                    className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group"
+                    className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-emerald-400 group-hover:scale-105 transition-transform">
-                      Good (2)
+                      {isUz ? "Yaxshi (2)" : "Good (2)"}
                     </span>
-                    <span className="text-[10px] text-[#98A69D] font-mono">4 days</span>
+                    <span className="text-[10px] text-[#98A69D] font-mono">4 {isUz ? "kun" : "days"}</span>
                   </button>
 
                   <button
                     onClick={() => handleReview(3)}
                     disabled={isSubmitting}
-                    className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group"
+                    className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 text-[#F3F7F4] transition-all flex flex-col items-center justify-center gap-1 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-cyan-400 group-hover:scale-105 transition-transform">
-                      Easy (3)
+                      {isUz ? "Oson (3)" : "Easy (3)"}
                     </span>
-                    <span className="text-[10px] text-[#98A69D] font-mono">8+ days</span>
+                    <span className="text-[10px] text-[#98A69D] font-mono">8+ {isUz ? "kun" : "days"}</span>
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setIsFlipped(true)}
-                  className="w-full py-3.5 rounded-2xl bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-xs font-semibold text-[#F3F7F4] transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-2xl bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-xs font-semibold text-[#F3F7F4] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Show Answer / Definition</span>
+                  <span>{isUz ? "Javob va Ta'rifni ko‘rsatish" : "Show Answer / Definition"}</span>
                   <ChevronRight className="w-4 h-4 text-[#10B981]" />
                 </button>
               )}
@@ -501,26 +519,36 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search word, Uzbek translation, topic..."
+                placeholder={isUz ? "So‘z, tarjima yoki mavzuni qidirish..." : "Search word, Uzbek translation, topic..."}
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#101915] border border-[#25352C] text-xs text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
               <span className="text-xs text-[#98A69D] flex items-center gap-1 shrink-0 font-mono">
-                <Filter className="w-3.5 h-3.5 text-[#10B981]" /> Status:
+                <Filter className="w-3.5 h-3.5 text-[#10B981]" /> {isUz ? "Holat:" : "Status:"}
               </span>
               {["ALL", "NEW", "LEARNING", "REVIEWING", "MASTERED"].map((st) => (
                 <button
                   key={st}
                   onClick={() => setSelectedStatus(st)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all shrink-0 ${
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all shrink-0 cursor-pointer ${
                     selectedStatus === st
                       ? "bg-[#10B981] text-[#080D0B] font-bold"
                       : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
                   }`}
                 >
-                  {st}
+                  {isUz
+                    ? st === "ALL"
+                      ? "Barchasi"
+                      : st === "NEW"
+                      ? "Yangi"
+                      : st === "LEARNING"
+                      ? "O‘rganilmoqda"
+                      : st === "REVIEWING"
+                      ? "Takrorlanmoqda"
+                      : "O‘zlashtirildi"
+                    : st}
                 </button>
               ))}
             </div>
@@ -563,8 +591,8 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                       <button
                         type="button"
                         onClick={() => handlePronounce(c.word, c.language)}
-                        className="p-1 text-[#98A69D] hover:text-[#10B981]"
-                        title="Pronounce"
+                        className="p-1 text-[#98A69D] hover:text-[#10B981] cursor-pointer"
+                        title={isUz ? "Talaffuz qilish" : "Pronounce"}
                       >
                         <Volume2 className="w-3.5 h-3.5" />
                       </button>
@@ -585,11 +613,11 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                 <div className="pt-4 mt-4 border-t border-[#25352C] flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
                   <span className="truncate max-w-[140px]">{c.topic}</span>
                   <div className="flex items-center gap-2">
-                    <span>Int: {c.interval}d</span>
+                    <span>{isUz ? "Oraliq:" : "Int:"} {c.interval}{isUz ? "k" : "d"}</span>
                     <button
                       onClick={() => handleDeleteCard(c.id)}
-                      className="p-1 rounded text-red-400/60 hover:text-red-400 hover:bg-[#101915]"
-                      title="Delete card"
+                      className="p-1 rounded text-red-400/60 hover:text-red-400 hover:bg-[#101915] cursor-pointer"
+                      title={isUz ? "Kartani o‘chirish" : "Delete card"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -602,8 +630,12 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
           {filteredLibrary.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <HelpCircle className="w-8 h-8 text-[#98A69D] mx-auto mb-2" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">No vocabulary cards found</p>
-              <p className="text-xs text-[#98A69D]">Try adjusting your search query or language filter.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Hech qanday so‘z kartochkasi topilmadi" : "No vocabulary cards found"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz ? "Qidiruv so‘zini yoki til filtrini o‘zgartirib ko‘ring." : "Try adjusting your search query or language filter."}
+              </p>
             </div>
           )}
         </div>
@@ -616,11 +648,13 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">New Vocabulary Card</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Yangi lug‘at kartochkasi" : "New Vocabulary Card"}
+                </h3>
               </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4]"
+                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -630,21 +664,21 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Language
+                    {isUz ? "Til" : "Language"}
                   </label>
                   <select
                     value={formData.language}
                     onChange={(e) => setFormData({ ...formData, language: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="ENGLISH">English</option>
-                    <option value="ARABIC">Arabic</option>
+                    <option value="ENGLISH">{isUz ? "Ingliz tili" : "English"}</option>
+                    <option value="ARABIC">{isUz ? "Arab tili" : "Arabic"}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    CEFR Level
+                    {isUz ? "CEFR Darajasi" : "CEFR Level"}
                   </label>
                   <select
                     value={formData.difficulty}
@@ -661,14 +695,14 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Word / Phrase *
+                  {isUz ? "So‘z yoki ibora *" : "Word / Phrase *"}
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.word}
                   onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-                  placeholder="e.g. ubiquitous, exacerbate, تَفَاقَمَ"
+                  placeholder={isUz ? "Masalan: ubiquitous, exacerbate, تَفَاقَمَ" : "e.g. ubiquitous, exacerbate, تَفَاقَمَ"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -676,21 +710,21 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Translation (Uzbek/En) *
+                    {isUz ? "O‘zbekcha tarjimasi *" : "Translation (Uzbek/En) *"}
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.translation}
                     onChange={(e) => setFormData({ ...formData, translation: e.target.value })}
-                    placeholder="e.g. Hamma joyda uchraydigan"
+                    placeholder={isUz ? "Masalan: Hamma joyda uchraydigan" : "e.g. Hamma joyda uchraydigan"}
                     className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Phonetics (Optional)
+                    {isUz ? "Fonetika / Transkripsiya" : "Phonetics (Optional)"}
                   </label>
                   <input
                     type="text"
@@ -703,36 +737,40 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Topic / Category</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Mavzu / Kategoriya" : "Topic / Category"}
+                </label>
                 <input
                   type="text"
                   value={formData.topic}
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  placeholder="e.g. Academic IELTS, Philosophy, Nahw"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Example Sentence</label>
-                <textarea
-                  rows={2}
-                  value={formData.exampleSentence}
-                  onChange={(e) => setFormData({ ...formData, exampleSentence: e.target.value })}
-                  placeholder="Target sentence displaying natural academic syntax..."
+                  placeholder={isUz ? "Masalan: Akademik IELTS, Falsafa, Nahv" : "e.g. Academic IELTS, Philosophy, Nahw"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Example Sentence Translation
+                  {isUz ? "Namunaviy gap" : "Example Sentence"}
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.exampleSentence}
+                  onChange={(e) => setFormData({ ...formData, exampleSentence: e.target.value })}
+                  placeholder={isUz ? "So‘zning gap ichida ishlatilishi..." : "Target sentence displaying natural academic syntax..."}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Namunaviy gap tarjimasi" : "Example Sentence Translation"}
                 </label>
                 <input
                   type="text"
                   value={formData.exampleTranslation}
                   onChange={(e) => setFormData({ ...formData, exampleTranslation: e.target.value })}
-                  placeholder="Uzbek translation of the example sentence..."
+                  placeholder={isUz ? "Namunaviy gapning o‘zbekcha ma'nosi..." : "Uzbek translation of the example sentence..."}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -741,15 +779,15 @@ export function VocabularySystem({ initialCards }: VocabularySystemProps) {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4]"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
                 >
-                  Cancel
+                  {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all"
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all cursor-pointer font-bold"
                 >
-                  Add Card to Deck
+                  {isUz ? "Kartani to‘plamga qo‘shish" : "Add Card to Deck"}
                 </button>
               </div>
             </form>

@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface GoalCardProps {
   goal: GoalSummary;
@@ -26,6 +27,7 @@ export function GoalCard({
   onToggleMilestone,
   onDeleteGoal,
 }: GoalCardProps) {
+  const { isUz } = useTranslation();
   const milestones = goal.milestones || [];
   const completedCount = milestones.filter((m) => m.isCompleted).length;
 
@@ -58,6 +60,54 @@ export function GoalCard({
     }
   };
 
+  const getCategoryLabel = (cat: string) => {
+    if (!isUz) return cat;
+    switch (cat.toLowerCase()) {
+      case "education":
+        return "Ta’lim";
+      case "career":
+        return "Karyera";
+      case "technology":
+        return "Texnologiya";
+      case "finance":
+        return "Moliya";
+      case "health":
+        return "Salomatlik";
+      default:
+        return cat;
+    }
+  };
+
+  const getTimeframeLabel = (tf: string) => {
+    if (!isUz) return tf.replace("_", " ");
+    switch (tf) {
+      case "SHORT_TERM":
+        return "Qisqa muddatli";
+      case "ANNUAL":
+        return "Yillik";
+      case "LONG_TERM":
+        return "Uzoq muddatli";
+      default:
+        return tf;
+    }
+  };
+
+  const getPriorityLabel = (pri: string) => {
+    if (!isUz) return pri;
+    switch (pri) {
+      case "URGENT":
+        return "SHOSHILINCH";
+      case "HIGH":
+        return "YUQORI";
+      case "NORMAL":
+        return "O‘RTA";
+      case "LOW":
+        return "PAST";
+      default:
+        return pri;
+    }
+  };
+
   // Calculate days remaining until target date
   let daysRemaining: number | null = null;
   if (goal.targetDate) {
@@ -76,17 +126,17 @@ export function GoalCard({
                 goal.category
               )}`}
             >
-              {goal.category}
+              {getCategoryLabel(goal.category)}
             </span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] text-[#98A69D] border border-[#25352C]">
-              {goal.timeframe.replace("_", " ")}
+              {getTimeframeLabel(goal.timeframe)}
             </span>
             <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded border ${getPriorityBadge(
+              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${getPriorityBadge(
                 goal.priority
               )}`}
             >
-              {goal.priority}
+              {getPriorityLabel(goal.priority)}
             </span>
           </div>
 
@@ -105,7 +155,10 @@ export function GoalCard({
         <button
           type="button"
           onClick={() => {
-            if (confirm(`Delete goal "${goal.title}"?`)) onDeleteGoal(goal.id);
+            const confirmMsg = isUz
+              ? `"${goal.title}" maqsadini o‘chirmoqchimisiz?`
+              : `Delete goal "${goal.title}"?`;
+            if (confirm(confirmMsg)) onDeleteGoal(goal.id);
           }}
           className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity"
         >
@@ -117,7 +170,8 @@ export function GoalCard({
       <div className="space-y-1.5 pt-1">
         <div className="flex items-center justify-between text-xs font-mono">
           <span className="text-[#98A69D] flex items-center gap-1.5">
-            <Target className="w-3.5 h-3.5 text-[#10B981]" /> Key Results Progress
+            <Target className="w-3.5 h-3.5 text-[#10B981]" />
+            <span>{isUz ? "Asosiy natijalar jarayoni" : "Key Results Progress"}</span>
           </span>
           <span className="font-bold text-[#10B981]">{goal.progress}%</span>
         </div>
@@ -133,7 +187,7 @@ export function GoalCard({
           {goal.targetDate && (
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3 text-[#10B981]" />
-              Target: {formatDate(goal.targetDate)}
+              {isUz ? "Muddati: " : "Target: "}{formatDate(goal.targetDate)}
             </span>
           )}
 
@@ -146,8 +200,8 @@ export function GoalCard({
               }
             >
               {daysRemaining > 0
-                ? `${daysRemaining} days remaining`
-                : "Deadline reached"}
+                ? (isUz ? `${daysRemaining} kun qoldi` : `${daysRemaining} days remaining`)
+                : (isUz ? "Muddat yetib keldi" : "Deadline reached")}
             </span>
           )}
         </div>
@@ -158,10 +212,11 @@ export function GoalCard({
         <div className="space-y-2 pt-2 border-t border-[#25352C]/60">
           <div className="text-[11px] font-mono text-[#98A69D] uppercase flex items-center justify-between">
             <span className="flex items-center gap-1">
-              <ListChecks className="w-3 h-3 text-[#10B981]" /> Key Milestones
+              <ListChecks className="w-3 h-3 text-[#10B981]" />
+              <span>{isUz ? "Bosqichli marralar" : "Key Milestones"}</span>
             </span>
             <span>
-              {completedCount}/{milestones.length} achieved
+              {completedCount}/{milestones.length} {isUz ? "bajarildi" : "achieved"}
             </span>
           </div>
 

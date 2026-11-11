@@ -4,6 +4,7 @@ import React from "react";
 import { GoalSummary } from "@/types";
 import { Target, CheckCircle2, Circle, Calendar, Clock, Flag, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface GoalTimelineViewProps {
   goals: GoalSummary[];
@@ -11,6 +12,8 @@ interface GoalTimelineViewProps {
 }
 
 export function GoalTimelineView({ goals, onToggleMilestone }: GoalTimelineViewProps) {
+  const { isUz } = useTranslation();
+
   // Sort goals by target date
   const sortedGoals = [...goals].sort((a, b) => {
     if (!a.targetDate) return 1;
@@ -18,20 +21,36 @@ export function GoalTimelineView({ goals, onToggleMilestone }: GoalTimelineViewP
     return new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime();
   });
 
+  const getTimeframeLabel = (tf: string) => {
+    if (!isUz) return tf.replace("_", " ");
+    switch (tf) {
+      case "SHORT_TERM":
+        return "Qisqa muddatli";
+      case "ANNUAL":
+        return "Yillik";
+      case "LONG_TERM":
+        return "Uzoq muddatli";
+      default:
+        return tf;
+    }
+  };
+
   return (
     <div className="glass-card rounded-2xl p-6 sm:p-8 border border-[#25352C] bg-[#101915] space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-[#25352C]">
         <div>
           <h3 className="text-base font-bold text-[#F3F7F4] flex items-center gap-2">
             <Flag className="w-4 h-4 text-[#10B981]" />
-            Chronological Strategic Roadmap
+            <span>{isUz ? "Xronologik Strategik Yo‘l Xaritasi" : "Chronological Strategic Roadmap"}</span>
           </h3>
           <p className="text-xs text-[#98A69D]">
-            Sequential timeline progression of Objectives, Key Results, and target delivery windows
+            {isUz
+              ? "Maqsadlar, asosiy natijalar va erishish muddatlarining xronologik rivoji"
+              : "Sequential timeline progression of Objectives, Key Results, and target delivery windows"}
           </p>
         </div>
         <span className="text-xs font-mono text-[#10B981] bg-[#10B981]/15 px-3 py-1 rounded-full border border-[#10B981]/30">
-          {goals.length} Milestones Trajectory
+          {goals.length} {isUz ? "ta Maqsad Trayektoriyasi" : "Milestones Trajectory"}
         </span>
       </div>
 
@@ -63,13 +82,13 @@ export function GoalTimelineView({ goals, onToggleMilestone }: GoalTimelineViewP
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-bold text-[#10B981] flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      {goal.targetDate ? formatDate(goal.targetDate) : "Ongoing"}
+                      {goal.targetDate ? formatDate(goal.targetDate) : (isUz ? "Davom etmoqda" : "Ongoing")}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] text-[#98A69D] border border-[#25352C]">
                       {goal.category}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] text-[#98A69D] border border-[#25352C]">
-                      {goal.timeframe.replace("_", " ")}
+                      {getTimeframeLabel(goal.timeframe)}
                     </span>
                   </div>
 
@@ -101,7 +120,9 @@ export function GoalTimelineView({ goals, onToggleMilestone }: GoalTimelineViewP
                 {milestones.length > 0 && (
                   <div className="space-y-1.5 pt-2 border-t border-[#25352C]">
                     <div className="text-[10px] font-mono text-[#98A69D] uppercase">
-                      Key Results Checklist ({completedCount}/{milestones.length}):
+                      {isUz
+                        ? `Asosiy Natijalar Ro‘yxati (${completedCount}/${milestones.length}):`
+                        : `Key Results Checklist (${completedCount}/${milestones.length}):`}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {milestones.map((m) => (

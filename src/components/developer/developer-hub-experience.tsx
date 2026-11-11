@@ -38,6 +38,7 @@ import {
   DeveloperHubMetrics,
 } from "@/types";
 import { triggerLiveSyncAction } from "@/server/actions/developer";
+import { useTranslation } from "@/stores/language-store";
 
 interface DeveloperHubExperienceProps {
   metrics: DeveloperHubMetrics;
@@ -72,6 +73,7 @@ export function DeveloperHubExperience({
   vercelProjects,
   vercelDeployments,
 }: DeveloperHubExperienceProps) {
+  const { isUz, dict } = useTranslation();
   const [activeTab, setActiveTab] = useState<"PROJECTS" | "DEV_TOOLS" | "GITHUB" | "VERCEL">("PROJECTS");
   const [isSyncingAll, setIsSyncingAll] = useState<boolean>(false);
   const [currentMetrics, setCurrentMetrics] = useState<DeveloperHubMetrics>(metrics);
@@ -104,44 +106,54 @@ export function DeveloperHubExperience({
         <button
           onClick={handleSyncAll}
           disabled={isSyncingAll}
-          className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 text-[#F3F7F4] flex items-center gap-2 transition-all shadow-sm"
+          className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 text-[#F3F7F4] flex items-center gap-2 transition-all shadow-sm cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-[#10B981] ${isSyncingAll ? "animate-spin" : ""}`} />
-          <span>{isSyncingAll ? "Syncing Telemetry..." : "Sync All Telemetry"}</span>
+          <span>
+            {isSyncingAll
+              ? (isUz ? "Sinxronlanmoqda..." : "Syncing Telemetry...")
+              : (isUz ? "Barcha telemetriyani yangilash" : "Sync All Telemetry")}
+          </span>
         </button>
       </ModuleHeader>
 
-      {/* Requirement 5: Visual distinction between Live Monitoring, Last Synchronized Information, and Manual Project Data */}
+      {/* Visual distinction between Live Monitoring, Last Synchronized Information, and Manual Project Data */}
       <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-mono text-[#98A69D]">
           <Info className="w-4 h-4 text-[#10B981] shrink-0" />
-          <span className="font-semibold text-[#F3F7F4]">Telemetry & Sync Legend:</span>
+          <span className="font-semibold text-[#F3F7F4]">
+            {isUz ? "Monitoring va Sinxronizatsiya izohi:" : "Telemetry & Sync Legend:"}
+          </span>
         </div>
 
         <div className="flex items-center gap-4 flex-wrap text-xs font-mono">
           {/* Live Monitoring Badge */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold">Live Monitoring</span>
-            <span className="text-[10px] text-emerald-400/80">(Vercel & GitHub Webhooks)</span>
+            <span className="font-bold">{isUz ? "Jonli monitoring" : "Live Monitoring"}</span>
+            <span className="text-[10px] text-emerald-400/80">
+              ({isUz ? "Vercel va GitHub Webhooks" : "Vercel & GitHub Webhooks"})
+            </span>
           </div>
 
           {/* Last Synced Info Badge */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="font-bold">Last Synced</span>
+            <span className="font-bold">{isUz ? "Oxirgi sinxronizatsiya" : "Last Synced"}</span>
             <span className="text-[10px] text-amber-300/80">
               {currentMetrics.githubSyncedAt
                 ? `${new Date(currentMetrics.githubSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                : "Just now"}
+                : (isUz ? "Hozirgina" : "Just now")}
             </span>
           </div>
 
           {/* Manually Entered Project Data Badge */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-bold">Manual Project Data</span>
-            <span className="text-[10px] text-cyan-300/80">(Local DB Isolated)</span>
+            <span className="font-bold">{isUz ? "Lokal loyiha ma'lumotlari" : "Manual Project Data"}</span>
+            <span className="text-[10px] text-cyan-300/80">
+              ({isUz ? "Mahalliy xotira" : "Local DB Isolated"})
+            </span>
           </div>
         </div>
       </div>
@@ -150,60 +162,68 @@ export function DeveloperHubExperience({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>ACTIVE VENTURES</span>
+            <span>{isUz ? "FAOL LOYIHALAR" : "ACTIVE VENTURES"}</span>
             <Code2 className="w-3.5 h-3.5 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
             {currentMetrics.activeProjects}{" "}
             <span className="text-xs text-[#98A69D] font-normal">/ {currentMetrics.totalProjects}</span>
           </div>
-          <div className="text-[10px] text-[#10B981] font-mono mt-0.5">Core Portfolios</div>
+          <div className="text-[10px] text-[#10B981] font-mono mt-0.5">
+            {isUz ? "Asosiy portfellar" : "Core Portfolios"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>OPEN BUGS</span>
+            <span>{isUz ? "OCHIQ XATOLIKLAR" : "OPEN BUGS"}</span>
             <Bug className="w-3.5 h-3.5 text-amber-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-amber-400">
             {currentMetrics.openBugs}
           </div>
           <div className="text-[10px] text-red-400 font-mono mt-0.5">
-            {currentMetrics.criticalBugs} Critical Anomaly
+            {currentMetrics.criticalBugs} {isUz ? "Kritik anomaliyalar" : "Critical Anomaly"}
           </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>BACKLOG QUEUE</span>
+            <span>{isUz ? "REJADAGI FUNKSIYALAR" : "BACKLOG QUEUE"}</span>
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
             {currentMetrics.backlogFeatures}
           </div>
-          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">Planned Features</div>
+          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">
+            {isUz ? "Rejalashtirilgan yangiliklar" : "Planned Features"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>MONTHLY DEPLOYS</span>
+            <span>{isUz ? "OYLIK DEPLOYLAR" : "MONTHLY DEPLOYS"}</span>
             <Activity className="w-3.5 h-3.5 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#10B981]">
             {currentMetrics.deploymentsThisMonth}
           </div>
-          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">Automated Builds</div>
+          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">
+            {isUz ? "Avtomatlashtirilgan buildlar" : "Automated Builds"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>SUCCESS RATE</span>
+            <span>{isUz ? "MUVAFFAQIYAT FOIZI" : "SUCCESS RATE"}</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#10B981]">
             {currentMetrics.deploymentSuccessRate}%
           </div>
-          <div className="text-[10px] text-emerald-400 font-mono mt-0.5">Production SLA</div>
+          <div className="text-[10px] text-emerald-400 font-mono mt-0.5">
+            {isUz ? "Ishonchlilik SLA" : "Production SLA"}
+          </div>
         </div>
       </div>
 
@@ -211,14 +231,14 @@ export function DeveloperHubExperience({
       <div className="glass-card rounded-2xl p-2 border border-[#25352C] flex items-center gap-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab("PROJECTS")}
-          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "PROJECTS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <Code2 className="w-4 h-4" />
-          <span>Project Management</span>
+          <span>{isUz ? "Loyihalar boshqaruvi" : "Project Management"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {projects.length}
           </span>
@@ -226,14 +246,14 @@ export function DeveloperHubExperience({
 
         <button
           onClick={() => setActiveTab("DEV_TOOLS")}
-          className={`flex-1 min-w-[170px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[170px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "DEV_TOOLS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <Terminal className="w-4 h-4" />
-          <span>Dev Tools & Docs</span>
+          <span>{isUz ? "Muhandislik asboblari va Hujjatlar" : "Dev Tools & Docs"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {bugs.length + features.length + docs.length}
           </span>
@@ -241,14 +261,14 @@ export function DeveloperHubExperience({
 
         <button
           onClick={() => setActiveTab("GITHUB")}
-          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "GITHUB"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <GitBranch className="w-4 h-4" />
-          <span>GitHub Integration</span>
+          <span>{isUz ? "GitHub integratsiyasi" : "GitHub Integration"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {githubRepos.length}
           </span>
@@ -256,14 +276,14 @@ export function DeveloperHubExperience({
 
         <button
           onClick={() => setActiveTab("VERCEL")}
-          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "VERCEL"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <Triangle className="w-4 h-4 fill-current" />
-          <span>Vercel Platform</span>
+          <span>{isUz ? "Vercel platformasi" : "Vercel Platform"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {vercelProjects.length}
           </span>

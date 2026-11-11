@@ -4,6 +4,7 @@ import React from "react";
 import { FocusSessionSummary } from "@/types";
 import { Clock, Brain, Flame, Sparkles, FileText, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface FocusHistoryProps {
   sessions: FocusSessionSummary[];
@@ -15,6 +16,8 @@ interface FocusHistoryProps {
 }
 
 export function FocusHistory({ sessions, stats }: FocusHistoryProps) {
+  const { dict, isUz } = useTranslation();
+
   const getModeColor = (mode: string) => {
     switch (mode) {
       case "DEEP_WORK":
@@ -30,6 +33,22 @@ export function FocusHistory({ sessions, stats }: FocusHistoryProps) {
     }
   };
 
+  const getModeLabel = (mode: string) => {
+    if (!isUz) return mode;
+    switch (mode) {
+      case "DEEP_WORK":
+        return "CHUQUR ISHLASH";
+      case "POMODORO":
+        return "POMODORO";
+      case "SHORT_BREAK":
+        return "QISQA TANAFFUS";
+      case "LONG_BREAK":
+        return "UZOQ TANAFFUS";
+      default:
+        return mode;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Telemetry Metric Cards */}
@@ -37,45 +56,56 @@ export function FocusHistory({ sessions, stats }: FocusHistoryProps) {
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-2">
           <div className="flex items-center justify-between text-[#98A69D]">
             <span className="text-xs font-mono uppercase tracking-wider">
-              Focus Today
+              {isUz ? "Bugungi Diqqat" : "Focus Today"}
             </span>
             <Clock className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            {stats.totalMinutesToday} <span className="text-xs font-normal text-[#98A69D]">mins</span>
+            {stats.totalMinutesToday}{" "}
+            <span className="text-xs font-normal text-[#98A69D]">
+              {isUz ? "daqiqa" : "mins"}
+            </span>
           </div>
           <div className="text-[11px] text-[#98A69D]">
-            Across {stats.sessionsCompletedToday} completed session{stats.sessionsCompletedToday === 1 ? "" : "s"}
+            {isUz
+              ? `${stats.sessionsCompletedToday} ta yakunlangan seansda`
+              : `Across ${stats.sessionsCompletedToday} completed session${stats.sessionsCompletedToday === 1 ? "" : "s"}`}
           </div>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-2">
           <div className="flex items-center justify-between text-[#98A69D]">
             <span className="text-xs font-mono uppercase tracking-wider">
-              Sessions Completed
+              {isUz ? "Bajarilgan Seanslar" : "Sessions Completed"}
             </span>
             <Brain className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            {sessions.length} <span className="text-xs font-normal text-[#98A69D]">logged</span>
+            {sessions.length}{" "}
+            <span className="text-xs font-normal text-[#98A69D]">
+              {isUz ? "qayd etildi" : "logged"}
+            </span>
           </div>
           <div className="text-[11px] text-[#10B981]">
-            High cognitive flow sustained
+            {isUz ? "Yuqori kognitiv oqim saqlandi" : "High cognitive flow sustained"}
           </div>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-2">
           <div className="flex items-center justify-between text-[#98A69D]">
             <span className="text-xs font-mono uppercase tracking-wider">
-              Cumulative Focus
+              {isUz ? "Jami Diqqat Vaqti" : "Cumulative Focus"}
             </span>
             <Flame className="w-4 h-4 text-[#F59E0B]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            {stats.totalFocusHoursAllTime} <span className="text-xs font-normal text-[#98A69D]">hours</span>
+            {stats.totalFocusHoursAllTime}{" "}
+            <span className="text-xs font-normal text-[#98A69D]">
+              {isUz ? "soat" : "hours"}
+            </span>
           </div>
           <div className="text-[11px] text-[#98A69D]">
-            Architecture & IELTS Band 8.5 work
+            {isUz ? "Arxitektura va IELTS Band 8.5 mehnati" : "Architecture & IELTS Band 8.5 work"}
           </div>
         </div>
       </div>
@@ -86,17 +116,19 @@ export function FocusHistory({ sessions, stats }: FocusHistoryProps) {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#10B981]" />
             <h3 className="text-sm font-bold text-[#F3F7F4]">
-              Completed Focus Log
+              {isUz ? "Bajarilgan Seanslar Jurnali" : "Completed Focus Log"}
             </h3>
           </div>
           <span className="text-xs font-mono text-[#98A69D]">
-            Past Sessions
+            {isUz ? "Oldingi Seanslar" : "Past Sessions"}
           </span>
         </div>
 
         {sessions.length === 0 ? (
           <div className="text-center py-8 text-[#98A69D] text-xs">
-            No focus sessions logged yet. Start a timer to track your deep work.
+            {isUz
+              ? "Hozircha diqqat seanslari qayd etilmagan. Chuqur ishlashni qayd etish uchun taymerni ishga tushiring."
+              : "No focus sessions logged yet. Start a timer to track your deep work."}
           </div>
         ) : (
           <div className="space-y-3">
@@ -115,10 +147,10 @@ export function FocusHistory({ sessions, stats }: FocusHistoryProps) {
                         session.mode
                       )}`}
                     >
-                      {session.mode}
+                      {getModeLabel(session.mode)}
                     </span>
                     <span className="text-[10px] font-mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">
-                      +{session.durationMinutes}m
+                      +{session.durationMinutes}{isUz ? "d" : "m"}
                     </span>
                   </div>
 

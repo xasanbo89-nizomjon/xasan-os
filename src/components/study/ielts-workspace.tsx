@@ -17,14 +17,9 @@ import {
   X,
   Target,
 } from "lucide-react";
-import {
-  createIeltsRecordAction,
-  deleteIeltsRecordAction,
-  createExamResultAction,
-  deleteExamResultAction,
-} from "@/server/actions/study";
 import { formatDate } from "@/lib/utils";
 import { useStudyStore } from "@/stores/study-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface IeltsWorkspaceProps {
   initialRecords: IeltsPracticeRecordSummary[];
@@ -35,6 +30,7 @@ export function IeltsWorkspace({
   initialRecords,
   initialExamResults,
 }: IeltsWorkspaceProps) {
+  const { isUz, dict } = useTranslation();
   const storeRecords = useStudyStore((s) => s.ieltsRecords);
   const storeExamResults = useStudyStore((s) => s.examResults);
   const addIeltsRecord = useStudyStore((s) => s.addIeltsRecord);
@@ -73,11 +69,11 @@ export function IeltsWorkspace({
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
 
   const sections = [
-    { id: "ALL", label: "All Sections", icon: BookOpen },
-    { id: "SPEAKING", label: "Speaking Lab", icon: Mic },
-    { id: "WRITING", label: "Academic Writing", icon: FileText },
-    { id: "READING", label: "Academic Reading", icon: BookOpen },
-    { id: "LISTENING", label: "Listening", icon: Headphones },
+    { id: "ALL", label: isUz ? "Barcha bo‘limlar" : "All Sections", icon: BookOpen },
+    { id: "SPEAKING", label: isUz ? "Speaking (So‘zlashuv)" : "Speaking Lab", icon: Mic },
+    { id: "WRITING", label: isUz ? "Writing (Akademik Yozish)" : "Academic Writing", icon: FileText },
+    { id: "READING", label: isUz ? "Reading (Akademik O‘qish)" : "Academic Reading", icon: BookOpen },
+    { id: "LISTENING", label: isUz ? "Listening (Tinglash)" : "Listening", icon: Headphones },
   ];
 
   const filteredRecords = records.filter((r) => {
@@ -144,7 +140,7 @@ export function IeltsWorkspace({
   };
 
   const handleDeleteRecord = async (id: string) => {
-    if (!confirm("Delete practice record?")) return;
+    if (!confirm(isUz ? "Ushbu mashg‘ulot qaydini o‘chirmoqchimisiz?" : "Delete practice record?")) return;
     deleteIeltsRecord(id);
   };
 
@@ -172,7 +168,7 @@ export function IeltsWorkspace({
   };
 
   const handleDeleteExam = async (id: string) => {
-    if (!confirm("Delete mock exam result?")) return;
+    if (!confirm(isUz ? "Ushbu mock imtihon natijasini o‘chirmoqchimisiz?" : "Delete mock exam result?")) return;
     deleteExamResult(id);
   };
 
@@ -185,46 +181,48 @@ export function IeltsWorkspace({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 border border-[#10B981]/40 bg-[#101915] space-y-1.5 emerald-glow-sm">
           <div className="text-xs font-mono text-[#98A69D] uppercase tracking-wider flex items-center justify-between">
-            <span>Target Band</span>
+            <span>{isUz ? "Maqsadli ball" : "Target Band"}</span>
             <Target className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-3xl font-black font-mono text-[#10B981]">
-            8.5 <span className="text-xs font-normal text-[#98A69D]">Overall</span>
+            8.5 <span className="text-xs font-normal text-[#98A69D]">{isUz ? "Umumiy" : "Overall"}</span>
           </div>
           <p className="text-[11px] text-[#98A69D]">
-            Global Academic & Thought Leader standard
+            {isUz ? "Xalqaro akademik va yetakchilik standarti" : "Global Academic & Thought Leader standard"}
           </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-1.5">
           <div className="text-xs font-mono text-[#98A69D] uppercase tracking-wider flex items-center justify-between">
-            <span>Current Estimated Band</span>
+            <span>{isUz ? "Joriy baholangan ball" : "Current Estimated Band"}</span>
             <Award className="w-4 h-4 text-[#3B82F6]" />
           </div>
           <div className="text-3xl font-black font-mono text-[#3B82F6]">
             {latestMock ? latestMock.overallBand : 8.0}
           </div>
           <p className="text-[11px] text-[#98A69D]">
-            Based on {examResults.length} proctored mock examinations
+            {isUz
+              ? `${examResults.length} ta rasmiy mock imtihoni asosida`
+              : `Based on ${examResults.length} proctored mock examinations`}
           </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-1.5">
           <div className="text-xs font-mono text-[#98A69D] uppercase tracking-wider flex items-center justify-between">
-            <span>Practice Drills</span>
+            <span>{isUz ? "Amaliy mashg‘ulotlar" : "Practice Drills"}</span>
             <FileText className="w-4 h-4 text-[#F59E0B]" />
           </div>
           <div className="text-3xl font-black font-mono text-[#F59E0B]">
-            {records.length} <span className="text-xs font-normal text-[#98A69D]">sessions</span>
+            {records.length} <span className="text-xs font-normal text-[#98A69D]">{isUz ? "mashg‘ulot" : "sessions"}</span>
           </div>
           <p className="text-[11px] text-[#98A69D]">
-            Writing essays, speaking evaluations & reading tests
+            {isUz ? "Insholar yozish, gapirish tahlillari va o‘qish testlari" : "Writing essays, speaking evaluations & reading tests"}
           </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915] space-y-1.5">
           <div className="text-xs font-mono text-[#98A69D] uppercase tracking-wider flex items-center justify-between">
-            <span>Mock Simulation Score</span>
+            <span>{isUz ? "Mock imtihon ko‘rsatkichi" : "Mock Simulation Score"}</span>
             <Sparkles className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-xs font-mono text-[#F3F7F4] space-y-0.5 pt-1">
@@ -238,7 +236,7 @@ export function IeltsWorkspace({
             </div>
           </div>
           <p className="text-[10px] text-[#10B981] pt-1">
-            Ready for official testing
+            {isUz ? "Rasmiy imtihonga tayyor" : "Ready for official testing"}
           </p>
         </div>
       </div>
@@ -275,7 +273,7 @@ export function IeltsWorkspace({
             className="px-3.5 py-2 rounded-xl bg-[#142019] hover:bg-[#101915] text-[#3B82F6] border border-[#3B82F6]/40 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Award className="w-4 h-4" />
-            Log Mock Exam
+            {isUz ? "Mock natijasini kiritish" : "Log Mock Exam"}
           </button>
 
           <button
@@ -284,7 +282,7 @@ export function IeltsWorkspace({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Log Practice Drill
+            {isUz ? "Amaliyot qaydini qo‘shish" : "Log Practice Drill"}
           </button>
         </div>
       </div>
@@ -293,12 +291,14 @@ export function IeltsWorkspace({
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-[#10B981]" />
-          Section Practice Records ({filteredRecords.length})
+          {isUz ? "Bo‘limlar bo‘yicha mashg‘ulotlar qaydi" : "Section Practice Records"} ({filteredRecords.length})
         </h3>
 
         {filteredRecords.length === 0 ? (
           <div className="glass-card rounded-2xl p-10 text-center border border-[#25352C] bg-[#101915]/50 text-xs text-[#98A69D]">
-            No practice sessions logged in this category. Click &quot;Log Practice Drill&quot; to add one.
+            {isUz
+              ? "Ushbu bo‘limda hali mashg‘ulotlar qayd etilmagan. Yangi qayd kiritish uchun \"Amaliyot qaydini qo‘shish\" tugmasini bosing."
+              : "No practice sessions logged in this category. Click \"Log Practice Drill\" to add one."}
           </div>
         ) : (
           <div className="space-y-3">
@@ -337,7 +337,7 @@ export function IeltsWorkspace({
                   <button
                     type="button"
                     onClick={() => handleDeleteRecord(rec.id)}
-                    className="p-1 rounded text-[#98A69D] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-1 rounded text-[#98A69D] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -347,7 +347,7 @@ export function IeltsWorkspace({
                 {rec.feedback && (
                   <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C] space-y-1 text-xs">
                     <div className="text-[10px] font-mono text-[#10B981] font-semibold uppercase flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Examiner Assessment & Lexical Telemetry
+                      <Sparkles className="w-3 h-3" /> {isUz ? "Imtihon oluvchi tahlili va leksik tavsiyalar" : "Examiner Assessment & Lexical Telemetry"}
                     </div>
                     <p className="text-[#98A69D] leading-relaxed">
                       {rec.feedback}
@@ -360,11 +360,11 @@ export function IeltsWorkspace({
                     {rec.durationMinutes && (
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-[#10B981]" />
-                        {rec.durationMinutes} mins
+                        {rec.durationMinutes} {isUz ? "daqiqa" : "mins"}
                       </span>
                     )}
                     {rec.wordCount && (
-                      <span>{rec.wordCount} words</span>
+                      <span>{rec.wordCount} {isUz ? "so‘z" : "words"}</span>
                     )}
                   </div>
                   <span>{formatDate(rec.createdAt)}</span>
@@ -380,10 +380,10 @@ export function IeltsWorkspace({
         <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
           <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
             <Award className="w-4 h-4 text-[#10B981]" />
-            Full Simulation Mock Exam Benchmarks
+            {isUz ? "To‘liq Mock imtihonlar ko‘rsatkichi" : "Full Simulation Mock Exam Benchmarks"}
           </h3>
           <span className="text-xs font-mono text-[#10B981]">
-            {examResults.length} Tests Logged
+            {examResults.length} {isUz ? "ta test kiritildi" : "Tests Logged"}
           </span>
         </div>
 
@@ -391,14 +391,14 @@ export function IeltsWorkspace({
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-[#25352C] text-[#98A69D] font-mono uppercase text-[10px]">
-                <th className="pb-3 font-semibold">Exam Simulation</th>
-                <th className="pb-3 font-semibold">Listening</th>
-                <th className="pb-3 font-semibold">Reading</th>
-                <th className="pb-3 font-semibold">Writing</th>
-                <th className="pb-3 font-semibold">Speaking</th>
-                <th className="pb-3 font-semibold">Overall Band</th>
-                <th className="pb-3 font-semibold">Date</th>
-                <th className="pb-3 font-semibold">Action</th>
+                <th className="pb-3 font-semibold">{isUz ? "Imtihon nomi" : "Exam Simulation"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "Tinglash" : "Listening"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "O‘qish" : "Reading"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "Yozish" : "Writing"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "So‘zlashuv" : "Speaking"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "Umumiy ball" : "Overall Band"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "Sana" : "Date"}</th>
+                <th className="pb-3 font-semibold">{isUz ? "Amal" : "Action"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#25352C]/60">
@@ -424,7 +424,7 @@ export function IeltsWorkspace({
                     <button
                       type="button"
                       onClick={() => handleDeleteExam(exam.id)}
-                      className="p-1 rounded text-[#98A69D] hover:text-[#EF4444]"
+                      className="p-1 rounded text-[#98A69D] hover:text-[#EF4444] cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -447,16 +447,16 @@ export function IeltsWorkspace({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#F3F7F4]">
-                    Log IELTS Practice Drill
+                    {isUz ? "IELTS amaliy mashg‘ulotini qayd etish" : "Log IELTS Practice Drill"}
                   </h3>
                   <p className="text-xs text-[#98A69D]">
-                    Record essay submission, speaking feedback, or reading score
+                    {isUz ? "Insho yuborish, speaking tahlili yoki o‘qish natijasini kiritish" : "Record essay submission, speaking feedback, or reading score"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsRecordModalOpen(false)}
-                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -466,29 +466,29 @@ export function IeltsWorkspace({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Section
+                    {isUz ? "Bo‘lim" : "Section"}
                   </label>
                   <select
                     value={recordSection}
                     onChange={(e) => setRecordSection(e.target.value)}
                     className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value="SPEAKING">Speaking</option>
-                    <option value="WRITING">Writing</option>
-                    <option value="READING">Reading</option>
-                    <option value="LISTENING">Listening</option>
+                    <option value="SPEAKING">{isUz ? "Speaking (So‘zlashuv)" : "Speaking"}</option>
+                    <option value="WRITING">{isUz ? "Writing (Yozish)" : "Writing"}</option>
+                    <option value="READING">{isUz ? "Reading (O‘qish)" : "Reading"}</option>
+                    <option value="LISTENING">{isUz ? "Listening (Tinglash)" : "Listening"}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Task / Part Type
+                    {isUz ? "Vazifa / Qism turi" : "Task / Part Type"}
                   </label>
                   <input
                     type="text"
                     value={recordTaskType}
                     onChange={(e) => setRecordTaskType(e.target.value)}
-                    placeholder="e.g. Task 2, Part 2, Section 4"
+                    placeholder={isUz ? "Masalan: Task 2, Part 2, Section 4" : "e.g. Task 2, Part 2, Section 4"}
                     className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
                   />
                 </div>
@@ -496,27 +496,27 @@ export function IeltsWorkspace({
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Title <span className="text-[#EF4444]">*</span>
+                  {isUz ? "Sarlavha" : "Title"} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={recordTitle}
                   onChange={(e) => setRecordTitle(e.target.value)}
-                  placeholder="e.g. Cambridge 18 Test 3: Technological Automation"
+                  placeholder={isUz ? "Masalan: Cambridge 18 Test 3: Texnologik avtomatlashtirish" : "e.g. Cambridge 18 Test 3: Technological Automation"}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Prompt / Exam Question
+                  {isUz ? "Savol yoki Topshiriq matni (Prompt)" : "Prompt / Exam Question"}
                 </label>
                 <textarea
                   rows={2}
                   value={recordPrompt}
                   onChange={(e) => setRecordPrompt(e.target.value)}
-                  placeholder="Topic card cue, essay prompt, or reading title..."
+                  placeholder={isUz ? "Mavzu savoli, insho mavzusi yoki o‘qish matni nomi..." : "Topic card cue, essay prompt, or reading title..."}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
                 />
               </div>
@@ -524,7 +524,7 @@ export function IeltsWorkspace({
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Band Score
+                    {isUz ? "Baholangan ball" : "Band Score"}
                   </label>
                   <input
                     type="number"
@@ -539,7 +539,7 @@ export function IeltsWorkspace({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Duration (mins)
+                    {isUz ? "Vaqt (daqiqa)" : "Duration (mins)"}
                   </label>
                   <input
                     type="number"
@@ -551,13 +551,13 @@ export function IeltsWorkspace({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                    Word Count
+                    {isUz ? "So‘zlar soni" : "Word Count"}
                   </label>
                   <input
                     type="number"
                     value={recordWordCount || ""}
                     onChange={(e) => setRecordWordCount(e.target.value ? Number(e.target.value) : undefined)}
-                    placeholder="e.g. 340"
+                    placeholder={isUz ? "Masalan: 340" : "e.g. 340"}
                     className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
                   />
                 </div>
@@ -565,13 +565,13 @@ export function IeltsWorkspace({
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Examiner Assessment & Lexical Notes
+                  {isUz ? "Imtihon oluvchi / AI tahlili va leksik qaydlar" : "Examiner Assessment & Lexical Notes"}
                 </label>
                 <textarea
                   rows={3}
                   value={recordFeedback}
                   onChange={(e) => setRecordFeedback(e.target.value)}
-                  placeholder="Lexical resource collocations, grammatical range, coherence notes..."
+                  placeholder={isUz ? "Leksik resurslar, grammatik xilma-xillik va tuzilish tahlili..." : "Lexical resource collocations, grammatical range, coherence notes..."}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
                 />
               </div>
@@ -580,17 +580,19 @@ export function IeltsWorkspace({
                 <button
                   type="button"
                   onClick={() => setIsRecordModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingRecord || !recordTitle.trim()}
-                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
+                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  {isSubmittingRecord ? "Logging..." : "Save Practice Session"}
+                  {isSubmittingRecord
+                    ? (isUz ? "Saqlanmoqda..." : "Logging...")
+                    : (isUz ? "Mashg‘ulotni saqlash" : "Save Practice Session")}
                 </button>
               </div>
             </form>
@@ -609,16 +611,16 @@ export function IeltsWorkspace({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#F3F7F4]">
-                    Log Full Mock Examination
+                    {isUz ? "To‘liq Mock imtihon natijasini kiritish" : "Log Full Mock Examination"}
                   </h3>
                   <p className="text-xs text-[#98A69D]">
-                    4-Section benchmark simulation with automated overall band
+                    {isUz ? "4 ta bo‘lim bo‘yicha avtomatik umumiy ball hisoblanadi" : "4-Section benchmark simulation with automated overall band"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsExamModalOpen(false)}
-                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+                className="p-1 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -627,14 +629,14 @@ export function IeltsWorkspace({
             <form onSubmit={handleCreateExam} className="space-y-4 pt-4">
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Exam Title / Paper <span className="text-[#EF4444]">*</span>
+                  {isUz ? "Imtihon nomi / Test kodi" : "Exam Title / Paper"} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={examTitle}
                   onChange={(e) => setExamTitle(e.target.value)}
-                  placeholder="e.g. Cambridge 18 Test 4 Full Academic Mock"
+                  placeholder={isUz ? "Masalan: Cambridge 18 Test 4 To‘liq Akademik Mock" : "e.g. Cambridge 18 Test 4 Full Academic Mock"}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -642,7 +644,7 @@ export function IeltsWorkspace({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#8B5CF6] uppercase block mb-1">
-                    Listening
+                    {isUz ? "Tinglash" : "Listening"}
                   </label>
                   <input
                     type="number"
@@ -657,7 +659,7 @@ export function IeltsWorkspace({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#F59E0B] uppercase block mb-1">
-                    Reading
+                    {isUz ? "O‘qish" : "Reading"}
                   </label>
                   <input
                     type="number"
@@ -672,7 +674,7 @@ export function IeltsWorkspace({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#3B82F6] uppercase block mb-1">
-                    Writing
+                    {isUz ? "Yozish" : "Writing"}
                   </label>
                   <input
                     type="number"
@@ -687,7 +689,7 @@ export function IeltsWorkspace({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#10B981] uppercase block mb-1">
-                    Speaking
+                    {isUz ? "So‘zlashuv" : "Speaking"}
                   </label>
                   <input
                     type="number"
@@ -703,7 +705,7 @@ export function IeltsWorkspace({
 
               {/* Computed Overall Preview */}
               <div className="p-3 rounded-xl bg-[#142019] border border-[#10B981]/30 flex items-center justify-between">
-                <span className="text-xs text-[#98A69D] font-mono">Predicted Overall Band:</span>
+                <span className="text-xs text-[#98A69D] font-mono">{isUz ? "Hisoblangan umumiy ball:" : "Predicted Overall Band:"}</span>
                 <span className="text-sm font-black font-mono text-[#10B981]">
                   Band {(Math.round(((examListening + examReading + examWriting + examSpeaking) / 4) * 2) / 2).toFixed(1)}
                 </span>
@@ -711,13 +713,13 @@ export function IeltsWorkspace({
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                  Simulation Notes / Bottlenecks
+                  {isUz ? "Imtihon tahlili / Zaif tomonlar" : "Simulation Notes / Bottlenecks"}
                 </label>
                 <textarea
                   rows={2}
                   value={examNotes}
                   onChange={(e) => setExamNotes(e.target.value)}
-                  placeholder="Pacing notes, distractor identification in Listening section 3..."
+                  placeholder={isUz ? "Vaqt taqsimoti, Listening 3-bo‘limidagi chalg‘ituvchilar..." : "Pacing notes, distractor identification in Listening section 3..."}
                   className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
                 />
               </div>
@@ -726,17 +728,19 @@ export function IeltsWorkspace({
                 <button
                   type="button"
                   onClick={() => setIsExamModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingExam || !examTitle.trim()}
-                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
+                  className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20 cursor-pointer"
                 >
                   <Award className="w-3.5 h-3.5" />
-                  {isSubmittingExam ? "Recording..." : "Record Mock Result"}
+                  {isSubmittingExam
+                    ? (isUz ? "Kiritilmoqda..." : "Recording...")
+                    : (isUz ? "Natijani saqlash" : "Record Mock Result")}
                 </button>
               </div>
             </form>

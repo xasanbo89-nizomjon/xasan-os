@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface MonthlyOverviewViewProps {
   balance: number;
@@ -22,24 +23,26 @@ export function MonthlyOverviewView({
   income,
   expenses,
 }: MonthlyOverviewViewProps) {
+  const { dict, isUz } = useTranslation();
+
   const okrs = [
     {
-      title: "Launch Aurelius IELTS Speech Engine",
-      target: "Sub-500ms Whisper Latency",
+      title: isUz ? "Aurelius IELTS nutq dvigatelini ishga tushirish" : "Launch Aurelius IELTS Speech Engine",
+      target: isUz ? "500ms dan past Whisper kechikishi" : "Sub-500ms Whisper Latency",
       progress: 78,
-      status: "ON TRACK",
+      status: isUz ? "REJA ASOSIDA" : "ON TRACK",
     },
     {
-      title: "Master IELTS Academic Writing & Speaking",
-      target: "Consistent Band 8.5 Benchmark",
+      title: isUz ? "IELTS Academic Writing va Speaking mahorati" : "Master IELTS Academic Writing & Speaking",
+      target: isUz ? "Barqaror Band 8.5 ko‘rsatkichi" : "Consistent Band 8.5 Benchmark",
       progress: 88,
-      status: "ON TRACK",
+      status: isUz ? "REJA ASOSIDA" : "ON TRACK",
     },
     {
-      title: "Deliver Ravon Avto Dealer CRM Webhooks",
-      target: "Idempotent Inventory Sync",
+      title: isUz ? "Ravon Avto diler CRM vebxuklarini yetkazish" : "Deliver Ravon Avto Dealer CRM Webhooks",
+      target: isUz ? "Idempotent ombor sinxronizatsiyasi" : "Idempotent Inventory Sync",
       progress: 92,
-      status: "NEAR COMPLETION",
+      status: isUz ? "YAKUNLANMOQDA" : "NEAR COMPLETION",
     },
   ];
 
@@ -49,40 +52,46 @@ export function MonthlyOverviewView({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#98A69D]">MONTHLY CASHFLOW</span>
+            <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+              {isUz ? "OYLIK KESHFLO" : "MONTHLY CASHFLOW"}
+            </span>
             <CircleDollarSign className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="text-3xl font-bold text-[#10B981]">
             {formatCurrency(balance)}
           </div>
           <p className="text-xs text-[#98A69D] mt-2 font-mono">
-            +{formatCurrency(income)} revenue / -{formatCurrency(expenses)} burn
+            +{formatCurrency(income)} {isUz ? "daromad" : "revenue"} / -{formatCurrency(expenses)} {isUz ? "xarajat" : "burn"}
           </p>
         </div>
 
         <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#98A69D]">STUDY TIME (THIS MONTH)</span>
+            <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+              {isUz ? "O‘QISH VAQTI (SHU OY)" : "STUDY TIME (THIS MONTH)"}
+            </span>
             <GraduationCap className="w-4 h-4 text-[#3B82F6]" />
           </div>
           <div className="text-3xl font-bold text-[#F3F7F4]">
-            68.5 hrs
+            68.5 {isUz ? "soat" : "hrs"}
           </div>
           <p className="text-xs text-[#10B981] mt-2 font-mono">
-            85% toward monthly 80h goal
+            {isUz ? "Oylik 80 soatlik maqsadning 85% qismi" : "85% toward monthly 80h goal"}
           </p>
         </div>
 
         <div className="glass-card rounded-2xl p-6 border border-[#25352C]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#98A69D]">MONTHLY DISCIPLINE</span>
+            <span className="text-[10px] font-mono text-[#98A69D] uppercase">
+              {isUz ? "OYLIK INTIZOM" : "MONTHLY DISCIPLINE"}
+            </span>
             <Award className="w-4 h-4 text-[#F59E0B]" />
           </div>
           <div className="text-3xl font-bold text-[#F59E0B]">
             94.8%
           </div>
           <p className="text-xs text-[#98A69D] mt-2 font-mono">
-            21-day consecutive peak streak
+            {isUz ? "21 kunlik eng yuqori ketma-ketlik" : "21-day consecutive peak streak"}
           </p>
         </div>
       </div>
@@ -93,10 +102,12 @@ export function MonthlyOverviewView({
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-[#10B981]" />
             <h3 className="text-sm font-bold text-[#F3F7F4]">
-              Monthly OKRs & Milestone Status
+              {isUz ? "Oylik OKR va marralar holati" : "Monthly OKRs & Milestone Status"}
             </h3>
           </div>
-          <span className="text-xs font-mono text-[#98A69D]">November 2026</span>
+          <span className="text-xs font-mono text-[#98A69D]">
+            {isUz ? "Noyabr 2026" : "November 2026"}
+          </span>
         </div>
 
         <div className="space-y-4">

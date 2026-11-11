@@ -18,11 +18,13 @@ import {
   biometricUnlockAction,
   logoutAction,
 } from "@/server/actions/auth";
+import { useTranslation } from "@/stores/language-store";
 
 function LockScreenContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/";
+  const { isUz } = useTranslation();
 
   const [pinLength, setPinLength] = useState<4 | 6>(4);
   const [pin, setPin] = useState<string>("");
@@ -75,22 +77,38 @@ function LockScreenContent() {
           if (res.locked && res.secondsRemaining) {
             setIsLockedOut(true);
             setCountdown(res.secondsRemaining);
-            setError(res.error || "Device locked due to multiple failed attempts.");
+            setError(
+              res.error ||
+                (isUz
+                  ? "Ko‘p marotaba xato kiritilgani sababli qurilma vaqtincha bloklandi."
+                  : "Device locked due to multiple failed attempts.")
+            );
           } else {
             if (typeof res.attemptsRemaining === "number") {
               setAttemptsLeft(res.attemptsRemaining);
             }
-            setError(res.error || "Incorrect PIN code. Please retry.");
+            setError(
+              res.error ||
+                (isUz
+                  ? "Noto‘g‘ri PIN-kod. Qayta urinib ko‘ring."
+                  : "Incorrect PIN code. Please retry.")
+            );
           }
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Verification error");
+        setError(
+          err instanceof Error
+            ? err.message
+            : isUz
+            ? "Tekshirishda xatolik yuz berdi"
+            : "Verification error"
+        );
         setPin("");
       } finally {
         setIsVerifying(false);
       }
     },
-    [isLockedOut, isVerifying, returnUrl, router]
+    [isLockedOut, isVerifying, returnUrl, router, isUz]
   );
 
   // Auto-verify when all digits are typed
@@ -150,7 +168,11 @@ function LockScreenContent() {
         }
       } catch (err) {
         console.error(err);
-        setError("Biometric validation failed.");
+        setError(
+          isUz
+            ? "Biometrik tekshiruv muvaffaqiyatsiz tugadi."
+            : "Biometric validation failed."
+        );
       } finally {
         setIsScanningBiometric(false);
       }
@@ -191,15 +213,17 @@ function LockScreenContent() {
 
         <h1 className="text-xl font-bold tracking-tight text-[#F3F7F4] text-center">
           {isSuccess
-            ? "Access Granted"
+            ? (isUz ? "Kirish Ruxsat Etildi" : "Access Granted")
             : isLockedOut
-            ? "Passcode Locked"
-            : "XASAN OS Passcode"}
+            ? (isUz ? "Xavfsizlik Qulfi Faol" : "Passcode Locked")
+            : (isUz ? "XASAN OS PIN-kod" : "XASAN OS Passcode")}
         </h1>
         <p className="text-xs text-[#98A69D] text-center mt-1">
           {isLockedOut
-            ? `Security lockout active for ${countdown}s`
-            : "Enter 4-digit PIN (Default: 1234) or Biometrics"}
+            ? (isUz ? `Xavfsizlik blokirovkasi: ${countdown}s` : `Security lockout active for ${countdown}s`)
+            : (isUz
+                ? `${pinLength} xonali PIN-kod (Standart: 1234) yoki Biometriyani kiriting`
+                : `Enter ${pinLength}-digit PIN (Default: 1234) or Biometrics`)}
         </p>
 
         {/* PIN Dots Indicator */}
@@ -246,7 +270,7 @@ function LockScreenContent() {
             type="button"
             disabled={isLockedOut || isVerifying || isSuccess}
             onClick={handleBiometricSimulation}
-            title="Biometric Simulation (TouchID / FaceID)"
+            title={isUz ? "Biometrik simulyatsiya (TouchID / FaceID)" : "Biometric Simulation (TouchID / FaceID)"}
             className={`h-14 rounded-2xl border transition-all active:scale-95 disabled:opacity-40 cursor-pointer flex items-center justify-center ${
               isScanningBiometric
                 ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981] animate-pulse"
@@ -283,14 +307,16 @@ function LockScreenContent() {
             onClick={() => setPinLength(pinLength === 4 ? 6 : 4)}
             className="hover:text-[#10B981] transition-colors cursor-pointer"
           >
-            Switch to {pinLength === 4 ? "6-digit" : "4-digit"}
+            {isUz
+              ? `${pinLength === 4 ? "6" : "4"} xonaliga o‘tish`
+              : `Switch to ${pinLength === 4 ? "6-digit" : "4-digit"}`}
           </button>
           <button
             onClick={handleLogout}
             className="hover:text-[#EF4444] transition-colors flex items-center gap-1 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Switch User</span>
+            <span>{isUz ? "Chiqish" : "Switch User"}</span>
           </button>
         </div>
       </div>

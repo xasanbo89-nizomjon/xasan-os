@@ -25,6 +25,7 @@ import {
   disconnectVercelAction,
   triggerLiveSyncAction,
 } from "@/server/actions/developer";
+import { useTranslation } from "@/stores/language-store";
 
 interface VercelIntegrationProps {
   initialSetting: DevIntegrationSettingSummary;
@@ -37,6 +38,7 @@ export function VercelIntegration({
   initialProjects,
   initialDeployments,
 }: VercelIntegrationProps) {
+  const { isUz } = useTranslation();
   const [setting, setSetting] = useState<DevIntegrationSettingSummary>(initialSetting);
   const [projects] = useState<VercelProjectSummary[]>(initialProjects);
   const [deployments] = useState<VercelDeploymentSummary[]>(initialDeployments);
@@ -78,7 +80,10 @@ export function VercelIntegration({
   };
 
   const handleDisconnect = async () => {
-    if (confirm("Disconnect Vercel account from XASAN OS?")) {
+    const confirmMsg = isUz
+      ? "Vercel hisobini XASAN OS dan uzmoqchimisiz?"
+      : "Disconnect Vercel account from XASAN OS?";
+    if (confirm(confirmMsg)) {
       const res = await disconnectVercelAction();
       if (res.success) {
         setSetting((prev) => ({
@@ -101,25 +106,39 @@ export function VercelIntegration({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#F3F7F4]">Vercel Edge Platform</h3>
+              <h3 className="text-base font-bold text-[#F3F7F4]">
+                {isUz ? "Vercel Edge Platformasi" : "Vercel Edge Platform"}
+              </h3>
               {setting.vercelConnected ? (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-[#10B981] border border-emerald-500/30 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>CONNECTED</span>
+                  <span>{isUz ? "ULANGAN" : "CONNECTED"}</span>
                 </span>
               ) : (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#98A69D] bg-[#101915] border border-[#25352C]">
-                  NOT CONNECTED
+                  {isUz ? "ULANMAGAN" : "NOT CONNECTED"}
                 </span>
               )}
             </div>
             <p className="text-xs text-[#98A69D] mt-0.5">
               {setting.vercelConnected ? (
                 <span>
-                  Team scope <strong className="text-[#F3F7F4]">{setting.vercelUsername}</strong> • Enterprise Edge Network with instant rollbacks.
+                  {isUz ? (
+                    <>
+                      Jamoa sohasi <strong className="text-[#F3F7F4]">{setting.vercelUsername}</strong> • Tezkor qaytarishga ega korporativ Edge tarmog‘i.
+                    </>
+                  ) : (
+                    <>
+                      Team scope <strong className="text-[#F3F7F4]">{setting.vercelUsername}</strong> • Enterprise Edge Network with instant rollbacks.
+                    </>
+                  )}
                 </span>
               ) : (
-                <span>Connect your Vercel Token to stream continuous deployments, preview URLs, and build failure logs.</span>
+                <span>
+                  {isUz
+                    ? "Doimiy deploylar, ko‘rinish havolalari va build xatoliklarini kuzatish uchun Vercel tokeningizni ulang."
+                    : "Connect your Vercel Token to stream continuous deployments, preview URLs, and build failure logs."}
+                </span>
               )}
             </p>
           </div>
@@ -134,22 +153,22 @@ export function VercelIntegration({
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-[#F3F7F4] transition-all flex items-center gap-2"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-[#10B981] ${isSyncing ? "animate-spin" : ""}`} />
-                <span>{isSyncing ? "Syncing..." : "Sync Vercel"}</span>
+                <span>{isSyncing ? (isUz ? "Sinxronlanmoqda..." : "Syncing...") : (isUz ? "Sinxronlash" : "Sync Vercel")}</span>
               </button>
               <button
                 onClick={handleDisconnect}
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all"
               >
-                Disconnect
+                {isUz ? "Uzish" : "Disconnect"}
               </button>
             </>
           ) : (
             <button
               onClick={() => setIsConnectModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-lg shadow-[#10B981]/20 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-lg shadow-[#10B981]/20 flex items-center gap-2 font-bold"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Connect Vercel</span>
+              <span>{isUz ? "Vercel-ni ulash" : "Connect Vercel"}</span>
             </button>
           )}
         </div>
@@ -166,7 +185,7 @@ export function VercelIntegration({
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Vercel Projects</span>
+          <span>{isUz ? "Vercel Loyihalari" : "Vercel Projects"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {projects.length}
           </span>
@@ -181,7 +200,7 @@ export function VercelIntegration({
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>Deployment History</span>
+          <span>{isUz ? "Deploylar tarixi" : "Deployment History"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {deployments.length}
           </span>
@@ -196,7 +215,7 @@ export function VercelIntegration({
           }`}
         >
           <AlertOctagon className="w-3.5 h-3.5 text-red-400" />
-          <span>Diagnostics & Errors</span>
+          <span>{isUz ? "Diagnostika va Xatolar" : "Diagnostics & Errors"}</span>
           {failedDeployments.length > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-500/20 text-red-400 font-mono">
               {failedDeployments.length}
@@ -227,11 +246,13 @@ export function VercelIntegration({
                   {proj.name}
                 </h4>
                 <div className="text-[11px] font-mono text-[#98A69D] mt-0.5">
-                  Framework: <span className="text-[#F3F7F4]">{proj.framework}</span>
+                  {isUz ? "Freymvork:" : "Framework:"} <span className="text-[#F3F7F4]">{proj.framework}</span>
                 </div>
 
                 <div className="mt-3 space-y-1">
-                  <div className="text-[10px] font-mono text-[#98A69D] uppercase">Assigned Domains:</div>
+                  <div className="text-[10px] font-mono text-[#98A69D] uppercase">
+                    {isUz ? "Biriktirilgan domenlar:" : "Assigned Domains:"}
+                  </div>
                   <div className="flex flex-wrap gap-1">
                     {proj.domains.map((dom) => (
                       <span
@@ -255,7 +276,7 @@ export function VercelIntegration({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[#10B981] hover:underline font-mono text-[11px]"
                 >
-                  <span>Production URL</span>
+                  <span>{isUz ? "Asosiy havola" : "Production URL"}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -269,10 +290,10 @@ export function VercelIntegration({
         <div className="glass-card rounded-2xl border border-[#25352C] overflow-hidden">
           <div className="p-4 border-b border-[#25352C] bg-[#101915] flex items-center justify-between">
             <span className="text-xs font-mono font-semibold text-[#F3F7F4]">
-              VERCEL EDGE DEPLOYMENT HISTORY
+              {isUz ? "VERCEL EDGE DEPLOYLAR TARIXI" : "VERCEL EDGE DEPLOYMENT HISTORY"}
             </span>
             <span className="text-[11px] font-mono text-[#98A69D]">
-              Live Vercel webhook integration
+              {isUz ? "Jonli Vercel vebhuk integratsiyasi" : "Live Vercel webhook integration"}
             </span>
           </div>
 
@@ -299,9 +320,11 @@ export function VercelIntegration({
                     </span>
                     <span className="text-[11px] font-mono text-[#10B981]">{d.branch}</span>
                   </div>
-                  <p className="text-[11px] text-[#98A69D]">{d.commitMessage || "No commit message"}</p>
+                  <p className="text-[11px] text-[#98A69D]">
+                    {d.commitMessage || (isUz ? "Kommit xabari yo‘q" : "No commit message")}
+                  </p>
                   <div className="text-[10px] font-mono text-[#98A69D]">
-                    Deployed by {d.creator} • {d.durationMs ? `${Math.round(d.durationMs / 1000)}s build` : "—"}
+                    {isUz ? "Deploy muallifi: " : "Deployed by "}{d.creator} • {d.durationMs ? `${Math.round(d.durationMs / 1000)}${isUz ? " soniya qurish" : "s build"}` : "—"}
                   </div>
                 </div>
 
@@ -311,7 +334,7 @@ export function VercelIntegration({
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-[#101915] border border-[#25352C] hover:border-[#10B981] text-[#98A69D] hover:text-[#10B981] transition-all font-mono text-[11px] flex items-center gap-1 shrink-0"
                 >
-                  <span>Inspect</span>
+                  <span>{isUz ? "Tekshirish" : "Inspect"}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -331,9 +354,11 @@ export function VercelIntegration({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <AlertOctagon className="w-5 h-5 text-red-400" />
-                  <h4 className="text-sm font-bold text-[#F3F7F4]">{fail.name} - Build Failure</h4>
+                  <h4 className="text-sm font-bold text-[#F3F7F4]">
+                    {fail.name} - {isUz ? "Qurishdagi xatolik" : "Build Failure"}
+                  </h4>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
-                    BRANCH: {fail.branch}
+                    {isUz ? "TARMOQ: " : "BRANCH: "}{fail.branch}
                   </span>
                 </div>
                 <span className="text-[11px] font-mono text-[#98A69D]">
@@ -343,7 +368,7 @@ export function VercelIntegration({
 
               <div>
                 <p className="text-xs text-red-300 font-semibold mb-2">
-                  {fail.errorMessage || "Deployment terminated due to build step failure."}
+                  {fail.errorMessage || (isUz ? "Build bosqichidagi xatolik tufayli deploy to‘xtatildi." : "Deployment terminated due to build step failure.")}
                 </p>
                 {fail.buildLogSnippet && (
                   <div className="p-4 rounded-xl bg-[#080D0B] border border-red-500/20 font-mono text-xs text-red-400/90 whitespace-pre-wrap leading-relaxed">
@@ -354,7 +379,7 @@ export function VercelIntegration({
 
               <div className="flex items-center justify-between pt-2 border-t border-[#25352C] text-xs">
                 <span className="text-[11px] font-mono text-[#98A69D]">
-                  Trigger Commit: {fail.commitMessage}
+                  {isUz ? "Sababchi kommit: " : "Trigger Commit: "}{fail.commitMessage}
                 </span>
                 <a
                   href={fail.url}
@@ -362,7 +387,7 @@ export function VercelIntegration({
                   rel="noopener noreferrer"
                   className="text-red-400 hover:underline flex items-center gap-1 font-mono text-[11px]"
                 >
-                  <span>Open Build Logs</span>
+                  <span>{isUz ? "Build loglarini ochish" : "Open Build Logs"}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -372,8 +397,14 @@ export function VercelIntegration({
           {failedDeployments.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-[#10B981] mx-auto" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">All Vercel deployments passing</p>
-              <p className="text-xs text-[#98A69D]">Zero build failures detected across edge production and preview branches.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Barcha Vercel deploylari muvaffaqiyatli" : "All Vercel deployments passing"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz
+                  ? "Production va preview tarmoqlarida hech qanday xatolik aniqlanmadi."
+                  : "Zero build failures detected across edge production and preview branches."}
+              </p>
             </div>
           )}
         </div>
@@ -386,7 +417,9 @@ export function VercelIntegration({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <Triangle className="w-5 h-5 text-[#10B981] fill-current" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Connect Vercel Team</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Vercel Jamoasini Ulash" : "Connect Vercel Team"}
+                </h3>
               </div>
               <button onClick={() => setIsConnectModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -395,7 +428,9 @@ export function VercelIntegration({
 
             <form onSubmit={handleConnect} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Vercel Team / Account</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Vercel jamoa / hisob nomi" : "Vercel Team / Account"}
+                </label>
                 <input
                   type="text"
                   required
@@ -407,7 +442,9 @@ export function VercelIntegration({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Vercel Personal Access Token</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Vercel shaxsiy kirish tokeni" : "Vercel Personal Access Token"}
+                </label>
                 <input
                   type="password"
                   required
@@ -419,8 +456,12 @@ export function VercelIntegration({
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsConnectModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Connect Platform</button>
+                <button type="button" onClick={() => setIsConnectModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Platformani ulash" : "Connect Platform"}
+                </button>
               </div>
             </form>
           </div>

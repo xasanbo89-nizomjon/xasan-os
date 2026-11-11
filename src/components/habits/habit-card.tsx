@@ -3,6 +3,7 @@
 import React from "react";
 import { HabitSummary } from "@/types";
 import { Flame, CheckCircle2, Circle, MoreVertical, Archive, Trash2, Clock, Calendar, AlertTriangle } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface HabitCardProps {
   habit: HabitSummary;
@@ -19,12 +20,14 @@ export function HabitCard({
   onArchive,
   onDelete,
 }: HabitCardProps) {
+  const { isUz } = useTranslation();
+
   // Generate past 7 days for mini check-in streak
   const past7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const dateStr = d.toISOString().slice(0, 10);
-    const dayLabel = d.toLocaleDateString("en-US", { weekday: "narrow" });
+    const dayLabel = d.toLocaleDateString(isUz ? "uz-UZ" : "en-US", { weekday: "narrow" });
     const isCompleted = habit.recentLogs?.some((l) => l.date === dateStr) || (i === 6 && habit.isCompletedToday);
     const isToday = i === 6;
     return { dateStr, dayLabel, isCompleted, isToday };
@@ -32,10 +35,29 @@ export function HabitCard({
 
   const getCategoryBadge = (cat: string) => {
     const c = cat.toLowerCase();
-    if (c.includes("study") || c.includes("education")) return "bg-[#3B82F6]/15 text-[#3B82F6] border-[#3B82F6]/30";
-    if (c.includes("fitness") || c.includes("health")) return "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30";
-    if (c.includes("reading")) return "bg-[#8B5CF6]/15 text-[#8B5CF6] border-[#8B5CF6]/30";
+    if (c.includes("study") || c.includes("education") || c.includes("ta'lim")) return "bg-[#3B82F6]/15 text-[#3B82F6] border-[#3B82F6]/30";
+    if (c.includes("fitness") || c.includes("health") || c.includes("sport") || c.includes("salomatlik")) return "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30";
+    if (c.includes("reading") || c.includes("mutolaa")) return "bg-[#8B5CF6]/15 text-[#8B5CF6] border-[#8B5CF6]/30";
     return "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30";
+  };
+
+  const getTranslatedCategory = (cat: string) => {
+    if (!isUz) return cat;
+    const lower = cat.toLowerCase();
+    if (lower.includes("education") || lower.includes("study")) return "Ta'lim";
+    if (lower.includes("health")) return "Salomatlik";
+    if (lower.includes("fitness")) return "Sport";
+    if (lower.includes("reading")) return "Mutolaa";
+    if (lower.includes("personal")) return "Rivojlanish";
+    if (lower.includes("productivity")) return "Unumdorlik";
+    return cat;
+  };
+
+  const getTranslatedFrequency = (freq: string) => {
+    if (!isUz) return freq;
+    if (freq === "DAILY") return "Har kuni";
+    if (freq === "WEEKLY") return "Haftalik";
+    return freq;
   };
 
   return (
@@ -52,10 +74,10 @@ export function HabitCard({
               {habit.name}
             </h4>
             <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${getCategoryBadge(habit.category)}`}>
-              {habit.category}
+              {getTranslatedCategory(habit.category)}
             </span>
             <span className="text-[10px] font-mono text-[#98A69D] bg-[#101915] px-2 py-0.5 rounded border border-[#25352C]">
-              {habit.frequency}
+              {getTranslatedFrequency(habit.frequency)}
             </span>
           </div>
 
@@ -69,9 +91,9 @@ export function HabitCard({
         {/* Streak Counter Badge */}
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#101915] border border-[#25352C] text-xs font-mono font-bold text-[#F59E0B] shrink-0">
           <Flame className="w-4 h-4 fill-current animate-pulse" />
-          <span>{habit.streak}d</span>
+          <span>{habit.streak}{isUz ? " kun" : "d"}</span>
           <span className="text-[10px] text-[#98A69D] font-normal hidden sm:inline">
-            (best: {habit.bestStreak}d)
+            ({isUz ? `eng yaxshi: ${habit.bestStreak} kun` : `best: ${habit.bestStreak}d`})
           </span>
         </div>
       </div>
@@ -79,24 +101,24 @@ export function HabitCard({
       {/* Middle Row: Telemetry (Completion rate & Missed days) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-1 text-[11px] font-mono text-[#98A69D]">
         <div className="bg-[#101915] p-2 rounded-xl border border-[#25352C]">
-          <span className="text-[10px] block opacity-70">Target:</span>
+          <span className="text-[10px] block opacity-70">{isUz ? "Maqsad:" : "Target:"}</span>
           <span className="text-xs font-semibold text-[#F3F7F4]">
-            {habit.targetCount} {habit.unit} / {habit.frequency === "DAILY" ? "day" : "wk"}
+            {habit.targetCount} {habit.unit} / {habit.frequency === "DAILY" ? (isUz ? "kun" : "day") : (isUz ? "hafta" : "wk")}
           </span>
         </div>
 
         <div className="bg-[#101915] p-2 rounded-xl border border-[#25352C]">
-          <span className="text-[10px] block opacity-70">30d Rate:</span>
+          <span className="text-[10px] block opacity-70">{isUz ? "30 kunlik:" : "30d Rate:"}</span>
           <span className="text-xs font-semibold text-[#10B981]">
             {habit.completionRate || 85}%
           </span>
         </div>
 
         <div className="bg-[#101915] p-2 rounded-xl border border-[#25352C] col-span-2 sm:col-span-1">
-          <span className="text-[10px] block opacity-70">Reminder:</span>
+          <span className="text-[10px] block opacity-70">{isUz ? "Eslatma:" : "Reminder:"}</span>
           <span className="text-xs font-semibold text-[#F3F7F4] flex items-center gap-1">
             <Clock className="w-3 h-3 text-[#10B981]" />
-            {habit.reminderTime || "None"}
+            {habit.reminderTime || (isUz ? "Yo‘q" : "None")}
           </span>
         </div>
       </div>
@@ -117,7 +139,7 @@ export function HabitCard({
                   ? "bg-[#101915] border-[#10B981] text-[#10B981]"
                   : "bg-[#101915] border-[#25352C] text-[#98A69D] hover:border-[#10B981]/40"
               }`}
-              title={`${d.dateStr}: ${d.isCompleted ? "Completed" : "Not logged"}`}
+              title={`${d.dateStr}: ${d.isCompleted ? (isUz ? "Bajarildi" : "Completed") : (isUz ? "Kutilmoqda" : "Not logged")}`}
             >
               <span className="text-[9px] font-mono leading-none">{d.dayLabel}</span>
               <div className="mt-1">
@@ -143,14 +165,16 @@ export function HabitCard({
             }`}
           >
             <CheckCircle2 className="w-4 h-4" />
-            {habit.isCompletedToday ? "Done Today" : "Log Today"}
+            {habit.isCompletedToday
+              ? (isUz ? "Bugun bajarildi" : "Done Today")
+              : (isUz ? "Bugun bajarish" : "Log Today")}
           </button>
 
           <button
             type="button"
             onClick={() => onArchive(habit.id, !habit.archived)}
-            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-            title={habit.archived ? "Unarchive Habit" : "Archive Habit"}
+            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+            title={habit.archived ? (isUz ? "Arxivdan chiqarish" : "Unarchive Habit") : (isUz ? "Arxivlash" : "Archive Habit")}
           >
             <Archive className="w-4 h-4" />
           </button>
@@ -158,10 +182,10 @@ export function HabitCard({
           <button
             type="button"
             onClick={() => {
-              if (confirm(`Delete habit "${habit.name}"?`)) onDelete(habit.id);
+              if (confirm(isUz ? `"${habit.name}" odatini o‘chirmoqchimisiz?` : `Delete habit "${habit.name}"?`)) onDelete(habit.id);
             }}
-            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors"
-            title="Delete Habit"
+            className="p-2 rounded-xl bg-[#101915] text-[#98A69D] hover:text-[#EF4444] border border-[#25352C] transition-colors cursor-pointer"
+            title={isUz ? "O‘chirish" : "Delete Habit"}
           >
             <Trash2 className="w-4 h-4" />
           </button>

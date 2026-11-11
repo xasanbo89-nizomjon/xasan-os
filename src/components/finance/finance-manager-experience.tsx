@@ -28,6 +28,7 @@ import {
   FinancialReportSummary,
 } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface FinanceManagerExperienceProps {
   metrics: FinanceMetrics;
@@ -44,6 +45,7 @@ export function FinanceManagerExperience({
   savingsGoals,
   initialReport,
 }: FinanceManagerExperienceProps) {
+  const { isUz, dict } = useTranslation();
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "TRANSACTIONS" | "BUDGETS" | "SAVINGS" | "REPORTS">("OVERVIEW");
 
   return (
@@ -60,58 +62,66 @@ export function FinanceManagerExperience({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>RECORDED BALANCE</span>
+            <span>{isUz ? "QAYD ETILGAN BALANS" : "RECORDED BALANCE"}</span>
             <Wallet className="w-3.5 h-3.5 text-[#10B981]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#10B981]">
             {formatCurrency(metrics.totalBalance)}
           </div>
-          <div className="text-[10px] text-emerald-400 font-mono mt-0.5">Net Liquid Capital</div>
+          <div className="text-[10px] text-emerald-400 font-mono mt-0.5">
+            {isUz ? "Sof likvid kapital" : "Net Liquid Capital"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>MONTHLY REVENUE</span>
+            <span>{isUz ? "OYLIK DAROMAD" : "MONTHLY REVENUE"}</span>
             <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
             {formatCurrency(metrics.incomeThisMonth)}
           </div>
-          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">Client & Venture Inflow</div>
+          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">
+            {isUz ? "Mijozlar va loyihalar tushumi" : "Client & Venture Inflow"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>MONTHLY BURN</span>
+            <span>{isUz ? "OYLIK XARAJAT" : "MONTHLY BURN"}</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-[#EF4444]" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#EF4444]">
             {formatCurrency(metrics.expensesThisMonth)}
           </div>
-          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">Cloud & Operations</div>
+          <div className="text-[10px] text-[#98A69D] font-mono mt-0.5">
+            {isUz ? "Server va operatsion xarajatlar" : "Cloud & Operations"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>NET SAVINGS</span>
+            <span>{isUz ? "SOF JAMG‘ARMA" : "NET SAVINGS"}</span>
             <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-cyan-400">
             {formatCurrency(metrics.netSavingsThisMonth)}
           </div>
-          <div className="text-[10px] text-cyan-400 font-mono mt-0.5">{metrics.savingsRatePercentage}% Savings Rate</div>
+          <div className="text-[10px] text-cyan-400 font-mono mt-0.5">
+            {metrics.savingsRatePercentage}% {isUz ? "Jamg‘arma ko‘rsatkichi" : "Savings Rate"}
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-[#25352C] bg-[#101915]/80 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between text-[11px] text-[#98A69D] font-mono mb-1">
-            <span>BUDGET USAGE</span>
+            <span>{isUz ? "BYUDJET ISHLATILISHI" : "BUDGET USAGE"}</span>
             <PieChart className="w-3.5 h-3.5 text-amber-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
             {metrics.budgetUtilizationPercentage}%
           </div>
           <div className="text-[10px] text-amber-400 font-mono mt-0.5">
-            of {formatCurrency(metrics.monthlyBudgetLimit)} Limit
+            {formatCurrency(metrics.monthlyBudgetLimit)} {isUz ? "limitidan" : "Limit"}
           </div>
         </div>
       </div>
@@ -120,26 +130,26 @@ export function FinanceManagerExperience({
       <div className="glass-card rounded-2xl p-2 border border-[#25352C] flex items-center gap-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab("OVERVIEW")}
-          className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "OVERVIEW"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Overview</span>
+          <span>{isUz ? "Umumiy holat" : "Overview"}</span>
         </button>
 
         <button
           onClick={() => setActiveTab("TRANSACTIONS")}
-          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[160px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "TRANSACTIONS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <Wallet className="w-4 h-4" />
-          <span>Transactions</span>
+          <span>{isUz ? "Tranzaksiyalar" : "Transactions"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {transactions.length}
           </span>
@@ -147,14 +157,14 @@ export function FinanceManagerExperience({
 
         <button
           onClick={() => setActiveTab("BUDGETS")}
-          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "BUDGETS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <PieChart className="w-4 h-4" />
-          <span>Budgets</span>
+          <span>{isUz ? "Byudjetlar" : "Budgets"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {budgets.length}
           </span>
@@ -162,14 +172,14 @@ export function FinanceManagerExperience({
 
         <button
           onClick={() => setActiveTab("SAVINGS")}
-          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "SAVINGS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <PiggyBank className="w-4 h-4" />
-          <span>Savings Goals</span>
+          <span>{isUz ? "Jamg‘arma maqsadlari" : "Savings Goals"}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
             {savingsGoals.length}
           </span>
@@ -177,14 +187,14 @@ export function FinanceManagerExperience({
 
         <button
           onClick={() => setActiveTab("REPORTS")}
-          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "REPORTS"
               ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
               : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-transparent hover:border-[#25352C]"
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>Reports & Safety</span>
+          <span>{isUz ? "Hisobotlar va Xavfsizlik" : "Reports & Safety"}</span>
         </button>
       </div>
 
@@ -197,17 +207,17 @@ export function FinanceManagerExperience({
             <div className="glass-card rounded-3xl p-6 border border-[#25352C] space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
                 <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-                  Monthly Cashflow Velocity
+                  {isUz ? "Oylik pul oqimi tezligi" : "Monthly Cashflow Velocity"}
                 </h4>
                 <span className="text-[11px] font-mono text-[#10B981]">
-                  Net: +{formatCurrency(metrics.netSavingsThisMonth)}
+                  {isUz ? "Sof:" : "Net:"} +{formatCurrency(metrics.netSavingsThisMonth)}
                 </span>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono mb-1.5">
-                    <span className="text-[#98A69D]">Gross Revenue</span>
+                    <span className="text-[#98A69D]">{isUz ? "Umumiy tushum" : "Gross Revenue"}</span>
                     <span className="text-[#10B981] font-bold">{formatCurrency(metrics.incomeThisMonth)}</span>
                   </div>
                   <div className="w-full h-2 bg-[#101915] rounded-full overflow-hidden border border-[#25352C]">
@@ -217,7 +227,7 @@ export function FinanceManagerExperience({
 
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono mb-1.5">
-                    <span className="text-[#98A69D]">Operational Expenses</span>
+                    <span className="text-[#98A69D]">{isUz ? "Operatsion xarajatlar" : "Operational Expenses"}</span>
                     <span className="text-[#EF4444] font-bold">{formatCurrency(metrics.expensesThisMonth)}</span>
                   </div>
                   <div className="w-full h-2 bg-[#101915] rounded-full overflow-hidden border border-[#25352C]">
@@ -231,8 +241,10 @@ export function FinanceManagerExperience({
                 </div>
 
                 <div className="pt-2 text-xs text-[#98A69D] flex items-center justify-between font-mono">
-                  <span>Savings Efficiency</span>
-                  <span className="text-cyan-400 font-bold">{metrics.savingsRatePercentage}% of revenue retained</span>
+                  <span>{isUz ? "Jamg‘arma samaradorligi" : "Savings Efficiency"}</span>
+                  <span className="text-cyan-400 font-bold">
+                    {metrics.savingsRatePercentage}% {isUz ? "daromad saqlab qolindi" : "of revenue retained"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -241,16 +253,16 @@ export function FinanceManagerExperience({
             <div className="glass-card rounded-3xl p-6 border border-[#25352C] space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
                 <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-                  Budget Discipline Health
+                  {isUz ? "Byudjet intizomi va sarf me'yori" : "Budget Discipline Health"}
                 </h4>
                 <span className="text-[11px] font-mono text-amber-400">
-                  {metrics.budgetUtilizationPercentage}% Used
+                  {metrics.budgetUtilizationPercentage}% {isUz ? "sarflandi" : "Used"}
                 </span>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-[#98A69D]">Disbursed</span>
+                  <span className="text-[#98A69D]">{isUz ? "Sarflangan" : "Disbursed"}</span>
                   <span className="font-bold text-[#F3F7F4]">{formatCurrency(metrics.expensesThisMonth)}</span>
                 </div>
                 <div className="w-full h-3 bg-[#101915] rounded-full overflow-hidden border border-[#25352C]">
@@ -266,8 +278,8 @@ export function FinanceManagerExperience({
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D]">
-                  <span>Ceiling: {formatCurrency(metrics.monthlyBudgetLimit)}</span>
-                  <span>{formatCurrency(Math.max(0, metrics.monthlyBudgetLimit - metrics.expensesThisMonth))} remaining</span>
+                  <span>{isUz ? "Limit:" : "Ceiling:"} {formatCurrency(metrics.monthlyBudgetLimit)}</span>
+                  <span>{formatCurrency(Math.max(0, metrics.monthlyBudgetLimit - metrics.expensesThisMonth))} {isUz ? "qoldi" : "remaining"}</span>
                 </div>
               </div>
             </div>
@@ -279,14 +291,14 @@ export function FinanceManagerExperience({
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-[#10B981]" />
                 <h4 className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-                  Recent Ledger Activity
+                  {isUz ? "Oxirgi tranzaksiyalar faolligi" : "Recent Ledger Activity"}
                 </h4>
               </div>
               <button
                 onClick={() => setActiveTab("TRANSACTIONS")}
-                className="text-xs text-[#10B981] hover:underline font-mono"
+                className="text-xs text-[#10B981] hover:underline font-mono cursor-pointer"
               >
-                View All ({transactions.length}) →
+                {isUz ? `Barchasini ko‘rish (${transactions.length}) →` : `View All (${transactions.length}) →`}
               </button>
             </div>
 
@@ -328,7 +340,7 @@ export function FinanceManagerExperience({
                       {formatCurrency(tx.amount)}
                     </div>
                     <div className="text-[10px] text-[#98A69D]">
-                      {new Date(tx.date).toLocaleDateString([], { month: "short", day: "numeric" })}
+                      {new Date(tx.date).toLocaleDateString(isUz ? "uz-UZ" : "en-US", { month: "short", day: "numeric" })}
                     </div>
                   </div>
                 </div>

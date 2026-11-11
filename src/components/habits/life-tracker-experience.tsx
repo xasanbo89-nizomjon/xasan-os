@@ -19,6 +19,7 @@ import { CreateHabitModal } from "./create-habit-modal";
 import { WellnessTracker } from "./wellness-tracker";
 import { JournalView } from "@/components/journal/journal-view";
 import { useHabitsStore } from "@/stores/habits-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface LifeTrackerExperienceProps {
   initialHabits: HabitSummary[];
@@ -31,6 +32,7 @@ export function LifeTrackerExperience({
   initialWellnessLogs,
   initialJournalEntries,
 }: LifeTrackerExperienceProps) {
+  const { dict, isUz } = useTranslation();
   const [activeTab, setActiveTab] = useState<"habits" | "heatmap" | "report" | "wellness" | "journal">("habits");
   const storeHabits = useHabitsStore((s) => s.habits);
   const storeWellness = useHabitsStore((s) => s.wellnessLogs);
@@ -89,7 +91,7 @@ export function LifeTrackerExperience({
             }`}
           >
             <Flame className="w-4 h-4" />
-            Habit Protocols ({activeHabits.length})
+            {dict.habits?.tabs?.habits || (isUz ? "Odatlar bayonnomasi" : "Habit Protocols")} ({activeHabits.length})
           </button>
 
           <button
@@ -102,7 +104,7 @@ export function LifeTrackerExperience({
             }`}
           >
             <Calendar className="w-4 h-4" />
-            Habit Calendar Heatmap
+            {isUz ? "Davomiylik xaritasi (Heatmap)" : "Habit Calendar Heatmap"}
           </button>
 
           <button
@@ -115,7 +117,7 @@ export function LifeTrackerExperience({
             }`}
           >
             <Award className="w-4 h-4 text-[#F59E0B]" />
-            Discipline Report
+            {isUz ? "Intizom hisoboti" : "Discipline Report"}
           </button>
 
           <button
@@ -128,7 +130,7 @@ export function LifeTrackerExperience({
             }`}
           >
             <Activity className="w-4 h-4 text-[#3B82F6]" />
-            Wellness Protocol
+            {dict.habits?.tabs?.wellness || (isUz ? "Salomatlik va Uyqu" : "Wellness Protocol")}
           </button>
 
           <button
@@ -141,7 +143,7 @@ export function LifeTrackerExperience({
             }`}
           >
             <BookOpen className="w-4 h-4 text-[#8B5CF6]" />
-            Digital Journal ({initialJournalEntries.length})
+            {dict.habits?.tabs?.journal || (isUz ? "Shaxsiy kundalik" : "Digital Journal")} ({initialJournalEntries.length})
           </button>
         </div>
 
@@ -156,7 +158,7 @@ export function LifeTrackerExperience({
                   ? "bg-[#142019] text-[#F59E0B] border-[#F59E0B]/40"
                   : "bg-[#142019] text-[#98A69D] border-[#25352C] hover:text-[#F3F7F4]"
               }`}
-              title={showArchived ? "View Active" : "View Archived Habits"}
+              title={showArchived ? (isUz ? "Faol odatlarni ko‘rish" : "View Active") : (isUz ? "Arxivlangan odatlar" : "View Archived Habits")}
             >
               <Archive className="w-4 h-4" />
             </button>
@@ -167,7 +169,7 @@ export function LifeTrackerExperience({
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              New Protocol
+              {dict.habits?.create_habit || (isUz ? "Yangi odat" : "New Protocol")}
             </button>
           </div>
         )}
@@ -183,18 +185,22 @@ export function LifeTrackerExperience({
                   <Flame className="w-6 h-6" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F3F7F4]">
-                  {showArchived ? "No Archived Habits" : "No Active Habits"}
+                  {showArchived
+                    ? (isUz ? "Arxivlangan odatlar mavjud emas" : "No Archived Habits")
+                    : (isUz ? "Faol odatlar mavjud emas" : "No Active Habits")}
                 </h3>
                 <p className="text-xs text-[#98A69D] max-w-sm">
-                  Build atomic discipline with daily and weekly execution rituals.
+                  {isUz
+                    ? "Kunlik va haftalik odatlar orqali intizomni shakllantiring."
+                    : "Build atomic discipline with daily and weekly execution rituals."}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5"
+                  className="mt-2 px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  Create First Protocol
+                  {dict.habits?.create_habit || (isUz ? "Birinchi odatni yaratish" : "Create First Protocol")}
                 </button>
               </div>
             ) : (

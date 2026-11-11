@@ -37,6 +37,7 @@ import {
   toggleArchiveNoteAction,
 } from "@/server/actions/knowledge";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface NoteEditorProps {
   note: KnowledgeNoteSummary;
@@ -47,17 +48,6 @@ interface NoteEditorProps {
   onTriggerAiCopilot: (action: "SUMMARIZE" | "EXPLAIN" | "GENERATE_QUESTIONS" | "EXTRACT_INFO") => void;
 }
 
-const CONTENT_TYPES: { id: NoteContentType; label: string }[] = [
-  { id: "NOTE", label: "Quick Note" },
-  { id: "IDEA", label: "Idea & Concept" },
-  { id: "ARTICLE", label: "Article / Memo" },
-  { id: "BOOK_SUMMARY", label: "Book Synthesis" },
-  { id: "PROGRAMMING_DOC", label: "Code Documentation" },
-  { id: "STUDY_NOTE", label: "Study & IELTS Note" },
-  { id: "PERSONAL_JOURNAL", label: "Personal Journal" },
-  { id: "RESEARCH", label: "Research Material" },
-];
-
 export function NoteEditor({
   note,
   folders,
@@ -66,6 +56,7 @@ export function NoteEditor({
   onNoteDeleted,
   onTriggerAiCopilot,
 }: NoteEditorProps) {
+  const { isUz } = useTranslation();
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [category, setCategory] = useState(note.category);
@@ -81,6 +72,17 @@ export function NoteEditor({
   const [isFavorite, setIsFavorite] = useState(note.isFavorite);
   const [isPinned, setIsPinned] = useState(note.isPinned);
   const [isArchived, setIsArchived] = useState(note.isArchived);
+
+  const contentTypes: { id: NoteContentType; label: string }[] = [
+    { id: "NOTE", label: isUz ? "Tezkor qayd" : "Quick Note" },
+    { id: "IDEA", label: isUz ? "G‘oya va Konseptsiya" : "Idea & Concept" },
+    { id: "ARTICLE", label: isUz ? "Maqola / Memo" : "Article / Memo" },
+    { id: "BOOK_SUMMARY", label: isUz ? "Kitob tahlili" : "Book Synthesis" },
+    { id: "PROGRAMMING_DOC", label: isUz ? "Dasturlash hujjati" : "Code Documentation" },
+    { id: "STUDY_NOTE", label: isUz ? "O‘qish va IELTS qaydi" : "Study & IELTS Note" },
+    { id: "PERSONAL_JOURNAL", label: isUz ? "Shaxsiy kundalik" : "Personal Journal" },
+    { id: "RESEARCH", label: isUz ? "Tadqiqot materiali" : "Research Material" },
+  ];
 
   // Sync state when active note prop changes
   useEffect(() => {
@@ -172,7 +174,10 @@ export function NoteEditor({
   };
 
   const handleDelete = async () => {
-    if (confirm("Permanently delete this note from the second brain?")) {
+    const confirmMsg = isUz
+      ? "Haqiqatan ham ushbu qaydni ikkinchi miyadan butunlay o‘chirmoqchimisiz?"
+      : "Permanently delete this note from the second brain?";
+    if (confirm(confirmMsg)) {
       const res = await deleteKnowledgeNoteAction(note.id);
       if (res.success) {
         onNoteDeleted(note.id);
@@ -269,7 +274,7 @@ export function NoteEditor({
             onChange={(e) => setContentType(e.target.value as NoteContentType)}
             className="px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-semibold text-[#10B981] focus:outline-none focus:border-[#10B981]"
           >
-            {CONTENT_TYPES.map((ct) => (
+            {contentTypes.map((ct) => (
               <option key={ct.id} value={ct.id}>
                 {ct.label}
               </option>
@@ -282,7 +287,7 @@ export function NoteEditor({
             onChange={(e) => setFolderId(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#98A69D] focus:outline-none focus:border-[#10B981]"
           >
-            <option value="">Unfiled / Root</option>
+            <option value="">{isUz ? "Papkasiz / Asosiy daraja" : "Unfiled / Root"}</option>
             {folders.map((f) => (
               <option key={f.id} value={f.id}>
                 📁 {f.name}
@@ -295,8 +300,8 @@ export function NoteEditor({
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category (e.g. Architecture)"
-            className="w-32 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+            placeholder={isUz ? "Kategoriya (masalan: Arxitektura)" : "Category (e.g. Architecture)"}
+            className="w-36 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
           />
         </div>
 
@@ -309,7 +314,7 @@ export function NoteEditor({
                 ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981]"
                 : "bg-[#142019] border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
-            title="Toggle Pin"
+            title={isUz ? "Qadashni o‘zgartirish" : "Toggle Pin"}
           >
             <Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} />
           </button>
@@ -321,7 +326,7 @@ export function NoteEditor({
                 ? "bg-amber-500/20 border-amber-400 text-amber-400"
                 : "bg-[#142019] border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
-            title="Toggle Favorite"
+            title={isUz ? "Tanlanganlarga qo‘shish" : "Toggle Favorite"}
           >
             <Star className={`w-3.5 h-3.5 ${isFavorite ? "fill-current" : ""}`} />
           </button>
@@ -333,7 +338,7 @@ export function NoteEditor({
                 ? "bg-blue-500/20 border-blue-400 text-blue-400"
                 : "bg-[#142019] border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4]"
             }`}
-            title="Toggle Archive"
+            title={isUz ? "Arxivlashni o‘zgartirish" : "Toggle Archive"}
           >
             <Archive className="w-3.5 h-3.5" />
           </button>
@@ -341,7 +346,7 @@ export function NoteEditor({
           <button
             onClick={handleDelete}
             className="p-2 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-red-400 transition-colors"
-            title="Delete Note"
+            title={isUz ? "Qaydni o‘chirish" : "Delete Note"}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -352,7 +357,7 @@ export function NoteEditor({
             className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 shadow-md shadow-[#10B981]/20 font-bold"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>{isSaving ? "Saving..." : "Save Note"}</span>
+            <span>{isSaving ? (isUz ? "Saqlanmoqda..." : "Saving...") : (isUz ? "Saqlash" : "Save Note")}</span>
           </button>
         </div>
       </div>
@@ -362,7 +367,7 @@ export function NoteEditor({
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Note Title / Invariant Heading..."
+        placeholder={isUz ? "Qayd sarlavhasi / Invariant nomi..." : "Note Title / Invariant Heading..."}
         className="w-full text-xl md:text-2xl font-bold bg-transparent border-none text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none"
       />
 
@@ -465,25 +470,25 @@ export function NoteEditor({
               type="button"
               onClick={() => onTriggerAiCopilot("SUMMARIZE")}
               className="px-2 py-0.5 rounded text-[10px] font-mono text-[#98A69D] hover:text-[#10B981]"
-              title="AI Summarize Note"
+              title={isUz ? "Qaydni AI orqali xulosa qilish" : "AI Summarize Note"}
             >
-              ✨ Summarize
+              {isUz ? "✨ Xulosa" : "✨ Summarize"}
             </button>
             <button
               type="button"
               onClick={() => onTriggerAiCopilot("EXPLAIN")}
               className="px-2 py-0.5 rounded text-[10px] font-mono text-[#98A69D] hover:text-cyan-400"
-              title="AI Deep Explain"
+              title={isUz ? "AI orqali chuqur tushuntirish" : "AI Deep Explain"}
             >
-              💡 Explain
+              {isUz ? "💡 Tushuntirish" : "💡 Explain"}
             </button>
             <button
               type="button"
               onClick={() => onTriggerAiCopilot("GENERATE_QUESTIONS")}
               className="px-2 py-0.5 rounded text-[10px] font-mono text-[#98A69D] hover:text-amber-400"
-              title="AI Study Questions"
+              title={isUz ? "O‘quv savollarini tuzish" : "AI Study Questions"}
             >
-              ❓ Quiz
+              {isUz ? "❓ Test" : "❓ Quiz"}
             </button>
           </div>
 
@@ -497,7 +502,7 @@ export function NoteEditor({
             }`}
           >
             {isPreview ? <Edit3 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span>{isPreview ? "Edit Raw" : "Live Preview"}</span>
+            <span>{isPreview ? (isUz ? "Tahrirlash" : "Edit Raw") : (isUz ? "Ko‘rinish" : "Live Preview")}</span>
           </button>
         </div>
       </div>
@@ -509,7 +514,11 @@ export function NoteEditor({
             id="note-content-area"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write architecture invariants, research formulas, or book summaries in Markdown..."
+            placeholder={
+              isUz
+                ? "Arxitektura qoidalari, tadqiqot formulalari yoki kitob xulosalarini Markdown formatida yozing..."
+                : "Write architecture invariants, research formulas, or book summaries in Markdown..."
+            }
             className="w-full h-full min-h-[340px] bg-transparent text-xs text-[#F3F7F4] placeholder-[#98A69D]/40 font-mono leading-relaxed resize-y focus:outline-none"
           />
         ) : (
@@ -528,7 +537,11 @@ export function NoteEditor({
             type="text"
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
-            placeholder="Tags separated by commas (e.g. Architecture, Raft, DistributedSystems)..."
+            placeholder={
+              isUz
+                ? "Vergul bilan ajratilgan teglar (masalan: Arxitektura, Raft, Algoritm)..."
+                : "Tags separated by commas (e.g. Architecture, Raft, DistributedSystems)..."
+            }
             className="flex-1 px-3 py-1 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
           />
         </div>
@@ -537,7 +550,7 @@ export function NoteEditor({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-mono text-[#98A69D] flex items-center gap-1">
-              <Paperclip className="w-3 h-3 text-[#10B981]" /> Attachments:
+              <Paperclip className="w-3 h-3 text-[#10B981]" /> {isUz ? "Fayllar:" : "Attachments:"}
             </span>
             {attachments.map((att, i) => (
               <span
@@ -560,7 +573,7 @@ export function NoteEditor({
                 type="text"
                 value={newAttachment}
                 onChange={(e) => setNewAttachment(e.target.value)}
-                placeholder="file_ref.pdf"
+                placeholder="fayl_nomi.pdf"
                 className="w-28 px-2 py-0.5 rounded bg-[#101915] border border-[#25352C] text-[10px] text-[#F3F7F4]"
               />
               <button
@@ -574,9 +587,9 @@ export function NoteEditor({
           </div>
 
           <div className="text-[10px] font-mono text-[#98A69D] flex items-center gap-3">
-            <span>Created: {formatDate(note.createdAt)}</span>
+            <span>{isUz ? "Yaratildi: " : "Created: "}{formatDate(note.createdAt)}</span>
             <span>•</span>
-            <span>Modified: {formatDate(note.updatedAt)}</span>
+            <span>{isUz ? "O‘zgartirildi: " : "Modified: "}{formatDate(note.updatedAt)}</span>
           </div>
         </div>
       </div>

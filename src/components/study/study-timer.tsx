@@ -19,30 +19,34 @@ import {
 } from "lucide-react";
 import { StudySessionSummary, ExamResultSummary } from "@/types";
 import { logStudySessionAction, createExamResultAction } from "@/server/actions/study";
+import { useTranslation } from "@/stores/language-store";
 
 interface StudyTimerProps {
   initialSessions: StudySessionSummary[];
   initialExams: ExamResultSummary[];
 }
 
-const SUBJECT_PRESETS = [
-  { id: "ielts-reading", label: "IELTS Academic Reading", category: "IELTS" },
-  { id: "ielts-writing", label: "IELTS Writing Task 2", category: "IELTS" },
-  { id: "ielts-speaking", label: "IELTS Speaking Band 8.5 Lab", category: "IELTS" },
-  { id: "arabic-nahw", label: "Arabic Grammar (Nahw & Sarf)", category: "ARABIC" },
-  { id: "arabic-vocab", label: "Arabic Classical Lexicon", category: "ARABIC" },
-  { id: "arch-design", label: "Software Architecture & Scalability", category: "CORE" },
-];
-
 const DURATION_PRESETS = [15, 25, 45, 60, 90];
 
 export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
+  const { isUz, dict } = useTranslation();
   const [sessions, setSessions] = useState<StudySessionSummary[]>(initialSessions);
   const [exams, setExams] = useState<ExamResultSummary[]>(initialExams);
   const [activeTab, setActiveTab] = useState<"TIMER" | "HISTORY">("TIMER");
 
+  const subjectPresets = [
+    { id: "ielts-reading", label: isUz ? "IELTS Akademik O‘qish (Reading)" : "IELTS Academic Reading", category: "IELTS" },
+    { id: "ielts-writing", label: isUz ? "IELTS Yozish (Writing Task 2)" : "IELTS Writing Task 2", category: "IELTS" },
+    { id: "ielts-speaking", label: isUz ? "IELTS So‘zlashuv (Speaking 8.5+ Lab)" : "IELTS Speaking Band 8.5 Lab", category: "IELTS" },
+    { id: "arabic-nahw", label: isUz ? "Arab tili grammatikasi (Nahv va Sarf)" : "Arabic Grammar (Nahw & Sarf)", category: "ARABIC" },
+    { id: "arabic-vocab", label: isUz ? "Arab tili mumtoz lug‘ati" : "Arabic Classical Lexicon", category: "ARABIC" },
+    { id: "arch-design", label: isUz ? "Dasturiy arxitektura va loyihalash" : "Software Architecture & Scalability", category: "CORE" },
+  ];
+
   // Timer state
-  const [selectedSubject, setSelectedSubject] = useState<string>("IELTS Academic Reading");
+  const [selectedSubject, setSelectedSubject] = useState<string>(
+    isUz ? "IELTS Akademik O‘qish (Reading)" : "IELTS Academic Reading"
+  );
   const [targetDurationMinutes, setTargetDurationMinutes] = useState<number>(45);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(45 * 60);
   const [isActive, setIsActive] = useState<boolean>(false);
@@ -203,25 +207,25 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab("TIMER")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "TIMER"
-                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20"
+                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
                 : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
             <Timer className="w-3.5 h-3.5" />
-            <span>Interactive Study Timer</span>
+            <span>{isUz ? "Fokus taymeri" : "Interactive Study Timer"}</span>
           </button>
           <button
             onClick={() => setActiveTab("HISTORY")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "HISTORY"
-                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20"
+                ? "bg-[#10B981] text-[#080D0B] shadow-lg shadow-[#10B981]/20 font-bold"
                 : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
             }`}
           >
             <Award className="w-3.5 h-3.5" />
-            <span>Exam History & Benchmarks</span>
+            <span>{isUz ? "Imtihonlar tarixi va natijalar" : "Exam History & Benchmarks"}</span>
             <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[#142019] text-[#98A69D] font-mono">
               {exams.length}
             </span>
@@ -231,10 +235,10 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
         {activeTab === "HISTORY" && (
           <button
             onClick={() => setIsExamModalOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center gap-1.5 cursor-pointer font-bold"
           >
             <Plus className="w-4 h-4" />
-            <span>Log Mock Exam</span>
+            <span>{isUz ? "Mock natijasini kiritish" : "Log Mock Exam"}</span>
           </button>
         )}
       </div>
@@ -248,7 +252,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
             <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 pb-6 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[#10B981]" />
-                <span className="text-xs font-mono text-[#98A69D]">CURRENT SUBJECT:</span>
+                <span className="text-xs font-mono text-[#98A69D]">{isUz ? "FAN / MAVZU:" : "CURRENT SUBJECT:"}</span>
               </div>
               <select
                 disabled={isActive}
@@ -256,7 +260,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#101915] border border-[#25352C] text-xs font-semibold text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
-                {SUBJECT_PRESETS.map((p) => (
+                {subjectPresets.map((p) => (
                   <option key={p.id} value={p.label}>
                     [{p.category}] {p.label}
                   </option>
@@ -298,7 +302,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 <div className="text-xs font-mono text-[#98A69D] mt-2 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-[#10B981]" />
                   <span>
-                    {isActive ? (isPaused ? "Paused" : "Deep Focus Active") : "Ready"}
+                    {isActive ? (isPaused ? (isUz ? "To‘xtatilgan" : "Paused") : (isUz ? "Chuqur fokus faol" : "Deep Focus Active")) : (isUz ? "Tayyor" : "Ready")}
                   </span>
                 </div>
               </div>
@@ -312,13 +316,13 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                     key={min}
                     disabled={isActive}
                     onClick={() => handleSelectDuration(min)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer ${
                       targetDurationMinutes === min
                         ? "bg-[#10B981] text-[#080D0B] font-bold shadow-md shadow-[#10B981]/20"
                         : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] disabled:opacity-40"
                     }`}
                   >
-                    {min}m
+                    {min}{isUz ? "daq" : "m"}
                   </button>
                 ))}
 
@@ -326,15 +330,15 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
                 <button
                   onClick={() => handleAddMinutes(5)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-mono bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981]"
+                  className="px-3 py-1.5 rounded-xl text-xs font-mono bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981] cursor-pointer"
                 >
-                  +5m
+                  +5{isUz ? "daq" : "m"}
                 </button>
                 <button
                   onClick={() => handleAddMinutes(15)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-mono bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981]"
+                  className="px-3 py-1.5 rounded-xl text-xs font-mono bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981] cursor-pointer"
                 >
-                  +15m
+                  +15{isUz ? "daq" : "m"}
                 </button>
               </div>
 
@@ -343,33 +347,33 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 {!isActive ? (
                   <button
                     onClick={handleStartTimer}
-                    className="px-8 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-sm shadow-xl shadow-[#10B981]/20 flex items-center gap-2 transition-all hover:scale-105"
+                    className="px-8 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-sm shadow-xl shadow-[#10B981]/20 flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-current" />
-                    <span>Start Session</span>
+                    <span>{isUz ? "Fokusni boshlash" : "Start Session"}</span>
                   </button>
                 ) : isPaused ? (
                   <button
                     onClick={handleResumeTimer}
-                    className="px-8 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-sm shadow-xl shadow-[#10B981]/20 flex items-center gap-2 transition-all"
+                    className="px-8 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-sm shadow-xl shadow-[#10B981]/20 flex items-center gap-2 transition-all cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-current" />
-                    <span>Resume</span>
+                    <span>{isUz ? "Davom ettirish" : "Resume"}</span>
                   </button>
                 ) : (
                   <button
                     onClick={handlePauseTimer}
-                    className="px-8 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-[#080D0B] font-bold text-sm shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all"
+                    className="px-8 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-[#080D0B] font-bold text-sm shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all cursor-pointer"
                   >
                     <Pause className="w-4 h-4 fill-current" />
-                    <span>Pause</span>
+                    <span>{isUz ? "To‘xtatib turish" : "Pause"}</span>
                   </button>
                 )}
 
                 <button
                   onClick={handleResetTimer}
-                  className="p-3 rounded-2xl bg-[#101915] border border-[#25352C] hover:border-[#EF4444] text-[#98A69D] hover:text-[#EF4444] transition-all"
-                  title="Reset Timer"
+                  className="p-3 rounded-2xl bg-[#101915] border border-[#25352C] hover:border-[#EF4444] text-[#98A69D] hover:text-[#EF4444] transition-all cursor-pointer"
+                  title={isUz ? "Qaytarish" : "Reset Timer"}
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
@@ -381,9 +385,9 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                       setIsPaused(false);
                       setIsLogModalOpen(true);
                     }}
-                    className="px-4 py-3 rounded-2xl bg-[#142019] border border-[#25352C] hover:border-[#10B981] text-xs font-semibold text-[#10B981] transition-all"
+                    className="px-4 py-3 rounded-2xl bg-[#142019] border border-[#25352C] hover:border-[#10B981] text-xs font-semibold text-[#10B981] transition-all cursor-pointer"
                   >
-                    Finish Early
+                    {isUz ? "Yakunlash" : "Finish Early"}
                   </button>
                 )}
               </div>
@@ -397,11 +401,11 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 <div className="flex items-center gap-2">
                   <History className="w-4 h-4 text-[#10B981]" />
                   <h3 className="text-xs font-semibold text-[#F3F7F4] uppercase tracking-wider font-mono">
-                    Study Session History
+                    {isUz ? "Mashg‘ulotlar tarixi" : "Study Session History"}
                   </h3>
                 </div>
                 <span className="text-[11px] font-mono text-[#98A69D]">
-                  {Math.round(totalStudyMinutes / 60)} hrs total
+                  {Math.round(totalStudyMinutes / 60)} {isUz ? "soat jami" : "hrs total"}
                 </span>
               </div>
 
@@ -416,7 +420,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                         {sess.subject}
                       </span>
                       <span className="text-[11px] font-mono font-bold text-[#10B981]">
-                        {sess.durationMinutes} min
+                        {sess.durationMinutes} {isUz ? "daq" : "min"}
                       </span>
                     </div>
                     {sess.notes && (
@@ -425,7 +429,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                       </p>
                     )}
                     <div className="text-[10px] font-mono text-[#98A69D] flex items-center justify-between pt-1 border-t border-[#25352C]/40">
-                      <span>{new Date(sess.completedAt).toLocaleDateString()}</span>
+                      <span>{new Date(sess.completedAt).toLocaleDateString(isUz ? "uz-UZ" : "en-US")}</span>
                       <span>{new Date(sess.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
@@ -433,7 +437,9 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
                 {sessions.length === 0 && (
                   <div className="text-center py-8 text-xs text-[#98A69D]">
-                    No study sessions logged yet. Complete a timer session to track your hours.
+                    {isUz
+                      ? "Hozircha mashg‘ulotlar mavjud emas. Soatlarni hisoblash uchun taymerni ishga tushiring."
+                      : "No study sessions logged yet. Complete a timer session to track your hours."}
                   </div>
                 )}
               </div>
@@ -441,7 +447,9 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
             <div className="pt-3 border-t border-[#25352C] text-center">
               <span className="text-[11px] text-[#98A69D]">
-                Consistent 90-minute daily sessions guarantee IELTS 8.5 retention.
+                {isUz
+                  ? "Kunlik 90 daqiqalik fokus sessiyasi IELTS 8.5+ natijasini kafolatlaydi."
+                  : "Consistent 90-minute daily sessions guarantee IELTS 8.5 retention."}
               </span>
             </div>
           </div>
@@ -455,34 +463,40 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
               <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-                <span>AVERAGE OVERALL</span>
+                <span>{isUz ? "O‘RTACHA BALL" : "AVERAGE OVERALL"}</span>
                 <TrendingUp className="w-4 h-4 text-[#10B981]" />
               </div>
               <div className="text-3xl font-bold font-mono text-[#10B981]">{averageBand}</div>
-              <p className="text-xs text-[#98A69D] mt-1">Across all completed official & mock tests</p>
+              <p className="text-xs text-[#98A69D] mt-1">
+                {isUz ? "Barcha topshirilgan mock imtihonlar bo‘yicha" : "Across all completed official & mock tests"}
+              </p>
             </div>
 
             <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
               <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-                <span>PEAK BAND SCORE</span>
+                <span>{isUz ? "ENG YUQORI BALL" : "PEAK BAND SCORE"}</span>
                 <Award className="w-4 h-4 text-cyan-400" />
               </div>
               <div className="text-3xl font-bold font-mono text-cyan-400">{highestBand}</div>
-              <p className="text-xs text-[#98A69D] mt-1">Target threshold: Band 8.5</p>
+              <p className="text-xs text-[#98A69D] mt-1">
+                {isUz ? "Maqsadli chegara: Band 8.5" : "Target threshold: Band 8.5"}
+              </p>
             </div>
 
             <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
               <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-                <span>TESTS COMPLETED</span>
+                <span>{isUz ? "TOPSHIRILGAN TESTLAR" : "TESTS COMPLETED"}</span>
                 <FileSpreadsheet className="w-4 h-4 text-amber-400" />
               </div>
               <div className="text-3xl font-bold font-mono text-[#F3F7F4]">{exams.length}</div>
-              <p className="text-xs text-[#98A69D] mt-1">Full 4-skill diagnostic simulations</p>
+              <p className="text-xs text-[#98A69D] mt-1">
+                {isUz ? "4 ta ko‘nikma bo‘yicha to‘liq sinovlar" : "Full 4-skill diagnostic simulations"}
+              </p>
             </div>
 
             <div className="glass-card rounded-2xl p-5 border border-[#25352C] bg-[#101915]/80">
               <div className="flex items-center justify-between text-xs text-[#98A69D] mb-2 font-mono">
-                <span>TARGET OBJECTIVE</span>
+                <span>{isUz ? "ASOSIY MAQSAD" : "TARGET OBJECTIVE"}</span>
                 <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
               </div>
               <div className="text-3xl font-bold font-mono text-[#10B981]">Band 8.5</div>
@@ -494,24 +508,26 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
           <div className="glass-card rounded-2xl border border-[#25352C] overflow-hidden">
             <div className="p-4 border-b border-[#25352C] flex items-center justify-between bg-[#101915]">
               <h3 className="text-xs font-semibold text-[#F3F7F4] uppercase font-mono tracking-wider">
-                Historical Exam Benchmark Records
+                {isUz ? "Rasmiy va Mock imtihonlar tarixi" : "Historical Exam Benchmark Records"}
               </h3>
-              <span className="text-xs text-[#98A69D] font-mono">Official & Diagnostic Mocks</span>
+              <span className="text-xs text-[#98A69D] font-mono">
+                {isUz ? "Rasmiy va Diagnostik Mocklar" : "Official & Diagnostic Mocks"}
+              </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-[#25352C] bg-[#142019]/60 text-[#98A69D] font-mono text-[11px]">
-                    <th className="py-3 px-4">Exam Title</th>
-                    <th className="py-3 px-4">Type</th>
-                    <th className="py-3 px-4 text-center">Listening</th>
-                    <th className="py-3 px-4 text-center">Reading</th>
-                    <th className="py-3 px-4 text-center">Writing</th>
-                    <th className="py-3 px-4 text-center">Speaking</th>
-                    <th className="py-3 px-4 text-center">Overall</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4">Notes</th>
+                    <th className="py-3 px-4">{isUz ? "Imtihon nomi" : "Exam Title"}</th>
+                    <th className="py-3 px-4">{isUz ? "Turi" : "Type"}</th>
+                    <th className="py-3 px-4 text-center">{isUz ? "Tinglash" : "Listening"}</th>
+                    <th className="py-3 px-4 text-center">{isUz ? "O‘qish" : "Reading"}</th>
+                    <th className="py-3 px-4 text-center">{isUz ? "Yozish" : "Writing"}</th>
+                    <th className="py-3 px-4 text-center">{isUz ? "So‘zlashuv" : "Speaking"}</th>
+                    <th className="py-3 px-4 text-center">{isUz ? "Umumiy ball" : "Overall"}</th>
+                    <th className="py-3 px-4">{isUz ? "Sana" : "Date"}</th>
+                    <th className="py-3 px-4">{isUz ? "Qaydlar" : "Notes"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#25352C]">
@@ -541,7 +557,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-[#98A69D] font-mono">
-                        {new Date(ex.date).toLocaleDateString()}
+                        {new Date(ex.date).toLocaleDateString(isUz ? "uz-UZ" : "en-US")}
                       </td>
                       <td className="py-3.5 px-4 text-[#98A69D] max-w-xs truncate">
                         {ex.notes || "—"}
@@ -562,11 +578,13 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Session Completed!</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Mashg‘ulot yakunlandi!" : "Session Completed!"}
+                </h3>
               </div>
               <button
                 onClick={() => setIsLogModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4]"
+                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -574,22 +592,24 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
             <div className="space-y-4">
               <div className="p-3.5 rounded-xl bg-[#142019] border border-[#25352C] space-y-1">
-                <div className="text-xs text-[#98A69D] font-mono">SUBJECT COMPLETED</div>
+                <div className="text-xs text-[#98A69D] font-mono">
+                  {isUz ? "YAKUNLANGAN MAVZU" : "SUBJECT COMPLETED"}
+                </div>
                 <div className="text-sm font-bold text-[#F3F7F4]">{selectedSubject}</div>
                 <div className="text-xs font-mono text-[#10B981]">
-                  Duration: {Math.max(1, Math.round((totalSeconds - secondsRemaining) / 60))} minutes
+                  {isUz ? "Davomiyligi:" : "Duration:"} {Math.max(1, Math.round((totalSeconds - secondsRemaining) / 60))} {isUz ? "daqiqa" : "minutes"}
                 </div>
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Session Reflections & Takeaways (Optional)
+                  {isUz ? "Xulosalar va Mulohazalar (Ixtiyoriy)" : "Session Reflections & Takeaways (Optional)"}
                 </label>
                 <textarea
                   rows={3}
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
-                  placeholder="e.g. Mastered Cambridge 18 Reading passage 3 (Heading matching), identified inference weakness..."
+                  placeholder={isUz ? "Masalan: Cambridge 18 Reading 3-matn (Sarlavha tanlash) mukammal ishlandi..." : "e.g. Mastered Cambridge 18 Reading passage 3 (Heading matching), identified inference weakness..."}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -598,16 +618,16 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 <button
                   type="button"
                   onClick={() => setIsLogModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4]"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
                 >
-                  Discard
+                  {isUz ? "Bekor qilish" : "Discard"}
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveSession}
-                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all"
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all cursor-pointer font-bold"
                 >
-                  Save to Study Log
+                  {isUz ? "O‘quv jurnaliga saqlash" : "Save to Study Log"}
                 </button>
               </div>
             </div>
@@ -622,11 +642,13 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Log Mock Exam Result</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Mock imtihon natijasini kiritish" : "Log Mock Exam Result"}
+                </h3>
               </div>
               <button
                 onClick={() => setIsExamModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4]"
+                className="p-1 rounded-lg hover:bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -635,14 +657,14 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
             <form onSubmit={handleCreateExam} className="space-y-4">
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Exam Title / Test Source *
+                  {isUz ? "Imtihon nomi / Test manbasi *" : "Exam Title / Test Source *"}
                 </label>
                 <input
                   type="text"
                   required
                   value={examForm.title}
                   onChange={(e) => setExamForm({ ...examForm, title: e.target.value })}
-                  placeholder="e.g. Cambridge IELTS 19 Academic Test 4"
+                  placeholder={isUz ? "Masalan: Cambridge IELTS 19 Academic Test 4" : "e.g. Cambridge IELTS 19 Academic Test 4"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -650,7 +672,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Listening Band
+                    {isUz ? "Tinglash (L)" : "Listening Band"}
                   </label>
                   <input
                     type="number"
@@ -666,7 +688,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Reading Band
+                    {isUz ? "O‘qish (R)" : "Reading Band"}
                   </label>
                   <input
                     type="number"
@@ -682,7 +704,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Writing Band
+                    {isUz ? "Yozish (W)" : "Writing Band"}
                   </label>
                   <input
                     type="number"
@@ -698,7 +720,7 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Speaking Band
+                    {isUz ? "So‘zlashuv (S)" : "Speaking Band"}
                   </label>
                   <input
                     type="number"
@@ -715,13 +737,13 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Section Analysis & Notes
+                  {isUz ? "Bo‘limlar tahlili va Qaydlar" : "Section Analysis & Notes"}
                 </label>
                 <textarea
                   rows={3}
                   value={examForm.notes}
                   onChange={(e) => setExamForm({ ...examForm, notes: e.target.value })}
-                  placeholder="e.g. Reading passage 2 took 24 mins. Writing Task 2 had strong lexical cohesion."
+                  placeholder={isUz ? "Masalan: Reading 2-matn 24 daqiqa oldi. Writing Task 2 kuchli leksik boylikka ega bo‘ldi." : "e.g. Reading passage 2 took 24 mins. Writing Task 2 had strong lexical cohesion."}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -730,15 +752,15 @@ export function StudyTimer({ initialSessions, initialExams }: StudyTimerProps) {
                 <button
                   type="button"
                   onClick={() => setIsExamModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4]"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4] cursor-pointer"
                 >
-                  Cancel
+                  {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all"
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all cursor-pointer font-bold"
                 >
-                  Save Exam Result
+                  {isUz ? "Natijani saqlash" : "Save Exam Result"}
                 </button>
               </div>
             </form>

@@ -23,6 +23,7 @@ import {
   AiGeneratedReportResult,
 } from "@/types";
 import { generateAiAnalyticsReportAction } from "@/server/actions/analytics";
+import { useTranslation } from "@/stores/language-store";
 
 interface AiReportModalProps {
   isOpen: boolean;
@@ -30,24 +31,41 @@ interface AiReportModalProps {
   currentPeriod: AnalyticsTimePeriod;
 }
 
-const REPORT_TYPES = [
-  { id: "EXECUTIVE_SYNTHESIS", label: "Executive Synthesis", icon: Sparkles },
-  { id: "STUDY_PERFORMANCE", label: "Study & IELTS 8.5", icon: GraduationCap },
-  { id: "HABIT_CONSISTENCY", label: "Habit & Discipline", icon: Flame },
-  { id: "PROJECT_PROGRESS", label: "Developer Ventures", icon: Code2 },
-  { id: "FINANCIAL_TREASURY", label: "Treasury & Runway", icon: Wallet },
-];
-
 export function AiReportModal({
   isOpen,
   onClose,
   currentPeriod,
 }: AiReportModalProps) {
+  const { dict, isUz } = useTranslation();
   const [selectedType, setSelectedType] = useState<string>("EXECUTIVE_SYNTHESIS");
   const [period, setPeriod] = useState<AnalyticsTimePeriod>(currentPeriod);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AiGeneratedReportResult | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const reportTypes = [
+    { id: "EXECUTIVE_SYNTHESIS", label: isUz ? "Ijroiya Xulosasi" : "Executive Synthesis", icon: Sparkles },
+    { id: "STUDY_PERFORMANCE", label: isUz ? "O‘qish va IELTS 8.5" : "Study & IELTS 8.5", icon: GraduationCap },
+    { id: "HABIT_CONSISTENCY", label: isUz ? "Odatlar va Intizom" : "Habit & Discipline", icon: Flame },
+    { id: "PROJECT_PROGRESS", label: isUz ? "Dasturchi Loyihalari" : "Developer Ventures", icon: Code2 },
+    { id: "FINANCIAL_TREASURY", label: isUz ? "Moliya va Jamg‘arma" : "Treasury & Runway", icon: Wallet },
+  ];
+
+  const getPeriodLabel = (p: AnalyticsTimePeriod) => {
+    if (!isUz) return p;
+    switch (p) {
+      case "DAILY":
+        return "KUNLIK";
+      case "WEEKLY":
+        return "HAFTALIK";
+      case "MONTHLY":
+        return "OYLIK";
+      case "YEARLY":
+        return "YILLIK";
+      default:
+        return p;
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -72,21 +90,21 @@ export function AiReportModal({
   const handleCopy = () => {
     if (!report) return;
     const fullText = `# ${report.title}
-Generated: ${report.generatedAt}
+${isUz ? "Yaratilgan sana" : "Generated"}: ${report.generatedAt}
 
-## Executive Summary
+## ${isUz ? "Ijroiya Xulosasi" : "Executive Summary"}
 ${report.executiveSummary}
 
-## Key Findings
+## ${isUz ? "Asosiy Topilmalar" : "Key Findings"}
 ${report.keyFindings.map((f) => `- ${f}`).join("\n")}
 
-## Strengths
+## ${isUz ? "Tizim Kuchli Tomonlari" : "Strengths"}
 ${report.strengths.map((s) => `+ ${s}`).join("\n")}
 
-## Bottlenecks & Friction Points
+## ${isUz ? "To‘siqlar va Oqsoqliklar" : "Bottlenecks & Friction Points"}
 ${report.bottlenecks.map((b) => `! ${b}`).join("\n")}
 
-## Actionable Recommendations
+## ${isUz ? "Amaliy Tavsiyalar" : "Actionable Recommendations"}
 ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
 `;
     navigator.clipboard.writeText(fullText);
@@ -110,20 +128,22 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-2">
-                AI Sovereign Analytical Report
+                {isUz ? "AI Shaxsiy Tahliliy Hisobot" : "AI Sovereign Analytical Report"}
                 <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
-                  VERIFIED DATA
+                  {isUz ? "HAQIQIY MA'LUMOTLAR" : "VERIFIED DATA"}
                 </span>
               </h3>
               <p className="text-[11px] text-[#98A69D]">
-                Synthesizing telemetry records from PostgreSQL and Sovereign Focus Kernel.
+                {isUz
+                  ? "Mahalliy xotira va diqqat markazidan olingan telemetriya tahlili."
+                  : "Synthesizing telemetry records from local storage and Sovereign Focus Kernel."}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors"
+            className="p-1.5 rounded-lg text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -133,7 +153,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
         <div className="p-3 border-b border-[#25352C] bg-[#101915] flex flex-wrap items-center justify-between gap-2">
           {/* Report types */}
           <div className="flex flex-wrap gap-1.5">
-            {REPORT_TYPES.map((rt) => {
+            {reportTypes.map((rt) => {
               const Icon = rt.icon;
               const isSelected = selectedType === rt.id;
               return (
@@ -143,7 +163,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
                     setSelectedType(rt.id);
                     handleGenerate(rt.id, period);
                   }}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     isSelected
                       ? "bg-[#142019] text-[#10B981] font-semibold border border-[#10B981]/40 shadow-sm"
                       : "text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019]"
@@ -165,13 +185,13 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
                   setPeriod(p);
                   handleGenerate(selectedType, p);
                 }}
-                className={`px-2 py-0.5 rounded transition-colors ${
+                className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
                   period === p
                     ? "bg-[#10B981] text-[#080D0B] font-bold"
                     : "text-[#98A69D] hover:text-[#F3F7F4]"
                 }`}
               >
-                {p}
+                {getPeriodLabel(p)}
               </button>
             ))}
           </div>
@@ -183,7 +203,9 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
             <div className="h-64 flex flex-col items-center justify-center space-y-3">
               <div className="w-8 h-8 rounded-full border-2 border-[#10B981]/20 border-t-[#10B981] animate-spin" />
               <p className="text-xs font-mono text-[#10B981]">
-                Synthesizing cross-subsystem telemetry & invariants...
+                {isUz
+                  ? "Tizim telemetriyasi va ko‘rsatkichlari tahlil qilinmoqda..."
+                  : "Synthesizing cross-subsystem telemetry & invariants..."}
               </p>
             </div>
           ) : report ? (
@@ -195,24 +217,24 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
                     {report.title}
                   </h4>
                   <p className="text-xs text-[#98A69D] font-mono">
-                    Timeframe: {period} &bull; Generated: {new Date(report.generatedAt).toLocaleString()}
+                    {isUz ? "Davr: " : "Timeframe: "}{getPeriodLabel(period)} &bull; {isUz ? "Yaratildi: " : "Generated: "}{new Date(report.generatedAt).toLocaleString()}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#142019] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-colors text-xs font-mono"
-                    title="Copy Report Markdown"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#142019] text-[#98A69D] hover:text-[#10B981] border border-[#25352C] hover:border-[#10B981]/30 transition-colors text-xs font-mono cursor-pointer"
+                    title={isUz ? "Hisobotni nusxalash" : "Copy Report Markdown"}
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copied ? "Copied" : "Copy"}</span>
+                    <span>{copied ? (isUz ? "Nusxalandi" : "Copied") : (isUz ? "Nusxalash" : "Copy")}</span>
                   </button>
 
                   <button
                     onClick={() => handleGenerate(selectedType, period)}
-                    className="p-1.5 rounded-lg bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors"
-                    title="Regenerate Report"
+                    className="p-1.5 rounded-lg bg-[#142019] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C] transition-colors cursor-pointer"
+                    title={isUz ? "Hisobotni qayta yaratish" : "Regenerate Report"}
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                   </button>
@@ -222,7 +244,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
               {/* Executive Summary Card */}
               <div className="glass-card rounded-xl p-4 border border-[#25352C] space-y-2 bg-[#142019]/60">
                 <span className="text-[10px] font-mono font-bold text-[#10B981] uppercase tracking-wider">
-                  Executive Summary
+                  {isUz ? "Ijroiya Xulosasi" : "Executive Summary"}
                 </span>
                 <p className="text-xs text-[#F3F7F4] leading-relaxed font-sans">
                   {report.executiveSummary}
@@ -232,7 +254,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
               {/* Key Findings */}
               <div className="glass-card rounded-xl p-4 border border-[#25352C] space-y-2.5">
                 <span className="text-[10px] font-mono font-bold text-[#98A69D] uppercase tracking-wider">
-                  Empirical Findings & Metrics
+                  {isUz ? "Asosiy Topilmalar va Ko‘rsatkichlar" : "Empirical Findings & Metrics"}
                 </span>
                 <ul className="space-y-1.5">
                   {report.keyFindings.map((finding, idx) => (
@@ -250,7 +272,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
                 <div className="glass-card rounded-xl p-4 border border-[#25352C] space-y-2 bg-[#101915]/50">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#10B981] uppercase">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>System Strengths</span>
+                    <span>{isUz ? "Tizim Kuchli Tomonlari" : "System Strengths"}</span>
                   </div>
                   <ul className="space-y-1.5">
                     {report.strengths.map((s, idx) => (
@@ -266,7 +288,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
                 <div className="glass-card rounded-xl p-4 border border-[#25352C] space-y-2 bg-[#101915]/50">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-400 uppercase">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Bottlenecks & Friction</span>
+                    <span>{isUz ? "To‘siqlar va Oqsoqliklar" : "Bottlenecks & Friction"}</span>
                   </div>
                   <ul className="space-y-1.5">
                     {report.bottlenecks.map((b, idx) => (
@@ -282,7 +304,7 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
               {/* Actionable Recommendations */}
               <div className="glass-card rounded-xl p-4 border border-[#10B981]/30 bg-[#142019] space-y-2.5">
                 <span className="text-[10px] font-mono font-bold text-[#10B981] uppercase tracking-wider">
-                  Prioritized Action Items for Next Sprint
+                  {isUz ? "Keyingi Davr Uchun Tavsiya Etilgan Amallar" : "Prioritized Action Items for Next Sprint"}
                 </span>
                 <div className="space-y-2">
                   {report.actionableRecommendations.map((rec, idx) => (
@@ -307,9 +329,9 @@ ${report.actionableRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}
           <span>XASAN OS Neural Telemetry Engine v1.0</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-[#142019] text-[#F3F7F4] hover:bg-[#25352C] rounded-lg transition-colors text-xs font-medium"
+            className="px-4 py-1.5 bg-[#142019] text-[#F3F7F4] hover:bg-[#25352C] rounded-lg transition-colors text-xs font-medium cursor-pointer"
           >
-            Close
+            {isUz ? "Yopish" : "Close"}
           </button>
         </div>
       </div>

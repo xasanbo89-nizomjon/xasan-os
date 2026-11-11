@@ -44,6 +44,7 @@ import {
   createDevReleaseAction,
 } from "@/server/actions/developer";
 import { useDeveloperStore } from "@/stores/developer-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface DeveloperToolsProps {
   projects: ProjectSummary[];
@@ -62,6 +63,7 @@ export function DeveloperTools({
   initialDeployments,
   initialReleases,
 }: DeveloperToolsProps) {
+  const { isUz } = useTranslation();
   const [activeSubTab, setActiveSubTab] = useState<"BUGS" | "FEATURES" | "DOCS" | "DEPLOYMENTS" | "RELEASES">("BUGS");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("ALL");
 
@@ -184,7 +186,7 @@ export function DeveloperTools({
       severity: bugForm.severity,
       module: bugForm.module,
       reproSteps: bugForm.reproSteps,
-      projectName: targetProject?.name || "Project",
+      projectName: targetProject?.name || (isUz ? "Loyiha" : "Project"),
     });
 
     setIsBugModalOpen(false);
@@ -204,7 +206,8 @@ export function DeveloperTools({
   };
 
   const handleDeleteBug = (id: string) => {
-    if (confirm("Delete this bug report?")) {
+    const confirmMsg = isUz ? "Ushbu xatolik qaydini o‘chirishni xohlaysizmi?" : "Delete this bug report?";
+    if (confirm(confirmMsg)) {
       deleteBug(id);
     }
   };
@@ -221,7 +224,7 @@ export function DeveloperTools({
       description: featForm.description,
       priority: featForm.priority,
       targetVersion: featForm.targetVersion,
-      projectName: targetProject?.name || "Project",
+      projectName: targetProject?.name || (isUz ? "Loyiha" : "Project"),
     });
 
     setIsFeatureModalOpen(false);
@@ -240,7 +243,8 @@ export function DeveloperTools({
   };
 
   const handleDeleteFeature = (id: string) => {
-    if (confirm("Delete this backlog item?")) {
+    const confirmMsg = isUz ? "Ushbu reja elementini o‘chirmoqchimisiz?" : "Delete this backlog item?";
+    if (confirm(confirmMsg)) {
       deleteFeature(id);
     }
   };
@@ -260,7 +264,7 @@ export function DeveloperTools({
       content: docForm.content,
       requestPayload: docForm.requestPayload || undefined,
       responsePayload: docForm.responsePayload || undefined,
-      projectName: targetProject?.name || "Project",
+      projectName: targetProject?.name || (isUz ? "Loyiha" : "Project"),
     });
 
     setIsDocModalOpen(false);
@@ -277,7 +281,8 @@ export function DeveloperTools({
   };
 
   const handleDeleteDoc = (id: string) => {
-    if (confirm("Delete this documentation item?")) {
+    const confirmMsg = isUz ? "Ushbu hujjatni o‘chirmoqchimisiz?" : "Delete this documentation item?";
+    if (confirm(confirmMsg)) {
       deleteDoc(id);
     }
   };
@@ -290,14 +295,14 @@ export function DeveloperTools({
       projectId: depForm.projectId || projects[0]?.id || "proj-1",
       environment: depForm.environment,
       commitSha: depForm.commitSha || "manual-sha",
-      commitMessage: depForm.commitMessage || "Manual deployment logged",
+      commitMessage: depForm.commitMessage || (isUz ? "Qo‘lda kiritilgan deploy" : "Manual deployment logged"),
       branch: depForm.branch || "main",
       status: depForm.status,
       deploymentUrl: depForm.deploymentUrl || undefined,
       buildDurationSec: Number(depForm.buildDurationSec) || 40,
       logSnippet: depForm.logSnippet || undefined,
       source: "MANUAL",
-      projectName: targetProject?.name || "Project",
+      projectName: targetProject?.name || (isUz ? "Loyiha" : "Project"),
     });
 
     setIsDepModalOpen(false);
@@ -314,7 +319,7 @@ export function DeveloperTools({
       version: relForm.version,
       title: relForm.title,
       changelog: relForm.changelog,
-      projectName: targetProject?.name || "Project",
+      projectName: targetProject?.name || (isUz ? "Loyiha" : "Project"),
     });
 
     setIsRelModalOpen(false);
@@ -340,7 +345,7 @@ export function DeveloperTools({
             }`}
           >
             <Bug className="w-3.5 h-3.5" />
-            <span>Bug Tracker</span>
+            <span>{isUz ? "Xatolar nazorati" : "Bug Tracker"}</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
               {bugs.filter((b) => b.status === "OPEN" || b.status === "INVESTIGATING").length}
             </span>
@@ -355,7 +360,7 @@ export function DeveloperTools({
             }`}
           >
             <ListTodo className="w-3.5 h-3.5" />
-            <span>Feature Backlog</span>
+            <span>{isUz ? "Funksiyalar rejasi" : "Feature Backlog"}</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
               {features.filter((f) => f.status !== "SHIPPED").length}
             </span>
@@ -370,7 +375,7 @@ export function DeveloperTools({
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>API & Docs</span>
+            <span>{isUz ? "API va Hujjatlar" : "API & Docs"}</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
               {docs.length}
             </span>
@@ -385,7 +390,7 @@ export function DeveloperTools({
             }`}
           >
             <Rocket className="w-3.5 h-3.5" />
-            <span>Deployments</span>
+            <span>{isUz ? "Deploylar" : "Deployments"}</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
               {deployments.length}
             </span>
@@ -400,7 +405,7 @@ export function DeveloperTools({
             }`}
           >
             <History className="w-3.5 h-3.5" />
-            <span>Releases</span>
+            <span>{isUz ? "Relizlar" : "Releases"}</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/20 font-mono">
               {releases.length}
             </span>
@@ -416,7 +421,9 @@ export function DeveloperTools({
               onChange={(e) => setSelectedProjectId(e.target.value)}
               className="bg-transparent text-xs text-[#F3F7F4] font-semibold focus:outline-none"
             >
-              <option value="ALL" className="bg-[#101915] text-[#F3F7F4]">All Projects</option>
+              <option value="ALL" className="bg-[#101915] text-[#F3F7F4]">
+                {isUz ? "Barcha loyihalar" : "All Projects"}
+              </option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id} className="bg-[#101915] text-[#F3F7F4]">
                   {p.name}
@@ -428,50 +435,50 @@ export function DeveloperTools({
           {activeSubTab === "BUGS" && (
             <button
               onClick={() => setIsBugModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0 font-bold"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Report Bug</span>
+              <span>{isUz ? "Xatolik kiritish" : "Report Bug"}</span>
             </button>
           )}
 
           {activeSubTab === "FEATURES" && (
             <button
               onClick={() => setIsFeatureModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0 font-bold"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>New Feature</span>
+              <span>{isUz ? "Yangi funksiya" : "New Feature"}</span>
             </button>
           )}
 
           {activeSubTab === "DOCS" && (
             <button
               onClick={() => setIsDocModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0 font-bold"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>New Doc / API</span>
+              <span>{isUz ? "Yangi Hujjat / API" : "New Doc / API"}</span>
             </button>
           )}
 
           {activeSubTab === "DEPLOYMENTS" && (
             <button
               onClick={() => setIsDepModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0 font-bold"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Log Deployment</span>
+              <span>{isUz ? "Deploy qayd etish" : "Log Deployment"}</span>
             </button>
           )}
 
           {activeSubTab === "RELEASES" && (
             <button
               onClick={() => setIsRelModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] flex items-center gap-1.5 shrink-0 font-bold"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>New Release</span>
+              <span>{isUz ? "Yangi reliz" : "New Release"}</span>
             </button>
           )}
         </div>
@@ -489,7 +496,7 @@ export function DeveloperTools({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] border border-[#25352C] text-[#10B981]">
-                      {bug.projectName || "Venture"}
+                      {bug.projectName || (isUz ? "Loyiha" : "Venture")}
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span
@@ -512,9 +519,15 @@ export function DeveloperTools({
                             ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
                             : "bg-red-500/10 text-red-300 border-red-500/20"
                         }`}
-                        title="Click to advance status"
+                        title={isUz ? "Holatni o‘zgartirish uchun bosing" : "Click to advance status"}
                       >
-                        {bug.status}
+                        {isUz
+                          ? bug.status === "RESOLVED"
+                            ? "Hal qilindi"
+                            : bug.status === "INVESTIGATING"
+                            ? "O‘rganilmoqda"
+                            : "Ochiq"
+                          : bug.status}
                       </button>
                     </div>
                   </div>
@@ -524,7 +537,7 @@ export function DeveloperTools({
                   </h4>
                   {bug.module && (
                     <div className="text-[11px] font-mono text-[#98A69D] mt-0.5">
-                      Module: <span className="text-[#F3F7F4]">{bug.module}</span>
+                      {isUz ? "Modul:" : "Module:"} <span className="text-[#F3F7F4]">{bug.module}</span>
                     </div>
                   )}
 
@@ -536,14 +549,19 @@ export function DeveloperTools({
 
                   {bug.reproSteps && (
                     <div className="mt-3 p-3 rounded-xl bg-[#080D0B] border border-[#25352C] text-[11px] font-mono text-[#98A69D] whitespace-pre-line">
-                      <span className="text-[#10B981] block mb-1">Reproduction:</span>
+                      <span className="text-[#10B981] block mb-1">
+                        {isUz ? "Qayta yuzaga keltirish:" : "Reproduction:"}
+                      </span>
                       {bug.reproSteps}
                     </div>
                   )}
                 </div>
 
                 <div className="pt-3 border-t border-[#25352C] flex items-center justify-between text-[10px] font-mono text-[#98A69D]">
-                  <span>Reported {new Date(bug.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    {isUz ? "Kiritildi: " : "Reported "}
+                    {new Date(bug.createdAt).toLocaleDateString()}
+                  </span>
                   <button
                     onClick={() => handleDeleteBug(bug.id)}
                     className="p-1 rounded text-red-400/60 hover:text-red-400"
@@ -558,8 +576,12 @@ export function DeveloperTools({
           {filteredBugs.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-[#10B981] mx-auto" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">Zero active bugs for this project!</p>
-              <p className="text-xs text-[#98A69D]">All reported issues have been resolved or closed.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Ushbu loyihada faol xatoliklar yo‘q!" : "Zero active bugs for this project!"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz ? "Barcha qayd etilgan muammolar hal qilingan yoki yopilgan." : "All reported issues have been resolved or closed."}
+              </p>
             </div>
           )}
         </div>
@@ -577,7 +599,7 @@ export function DeveloperTools({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] border border-[#25352C] text-[#10B981]">
-                      {feat.projectName || "Venture"}
+                      {feat.projectName || (isUz ? "Loyiha" : "Venture")}
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
@@ -597,9 +619,17 @@ export function DeveloperTools({
                             ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
                             : "bg-[#101915] text-[#98A69D] border-[#25352C]"
                         }`}
-                        title="Click to advance status"
+                        title={isUz ? "Holatni o‘zgartirish uchun bosing" : "Click to advance status"}
                       >
-                        {feat.status.replace("_", " ")}
+                        {isUz
+                          ? feat.status === "SHIPPED"
+                            ? "Chiqarildi"
+                            : feat.status === "IN_DEVELOPMENT"
+                            ? "Jarayonda"
+                            : feat.status === "PLANNED"
+                            ? "Rejalashtirilgan"
+                            : "Rejada"
+                          : feat.status.replace("_", " ")}
                       </button>
                     </div>
                   </div>
@@ -615,7 +645,10 @@ export function DeveloperTools({
                 </div>
 
                 <div className="pt-3 border-t border-[#25352C] flex items-center justify-between text-[10px] font-mono text-[#98A69D]">
-                  <span>Added {new Date(feat.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    {isUz ? "Qo‘shildi: " : "Added "}
+                    {new Date(feat.createdAt).toLocaleDateString()}
+                  </span>
                   <button
                     onClick={() => handleDeleteFeature(feat.id)}
                     className="p-1 rounded text-red-400/60 hover:text-red-400"
@@ -630,8 +663,12 @@ export function DeveloperTools({
           {filteredFeatures.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <Sparkles className="w-8 h-8 text-[#98A69D] mx-auto" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">Feature backlog is empty</p>
-              <p className="text-xs text-[#98A69D]">Add items to plan the next engineering release.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Funksiyalar rejasi bo‘sh" : "Feature backlog is empty"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz ? "Navbatdagi muhandislik relizi uchun yangi vazifalar qo‘shing." : "Add items to plan the next engineering release."}
+              </p>
             </div>
           )}
         </div>
@@ -649,7 +686,7 @@ export function DeveloperTools({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101915] border border-[#25352C] text-[#10B981]">
-                      {doc.projectName || "Venture"}
+                      {doc.projectName || (isUz ? "Loyiha" : "Venture")}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
                       {doc.category}
@@ -688,7 +725,7 @@ export function DeveloperTools({
                     {doc.requestPayload && (
                       <div className="p-3.5 rounded-xl bg-[#080D0B] border border-[#25352C] space-y-1.5 font-mono text-[11px]">
                         <div className="text-[10px] text-[#10B981] uppercase tracking-wider font-bold">
-                          Request Payload
+                          {isUz ? "So‘rov Tanasi (Request Payload)" : "Request Payload"}
                         </div>
                         <pre className="text-[#98A69D] overflow-x-auto whitespace-pre-wrap">
                           {doc.requestPayload}
@@ -699,7 +736,7 @@ export function DeveloperTools({
                     {doc.responsePayload && (
                       <div className="p-3.5 rounded-xl bg-[#080D0B] border border-[#25352C] space-y-1.5 font-mono text-[11px]">
                         <div className="text-[10px] text-cyan-400 uppercase tracking-wider font-bold">
-                          Response Schema / Output
+                          {isUz ? "Javob Sxemasi (Response Schema)" : "Response Schema / Output"}
                         </div>
                         <pre className="text-[#98A69D] overflow-x-auto whitespace-pre-wrap">
                           {doc.responsePayload}
@@ -715,8 +752,14 @@ export function DeveloperTools({
           {filteredDocs.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <FileText className="w-8 h-8 text-[#98A69D] mx-auto" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">No technical documentation logged</p>
-              <p className="text-xs text-[#98A69D]">Document endpoints, system architecture schemas, or environment variables.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Texnik hujjatlar mavjud emas" : "No technical documentation logged"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz
+                  ? "API endpointlari, tizim arxitekturasi yoki muhit o‘zgaruvchilarini hujjatlashtiring."
+                  : "Document endpoints, system architecture schemas, or environment variables."}
+              </p>
             </div>
           )}
         </div>
@@ -728,10 +771,12 @@ export function DeveloperTools({
           <div className="glass-card rounded-2xl border border-[#25352C] overflow-hidden">
             <div className="p-4 border-b border-[#25352C] bg-[#101915] flex items-center justify-between">
               <span className="text-xs font-mono font-semibold text-[#F3F7F4]">
-                DEPLOYMENT PIPELINE RECORDS
+                {isUz ? "DEPLOY JARAYONLARI HISOBOTI" : "DEPLOYMENT PIPELINE RECORDS"}
               </span>
               <span className="text-[11px] font-mono text-[#98A69D]">
-                Showing {filteredDeployments.length} latest events
+                {isUz
+                  ? `${filteredDeployments.length} ta so‘nggi jarayon ko‘rsatilmoqda`
+                  : `Showing ${filteredDeployments.length} latest events`}
               </span>
             </div>
 
@@ -739,14 +784,14 @@ export function DeveloperTools({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-[#25352C] bg-[#142019]/60 text-[#98A69D] font-mono text-[11px]">
-                    <th className="py-3 px-4">Project</th>
-                    <th className="py-3 px-4">Env</th>
-                    <th className="py-3 px-4">Commit / Branch</th>
-                    <th className="py-3 px-4">Message</th>
-                    <th className="py-3 px-4">Duration</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Timestamp</th>
-                    <th className="py-3 px-4 text-right">URL</th>
+                    <th className="py-3 px-4">{isUz ? "Loyiha" : "Project"}</th>
+                    <th className="py-3 px-4">{isUz ? "Muhit" : "Env"}</th>
+                    <th className="py-3 px-4">{isUz ? "Kommit / Tarmoq" : "Commit / Branch"}</th>
+                    <th className="py-3 px-4">{isUz ? "Xabar" : "Message"}</th>
+                    <th className="py-3 px-4">{isUz ? "Davomiylik" : "Duration"}</th>
+                    <th className="py-3 px-4">{isUz ? "Holat" : "Status"}</th>
+                    <th className="py-3 px-4">{isUz ? "Vaqt" : "Timestamp"}</th>
+                    <th className="py-3 px-4 text-right">{isUz ? "Havola" : "URL"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#25352C]">
@@ -843,8 +888,14 @@ export function DeveloperTools({
           {filteredReleases.length === 0 && (
             <div className="glass-card rounded-2xl p-8 border border-[#25352C] text-center space-y-2">
               <History className="w-8 h-8 text-[#98A69D] mx-auto" />
-              <p className="text-xs font-semibold text-[#F3F7F4]">No releases tagged yet</p>
-              <p className="text-xs text-[#98A69D]">Create a release record with semantic versioning and changelog notes.</p>
+              <p className="text-xs font-semibold text-[#F3F7F4]">
+                {isUz ? "Hali rasmiy relizlar yaratilmagan" : "No releases tagged yet"}
+              </p>
+              <p className="text-xs text-[#98A69D]">
+                {isUz
+                  ? "Semantik versiyalash va o‘zgarishlar jurnali bilan yangi reliz yarating."
+                  : "Create a release record with semantic versioning and changelog notes."}
+              </p>
             </div>
           )}
         </div>
@@ -858,7 +909,9 @@ export function DeveloperTools({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <Bug className="w-5 h-5 text-red-400" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Report Bug / Anomaly</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Xatolik / Anomaliya kiritish" : "Report Bug / Anomaly"}
+                </h3>
               </div>
               <button onClick={() => setIsBugModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -867,7 +920,9 @@ export function DeveloperTools({
 
             <form onSubmit={handleCreateBug} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Project</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tegishli loyiha *" : "Target Project *"}
+                </label>
                 <select
                   value={bugForm.projectId}
                   onChange={(e) => setBugForm({ ...bugForm, projectId: e.target.value })}
@@ -880,58 +935,70 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Bug Summary *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Xatolik sarlavhasi *" : "Bug Summary *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={bugForm.title}
                   onChange={(e) => setBugForm({ ...bugForm, title: e.target.value })}
-                  placeholder="e.g. Memory leak during continuous speech scoring"
+                  placeholder={isUz ? "Masalan: Nutq baholashda xotira to‘lib ketishi" : "e.g. Memory leak during continuous speech scoring"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Severity</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Jiddiylik darajasi" : "Severity"}
+                  </label>
                   <select
                     value={bugForm.severity}
                     onChange={(e) => setBugForm({ ...bugForm, severity: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   >
-                    <option value="CRITICAL">Critical</option>
-                    <option value="HIGH">High</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="LOW">Low</option>
+                    <option value="CRITICAL">{isUz ? "O‘ta muhim (Critical)" : "Critical"}</option>
+                    <option value="HIGH">{isUz ? "Yuqori (High)" : "High"}</option>
+                    <option value="MEDIUM">{isUz ? "O‘rta (Medium)" : "Medium"}</option>
+                    <option value="LOW">{isUz ? "Past (Low)" : "Low"}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Module / Component</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Modul / Qism" : "Module / Component"}
+                  </label>
                   <input
                     type="text"
                     value={bugForm.module}
                     onChange={(e) => setBugForm({ ...bugForm, module: e.target.value })}
-                    placeholder="e.g. Whisper Pipeline"
+                    placeholder={isUz ? "Masalan: Whisper Quvuri" : "e.g. Whisper Pipeline"}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Reproduction Steps</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Qayta yuzaga keltirish qadamlari" : "Reproduction Steps"}
+                </label>
                 <textarea
                   rows={2}
                   value={bugForm.reproSteps}
                   onChange={(e) => setBugForm({ ...bugForm, reproSteps: e.target.value })}
-                  placeholder="1. Open speaking session&#10;2. Start speech stream"
+                  placeholder={isUz ? "1. Sessiyani boshlang&#10;2. Ovozli yozuvni yuboring" : "1. Open speaking session&#10;2. Start speech stream"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsBugModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Log Bug</button>
+                <button type="button" onClick={() => setIsBugModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Xatolikni saqlash" : "Log Bug"}
+                </button>
               </div>
             </form>
           </div>
@@ -945,7 +1012,9 @@ export function DeveloperTools({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <ListTodo className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">New Backlog Feature</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Rejaga yangi funksiya qo‘shish" : "New Backlog Feature"}
+                </h3>
               </div>
               <button onClick={() => setIsFeatureModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -954,7 +1023,9 @@ export function DeveloperTools({
 
             <form onSubmit={handleCreateFeature} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Project</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tegishli loyiha *" : "Target Project *"}
+                </label>
                 <select
                   value={featForm.projectId}
                   onChange={(e) => setFeatForm({ ...featForm, projectId: e.target.value })}
@@ -967,34 +1038,40 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Feature Title *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Funksiya nomi *" : "Feature Title *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={featForm.title}
                   onChange={(e) => setFeatForm({ ...featForm, title: e.target.value })}
-                  placeholder="e.g. WebRTC zero-latency audio fallback"
+                  placeholder={isUz ? "Masalan: WebRTC audio kechikishini pasaytirish" : "e.g. WebRTC zero-latency audio fallback"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Priority</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Ustuvorlik" : "Priority"}
+                  </label>
                   <select
                     value={featForm.priority}
                     onChange={(e) => setFeatForm({ ...featForm, priority: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   >
-                    <option value="P0">P0 (Blocker)</option>
-                    <option value="P1">P1 (High)</option>
-                    <option value="P2">P2 (Medium)</option>
-                    <option value="P3">P3 (Nice-to-have)</option>
+                    <option value="P0">P0 ({isUz ? "Bloklovchi" : "Blocker"})</option>
+                    <option value="P1">P1 ({isUz ? "Yuqori" : "High"})</option>
+                    <option value="P2">P2 ({isUz ? "O‘rta" : "Medium"})</option>
+                    <option value="P3">P3 ({isUz ? "Past" : "Nice-to-have"})</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Version</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Reliz versiyasi" : "Target Version"}
+                  </label>
                   <input
                     type="text"
                     value={featForm.targetVersion}
@@ -1006,19 +1083,25 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Description / Spec</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tavsif / Xususiyatlar" : "Description / Spec"}
+                </label>
                 <textarea
                   rows={2}
                   value={featForm.description}
                   onChange={(e) => setFeatForm({ ...featForm, description: e.target.value })}
-                  placeholder="Scope details and user benefit..."
+                  placeholder={isUz ? "Funksiya maqsadi va foydalanuvchiga qiymati..." : "Scope details and user benefit..."}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsFeatureModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Add Feature</button>
+                <button type="button" onClick={() => setIsFeatureModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Funksiyani saqlash" : "Add Feature"}
+                </button>
               </div>
             </form>
           </div>
@@ -1032,7 +1115,9 @@ export function DeveloperTools({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">New Technical Note / API Doc</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Yangi Texnik Hujjat / API" : "New Technical Note / API Doc"}
+                </h3>
               </div>
               <button onClick={() => setIsDocModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -1041,7 +1126,9 @@ export function DeveloperTools({
 
             <form onSubmit={handleCreateDoc} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Project</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tegishli loyiha *" : "Target Project *"}
+                </label>
                 <select
                   value={docForm.projectId}
                   onChange={(e) => setDocForm({ ...docForm, projectId: e.target.value })}
@@ -1054,34 +1141,40 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Doc Title *</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Hujjat sarlavhasi *" : "Doc Title *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={docForm.title}
                   onChange={(e) => setDocForm({ ...docForm, title: e.target.value })}
-                  placeholder="e.g. Speech Evaluation Inference API"
+                  placeholder={isUz ? "Masalan: Nutqni baholash Inference API" : "e.g. Speech Evaluation Inference API"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Category</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Kategoriya" : "Category"}
+                  </label>
                   <select
                     value={docForm.category}
                     onChange={(e) => setDocForm({ ...docForm, category: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   >
                     <option value="API">API</option>
-                    <option value="ARCHITECTURE">Architecture</option>
-                    <option value="ENVIRONMENT">Environment</option>
-                    <option value="GUIDE">Guide</option>
+                    <option value="ARCHITECTURE">{isUz ? "Arxitektura" : "Architecture"}</option>
+                    <option value="ENVIRONMENT">{isUz ? "Muhit" : "Environment"}</option>
+                    <option value="GUIDE">{isUz ? "Qo‘llanma" : "Guide"}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Method</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "HTTP Metod" : "Method"}
+                  </label>
                   <select
                     value={docForm.method}
                     onChange={(e) => setDocForm({ ...docForm, method: e.target.value })}
@@ -1095,7 +1188,7 @@ export function DeveloperTools({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Endpoint Path</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Endpoint</label>
                   <input
                     type="text"
                     value={docForm.endpoint}
@@ -1107,20 +1200,30 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Content / Specification</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Hujjat / Tavsif" : "Content / Specification"}
+                </label>
                 <textarea
                   rows={3}
                   required
                   value={docForm.content}
                   onChange={(e) => setDocForm({ ...docForm, content: e.target.value })}
-                  placeholder="Explain latency requirements, authentication schemas, or operational constraints..."
+                  placeholder={
+                    isUz
+                      ? "Kechikish talablari, autentifikatsiya va tizim qoidalarini yozing..."
+                      : "Explain latency requirements, authentication schemas, or operational constraints..."
+                  }
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsDocModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Save Document</button>
+                <button type="button" onClick={() => setIsDocModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Hujjatni saqlash" : "Save Document"}
+                </button>
               </div>
             </form>
           </div>
@@ -1134,7 +1237,9 @@ export function DeveloperTools({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <Rocket className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Log Deployment Event</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Deploy jarayonini qayd etish" : "Log Deployment Event"}
+                </h3>
               </div>
               <button onClick={() => setIsDepModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -1143,7 +1248,9 @@ export function DeveloperTools({
 
             <form onSubmit={handleCreateDeployment} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Project</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tegishli loyiha" : "Target Project"}
+                </label>
                 <select
                   value={depForm.projectId}
                   onChange={(e) => setDepForm({ ...depForm, projectId: e.target.value })}
@@ -1157,7 +1264,9 @@ export function DeveloperTools({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Environment</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Muhit" : "Environment"}
+                  </label>
                   <select
                     value={depForm.environment}
                     onChange={(e) => setDepForm({ ...depForm, environment: e.target.value })}
@@ -1170,21 +1279,25 @@ export function DeveloperTools({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Status</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Holat" : "Status"}
+                  </label>
                   <select
                     value={depForm.status}
                     onChange={(e) => setDepForm({ ...depForm, status: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   >
-                    <option value="SUCCESS">Success</option>
-                    <option value="FAILED">Failed</option>
-                    <option value="BUILDING">Building</option>
+                    <option value="SUCCESS">{isUz ? "Muvaffaqiyatli" : "Success"}</option>
+                    <option value="FAILED">{isUz ? "Xatolik" : "Failed"}</option>
+                    <option value="BUILDING">{isUz ? "Qurilmoqda" : "Building"}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Commit Message</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Kommit xabari" : "Commit Message"}
+                </label>
                 <input
                   type="text"
                   value={depForm.commitMessage}
@@ -1207,7 +1320,9 @@ export function DeveloperTools({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Branch</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Tarmoq" : "Branch"}
+                  </label>
                   <input
                     type="text"
                     value={depForm.branch}
@@ -1219,7 +1334,9 @@ export function DeveloperTools({
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Deployment URL</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Deploy havolasi" : "Deployment URL"}
+                </label>
                 <input
                   type="url"
                   value={depForm.deploymentUrl}
@@ -1230,8 +1347,12 @@ export function DeveloperTools({
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsDepModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Log Deployment</button>
+                <button type="button" onClick={() => setIsDepModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Deployni saqlash" : "Log Deployment"}
+                </button>
               </div>
             </form>
           </div>
@@ -1245,7 +1366,9 @@ export function DeveloperTools({
             <div className="flex items-center justify-between pb-3 border-b border-[#25352C]">
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[#10B981]" />
-                <h3 className="text-sm font-semibold text-[#F3F7F4]">Publish New Release</h3>
+                <h3 className="text-sm font-semibold text-[#F3F7F4]">
+                  {isUz ? "Dasturiy Relizni E’lon Qilish" : "Publish New Release"}
+                </h3>
               </div>
               <button onClick={() => setIsRelModalOpen(false)} className="text-[#98A69D] hover:text-[#F3F7F4]">
                 <X className="w-4 h-4" />
@@ -1254,7 +1377,9 @@ export function DeveloperTools({
 
             <form onSubmit={handleCreateRelease} className="space-y-3">
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Target Project</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Tegishli loyiha *" : "Target Project *"}
+                </label>
                 <select
                   value={relForm.projectId}
                   onChange={(e) => setRelForm({ ...relForm, projectId: e.target.value })}
@@ -1268,7 +1393,9 @@ export function DeveloperTools({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">SemVer Version *</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Versiya tegi *" : "SemVer Version *"}
+                  </label>
                   <input
                     type="text"
                     required
@@ -1280,33 +1407,41 @@ export function DeveloperTools({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Release Title *</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Reliz nomi *" : "Release Title *"}
+                  </label>
                   <input
                     type="text"
                     required
                     value={relForm.title}
                     onChange={(e) => setRelForm({ ...relForm, title: e.target.value })}
-                    placeholder="Speech Coherence v2"
+                    placeholder={isUz ? "Masalan: Nutq moduli v2" : "Speech Coherence v2"}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Changelog Bullets</label>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "O‘zgarishlar jurnali (Changelog)" : "Changelog Bullets"}
+                </label>
                 <textarea
                   rows={4}
                   required
                   value={relForm.changelog}
                   onChange={(e) => setRelForm({ ...relForm, changelog: e.target.value })}
-                  placeholder="• Fixed audio stream latency&#10;• Added CEFR B2/C1 vocabulary deck"
+                  placeholder={isUz ? "• Audio oqim kechikishi tuzatildi&#10;• Yangi lug‘at to‘plami qo‘shildi" : "• Fixed audio stream latency&#10;• Added CEFR B2/C1 vocabulary deck"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4]"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
-                <button type="button" onClick={() => setIsRelModalOpen(false)} className="text-xs text-[#98A69D]">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B]">Publish Release</button>
+                <button type="button" onClick={() => setIsRelModalOpen(false)} className="text-xs text-[#98A69D]">
+                  {isUz ? "Bekor qilish" : "Cancel"}
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] font-bold">
+                  {isUz ? "Relizni chop etish" : "Publish Release"}
+                </button>
               </div>
             </form>
           </div>

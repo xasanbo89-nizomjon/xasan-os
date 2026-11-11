@@ -24,12 +24,14 @@ import {
 } from "lucide-react";
 import { ProjectSummary, ProjectStatus, Priority } from "@/types";
 import { useDeveloperStore } from "@/stores/developer-store";
+import { useTranslation } from "@/stores/language-store";
 
 interface ProjectManagementProps {
   initialProjects: ProjectSummary[];
 }
 
 export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
+  const { isUz } = useTranslation();
   const storeProjects = useDeveloperStore((s) => s.projects);
   const addProject = useDeveloperStore((s) => s.addProject);
   const updateProject = useDeveloperStore((s) => s.updateProject);
@@ -166,7 +168,10 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
   };
 
   const handleDeleteProject = (id: string) => {
-    if (confirm("Are you sure you want to delete this project and its related data?")) {
+    const confirmMsg = isUz
+      ? "Haqiqatan ham bu loyihani va barcha bog‘liq ma’lumotlarni o‘chirmoqchimisiz?"
+      : "Are you sure you want to delete this project and its related data?";
+    if (confirm(confirmMsg)) {
       deleteProject(id);
       if (editingProject?.id === id) {
         setIsCreateModalOpen(false);
@@ -202,6 +207,42 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
     }
   };
 
+  const getStatusLabel = (status: ProjectStatus | string) => {
+    if (!isUz) return status;
+    switch (status) {
+      case "ALL":
+        return "Barchasi";
+      case ProjectStatus.ACTIVE:
+        return "Faol";
+      case ProjectStatus.PLANNING:
+        return "Rejada";
+      case ProjectStatus.PAUSED:
+        return "To‘xtatilgan";
+      case ProjectStatus.COMPLETED:
+        return "Yakunlangan";
+      case ProjectStatus.ARCHIVED:
+        return "Arxivda";
+      default:
+        return status;
+    }
+  };
+
+  const getPriorityLabel = (priority: Priority) => {
+    if (!isUz) return priority;
+    switch (priority) {
+      case Priority.URGENT:
+        return "Shoshilinch";
+      case Priority.HIGH:
+        return "Yuqori";
+      case Priority.NORMAL:
+        return "O‘rta";
+      case Priority.LOW:
+        return "Past";
+      default:
+        return priority;
+    }
+  };
+
   const getPriorityBadge = (priority: Priority) => {
     switch (priority) {
       case Priority.URGENT:
@@ -228,7 +269,11 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search projects by name, stack, or domain..."
+            placeholder={
+              isUz
+                ? "Loyihalarni nomi, steki yoki sohasi bo‘yicha qidirish..."
+                : "Search projects by name, stack, or domain..."
+            }
             className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#101915] border border-[#25352C] text-xs text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
           />
         </div>
@@ -245,7 +290,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                   : "bg-[#101915] text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
               }`}
             >
-              {st}
+              {getStatusLabel(st)}
             </button>
           ))}
         </div>
@@ -253,10 +298,10 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
         {/* New Project Button */}
         <button
           onClick={handleOpenCreate}
-          className="w-full md:w-auto px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-lg shadow-[#10B981]/20"
+          className="w-full md:w-auto px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-lg shadow-[#10B981]/20 font-bold"
         >
           <Plus className="w-4 h-4" />
-          <span>New Project</span>
+          <span>{isUz ? "Yangi loyiha" : "New Project"}</span>
         </button>
       </div>
 
@@ -285,7 +330,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                           {proj.name}
                         </h3>
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${getPriorityBadge(proj.priority)}`}>
-                          {proj.priority}
+                          {getPriorityLabel(proj.priority)}
                         </span>
                       </div>
                       <span className="text-[11px] font-mono text-[#98A69D]">/{proj.slug}</span>
@@ -294,19 +339,19 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-mono font-semibold px-2.5 py-1 rounded-lg border ${getStatusBadge(proj.status)}`}>
-                      {proj.status}
+                      {getStatusLabel(proj.status)}
                     </span>
                     <button
                       onClick={() => handleOpenEdit(proj)}
                       className="p-1.5 rounded-lg bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981] transition-colors"
-                      title="Edit Project"
+                      title={isUz ? "Loyihani tahrirlash" : "Edit Project"}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteProject(proj.id)}
                       className="p-1.5 rounded-lg bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-red-400 transition-colors"
-                      title="Delete Project"
+                      title={isUz ? "Loyihani o‘chirish" : "Delete Project"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -315,13 +360,13 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
                 {/* Description */}
                 <p className="text-xs text-[#98A69D] leading-relaxed mb-4 min-h-[36px]">
-                  {proj.description || "No project overview provided."}
+                  {proj.description || (isUz ? "Loyiha tavsifi berilmagan." : "No project overview provided.")}
                 </p>
 
                 {/* Tech Stack */}
                 <div className="space-y-1.5 mb-5">
                   <div className="text-[10px] uppercase font-mono text-[#98A69D] tracking-wider">
-                    Tech Stack Architecture
+                    {isUz ? "Texnologik stek arxitekturasi" : "Tech Stack Architecture"}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {proj.techStack.map((tech) => (
@@ -340,7 +385,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
               <div className="space-y-4 pt-4 border-t border-[#25352C]">
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono text-[#98A69D] mb-1.5">
-                    <span>Progress Roadmap</span>
+                    <span>{isUz ? "Bajarilish bosqichi" : "Progress Roadmap"}</span>
                     <span className="text-[#10B981] font-bold">{proj.progress}%</span>
                   </div>
                   <div className="w-full h-2 bg-[#101915] rounded-full overflow-hidden border border-[#25352C]">
@@ -356,9 +401,9 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-[#10B981]" />
                     <span>
-                      {proj.startDate ? new Date(proj.startDate).toLocaleDateString([], { month: "short", day: "numeric" }) : "Started"}
+                      {proj.startDate ? new Date(proj.startDate).toLocaleDateString([], { month: "short", day: "numeric" }) : (isUz ? "Boshlangan" : "Started")}
                       {" → "}
-                      {proj.targetDate ? new Date(proj.targetDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "Ongoing"}
+                      {proj.targetDate ? new Date(proj.targetDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : (isUz ? "Davom etmoqda" : "Ongoing")}
                     </span>
                   </div>
 
@@ -366,7 +411,9 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-amber-400" />
                       <span className={daysRemaining < 0 ? "text-red-400 font-bold" : "text-amber-400"}>
-                        {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d overdue` : `${daysRemaining}d left`}
+                        {daysRemaining < 0
+                          ? (isUz ? `${Math.abs(daysRemaining)} kun kechikdi` : `${Math.abs(daysRemaining)}d overdue`)
+                          : (isUz ? `${daysRemaining} kun qoldi` : `${daysRemaining}d left`)}
                       </span>
                     </div>
                   )}
@@ -385,7 +432,9 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                       <span>{proj.repositoryUrl.replace("https://github.com/", "")}</span>
                     </a>
                   ) : (
-                    <span className="text-[#98A69D]/50 text-[11px] font-mono">Private Repo</span>
+                    <span className="text-[#98A69D]/50 text-[11px] font-mono">
+                      {isUz ? "Yopiq ombor" : "Private Repo"}
+                    </span>
                   )}
 
                   {proj.liveUrl ? (
@@ -395,11 +444,13 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-[#10B981] hover:underline font-mono text-[11px]"
                     >
-                      <span>Live Site</span>
+                      <span>{isUz ? "Jonli sayt" : "Live Site"}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : (
-                    <span className="text-[#98A69D]/50 text-[11px] font-mono">Staging only</span>
+                    <span className="text-[#98A69D]/50 text-[11px] font-mono">
+                      {isUz ? "Sinov muhiti" : "Staging only"}
+                    </span>
                   )}
                 </div>
               </div>
@@ -411,8 +462,12 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
       {filteredProjects.length === 0 && (
         <div className="glass-card rounded-2xl p-10 border border-[#25352C] text-center space-y-3">
           <Terminal className="w-8 h-8 text-[#98A69D] mx-auto" />
-          <h4 className="text-sm font-semibold text-[#F3F7F4]">No projects matching criteria</h4>
-          <p className="text-xs text-[#98A69D]">Adjust filters or create a new project above.</p>
+          <h4 className="text-sm font-semibold text-[#F3F7F4]">
+            {isUz ? "Mezonlarga mos loyihalar topilmadi" : "No projects matching criteria"}
+          </h4>
+          <p className="text-xs text-[#98A69D]">
+            {isUz ? "Filtrlarni o‘zgartiring yoki yangi loyiha qo‘shing." : "Adjust filters or create a new project above."}
+          </p>
         </div>
       )}
 
@@ -424,7 +479,9 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
               <div className="flex items-center gap-2">
                 <Code2 className="w-5 h-5 text-[#10B981]" />
                 <h3 className="text-sm font-semibold text-[#F3F7F4]">
-                  {editingProject ? "Edit Project Details" : "Create New Project"}
+                  {editingProject
+                    ? (isUz ? "Loyiha tafsilotlarini tahrirlash" : "Edit Project Details")
+                    : (isUz ? "Yangi loyiha yaratish" : "Create New Project")}
                 </h3>
               </div>
               <button
@@ -438,71 +495,31 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
             <form onSubmit={handleSaveProject} className="space-y-4">
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Project Name *
+                  {isUz ? "Loyiha nomi *" : "Project Name *"}
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Aurelius IELTS, Ravon Auto Tuning"
+                  placeholder={isUz ? "Masalan: Aurelius IELTS, Ravon Auto Tuning" : "e.g. Aurelius IELTS, Ravon Auto Tuning"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Description / Core Purpose
+                  {isUz ? "Tavsif / Asosiy maqsad" : "Description / Core Purpose"}
                 </label>
                 <textarea
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Briefly state architecture scope and target value proposition..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
-                  >
-                    <option value={ProjectStatus.ACTIVE}>Active</option>
-                    <option value={ProjectStatus.PLANNING}>Planning</option>
-                    <option value={ProjectStatus.PAUSED}>Paused</option>
-                    <option value={ProjectStatus.COMPLETED}>Completed</option>
-                    <option value={ProjectStatus.ARCHIVED}>Archived</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Priority</label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
-                  >
-                    <option value={Priority.URGENT}>Urgent</option>
-                    <option value={Priority.HIGH}>High</option>
-                    <option value={Priority.NORMAL}>Normal</option>
-                    <option value={Priority.LOW}>Low</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Tech Stack (Comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={formData.techStack}
-                  onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-                  placeholder="e.g. Next.js 16, TypeScript, Whisper, PostgreSQL"
+                  placeholder={
+                    isUz
+                      ? "Arxitektura ko‘lami va loyiha qiymatini qisqacha bayon qiling..."
+                      : "Briefly state architecture scope and target value proposition..."
+                  }
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -510,7 +527,55 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Repository URL
+                    {isUz ? "Holat" : "Status"}
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                  >
+                    <option value={ProjectStatus.ACTIVE}>{isUz ? "Faol" : "Active"}</option>
+                    <option value={ProjectStatus.PLANNING}>{isUz ? "Rejada" : "Planning"}</option>
+                    <option value={ProjectStatus.PAUSED}>{isUz ? "To‘xtatilgan" : "Paused"}</option>
+                    <option value={ProjectStatus.COMPLETED}>{isUz ? "Yakunlangan" : "Completed"}</option>
+                    <option value={ProjectStatus.ARCHIVED}>{isUz ? "Arxivda" : "Archived"}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Ustuvorlik" : "Priority"}
+                  </label>
+                  <select
+                    value={formData.priority}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                  >
+                    <option value={Priority.URGENT}>{isUz ? "Shoshilinch" : "Urgent"}</option>
+                    <option value={Priority.HIGH}>{isUz ? "Yuqori" : "High"}</option>
+                    <option value={Priority.NORMAL}>{isUz ? "O‘rta" : "Normal"}</option>
+                    <option value={Priority.LOW}>{isUz ? "Past" : "Low"}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                  {isUz ? "Texnologik stek (vergul bilan)" : "Tech Stack (Comma-separated)"}
+                </label>
+                <input
+                  type="text"
+                  value={formData.techStack}
+                  onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
+                  placeholder={isUz ? "Masalan: Next.js 16, TypeScript, Tailwind CSS, PostgreSQL" : "e.g. Next.js 16, TypeScript, Whisper, PostgreSQL"}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "GitHub ombor havolasi" : "Repository URL"}
                   </label>
                   <input
                     type="url"
@@ -523,7 +588,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Live Site URL
+                    {isUz ? "Jonli sayt havolasi" : "Live Site URL"}
                   </label>
                   <input
                     type="url"
@@ -537,7 +602,9 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">Start Date</label>
+                  <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
+                    {isUz ? "Boshlanish sanasi" : "Start Date"}
+                  </label>
                   <input
                     type="date"
                     value={formData.startDate}
@@ -548,7 +615,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Target Completion Date
+                    {isUz ? "Yakunlash sanasi" : "Target Completion Date"}
                   </label>
                   <input
                     type="date"
@@ -561,7 +628,7 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
 
               <div>
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#98A69D] mb-1">
-                  <span>Progress Completion</span>
+                  <span>{isUz ? "Bajarilish foizi" : "Progress Completion"}</span>
                   <span className="text-[#10B981] font-bold">{formData.progress}%</span>
                 </div>
                 <input
@@ -581,13 +648,15 @@ export function ProjectManagement({ initialProjects }: ProjectManagementProps) {
                   onClick={() => setIsCreateModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4]"
                 >
-                  Cancel
+                  {isUz ? "Bekor qilish" : "Cancel"}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all"
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all font-bold"
                 >
-                  {editingProject ? "Update Project" : "Create Project"}
+                  {editingProject
+                    ? (isUz ? "Loyihani yangilash" : "Update Project")
+                    : (isUz ? "Loyiha yaratish" : "Create Project")}
                 </button>
               </div>
             </form>

@@ -3,33 +3,42 @@
 import React from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, Zap, Bot, ArrowUpRight } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface AiRecommendationsWidgetProps {
   onStartFocus: () => void;
 }
 
 export function AiRecommendationsWidget({ onStartFocus }: AiRecommendationsWidgetProps) {
+  const { dict, isUz } = useTranslation();
+
   const recommendations = [
     {
       id: "rec-1",
-      badge: "OPTIMAL TIMING",
-      text: "Prime focus window detected: Allocate next 50m block to Aurelius IELTS audio streaming pipeline.",
-      actionLabel: "Start Focus Block",
+      badge: isUz ? "ENG QULAY VAQT" : "OPTIMAL TIMING",
+      text: isUz
+        ? "Eng samarali diqqat oynasi aniqlandi: keyingi 50 daqiqalik blokni Aurelius IELTS audio oqimi uchun ajrating."
+        : "Prime focus window detected: Allocate next 50m block to Aurelius IELTS audio streaming pipeline.",
+      actionLabel: isUz ? "Fokusni boshlash" : "Start Focus Block",
       action: onStartFocus,
     },
     {
       id: "rec-2",
-      badge: "IELTS FLUENCY",
-      text: "Speaking practice interval reached: Complete Part 2 cue-card on Artificial Intelligence and Labor Markets.",
+      badge: isUz ? "IELTS RAVONLIGI" : "IELTS FLUENCY",
+      text: isUz
+        ? "Nutq mashqi vaqti keldi: Sun'iy intellekt va mehnat bozori mavzusida Part 2 kartasini yakunlang."
+        : "Speaking practice interval reached: Complete Part 2 cue-card on Artificial Intelligence and Labor Markets.",
       href: "/study-center",
-      actionLabel: "Open Speech Lab",
+      actionLabel: isUz ? "Nutq laboratoriyasi" : "Open Speech Lab",
     },
     {
       id: "rec-3",
-      badge: "DATABASE HYGIENE",
-      text: "UUID indexing verified across tasks, habits and projects. All relations isolated.",
+      badge: isUz ? "TIZIM GIGIYENASI" : "DATABASE HYGIENE",
+      text: isUz
+        ? "Mahalliy xotirada barcha modullar yaxlitligi va ma'lumotlar xavfsizligi tasdiqlandi."
+        : "UUID indexing verified across tasks, habits and projects. All relations isolated.",
       href: "/settings",
-      actionLabel: "View Isolation",
+      actionLabel: isUz ? "Xotirani ko‘rish" : "View Isolation",
     },
   ];
 
@@ -42,11 +51,11 @@ export function AiRecommendationsWidget({ onStartFocus }: AiRecommendationsWidge
           </div>
           <div>
             <h3 className="text-sm font-bold text-[#F3F7F4] flex items-center gap-1.5">
-              XASAN AI Sovereign Recommendations
+              {isUz ? "XASAN AI Tavsiyalari" : "XASAN AI Sovereign Recommendations"}
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
             </h3>
             <span className="text-[10px] text-[#98A69D]">
-              Proactive agent telemetry & execution nudges
+              {isUz ? "Proaktiv AI agenti tahlili va amaliy maslahatlar" : "Proactive agent telemetry & execution nudges"}
             </span>
           </div>
         </div>
@@ -55,7 +64,7 @@ export function AiRecommendationsWidget({ onStartFocus }: AiRecommendationsWidge
           href="/xasan-ai"
           className="text-xs text-[#10B981] hover:underline flex items-center gap-1"
         >
-          Copilot <ArrowUpRight className="w-3.5 h-3.5" />
+          {dict.nav.xasan_ai} <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 

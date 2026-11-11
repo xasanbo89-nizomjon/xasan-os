@@ -30,6 +30,7 @@ import {
   deleteReminderAction,
 } from "@/server/actions/calendar";
 import { formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 type CalendarViewMode = "month" | "week" | "day" | "agenda";
 
@@ -44,6 +45,7 @@ export function CalendarExperience({
   initialReminders,
   projects,
 }: CalendarExperienceProps) {
+  const { dict, isUz } = useTranslation();
   const [events, setEvents] = useState<CalendarEventSummary[]>(initialEvents);
   const [reminders, setReminders] = useState<ReminderSummary[]>(initialReminders);
   const [viewMode, setViewMode] = useState<CalendarViewMode>("month");
@@ -61,7 +63,7 @@ export function CalendarExperience({
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
+  const monthName = currentDate.toLocaleString(isUz ? "uz-UZ" : "en-US", { month: "long" });
 
   // Navigation handlers
   const handlePrev = () => {
@@ -201,7 +203,9 @@ export function CalendarExperience({
   // Month grid calculations
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Monday = 0
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = isUz
+    ? ["Dush", "Sesh", "Chor", "Pay", "Juma", "Shan", "Yak"]
+    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   // Week view calculations (current week)
   const currentDayOfWeek = (currentDate.getDay() + 6) % 7; // Monday = 0
@@ -224,9 +228,9 @@ export function CalendarExperience({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-[#F3F7F4]">
+              <h2 className="text-base sm:text-lg font-bold text-[#F3F7F4] capitalize">
                 {viewMode === "day"
-                  ? currentDate.toLocaleDateString("default", {
+                  ? currentDate.toLocaleDateString(isUz ? "uz-UZ" : "en-US", {
                       weekday: "long",
                       month: "long",
                       day: "numeric",
@@ -235,11 +239,13 @@ export function CalendarExperience({
                   : `${monthName} ${year}`}
               </h2>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
-                Synchronized
+                {isUz ? "Sinxronlangan" : "Synchronized"}
               </span>
             </div>
             <p className="text-xs text-[#98A69D]">
-              Deep work architecture blocks, project releases, and milestones
+              {isUz
+                ? "Chuqur ishlash bloklari, loyihalar relizlari va muddatlar"
+                : "Deep work architecture blocks, project releases, and milestones"}
             </p>
           </div>
         </div>
@@ -251,46 +257,46 @@ export function CalendarExperience({
             <button
               type="button"
               onClick={() => setViewMode("month")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === "month"
                   ? "bg-[#101915] text-[#10B981] font-semibold"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
             >
-              Month
+              {dict.calendar.views.month}
             </button>
             <button
               type="button"
               onClick={() => setViewMode("week")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === "week"
                   ? "bg-[#101915] text-[#10B981] font-semibold"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
             >
-              Week
+              {dict.calendar.views.week}
             </button>
             <button
               type="button"
               onClick={() => setViewMode("day")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === "day"
                   ? "bg-[#101915] text-[#10B981] font-semibold"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
             >
-              Day
+              {dict.calendar.views.day}
             </button>
             <button
               type="button"
               onClick={() => setViewMode("agenda")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === "agenda"
                   ? "bg-[#101915] text-[#10B981] font-semibold"
                   : "text-[#98A69D] hover:text-[#F3F7F4]"
               }`}
             >
-              Agenda
+              {dict.calendar.views.agenda}
             </button>
           </div>
 
@@ -299,21 +305,21 @@ export function CalendarExperience({
             <button
               type="button"
               onClick={handlePrev}
-              className="p-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] hover:border-[#10B981] transition-colors"
+              className="p-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] hover:border-[#10B981] transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={handleToday}
-              className="px-2.5 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#F3F7F4] hover:text-[#10B981]"
+              className="px-2.5 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#F3F7F4] hover:text-[#10B981] cursor-pointer"
             >
-              Today
+              {dict.common.today}
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="p-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] hover:border-[#10B981] transition-colors"
+              className="p-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] hover:border-[#10B981] transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -330,7 +336,7 @@ export function CalendarExperience({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors shadow-lg shadow-[#10B981]/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Schedule Block
+            {isUz ? "Rejalashtirish" : "Schedule Block"}
           </button>
         </div>
       </div>
@@ -339,19 +345,19 @@ export function CalendarExperience({
       <div className="flex items-center justify-between flex-wrap gap-3 p-3 rounded-2xl bg-[#101915] border border-[#25352C]">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
           <Filter className="w-3.5 h-3.5 text-[#10B981]" />
-          <span className="text-xs font-semibold text-[#F3F7F4]">Categories:</span>
+          <span className="text-xs font-semibold text-[#F3F7F4]">{isUz ? "Kategoriyalar:" : "Categories:"}</span>
           {[
-            { id: "ALL", label: "All Blocks" },
-            { id: "WORK", label: "Work & Arch", color: "#10B981" },
-            { id: "EDUCATION", label: "IELTS & Study", color: "#3B82F6" },
-            { id: "PROJECT", label: "Projects", color: "#F59E0B" },
-            { id: "PERSONAL", label: "Personal / Fitness", color: "#8B5CF6" },
+            { id: "ALL", label: dict.common.all },
+            { id: "WORK", label: isUz ? "Ish va Dasturlash" : "Work & Arch", color: "#10B981" },
+            { id: "EDUCATION", label: isUz ? "IELTS va Ta'lim" : "IELTS & Study", color: "#3B82F6" },
+            { id: "PROJECT", label: isUz ? "Loyihalar" : "Projects", color: "#F59E0B" },
+            { id: "PERSONAL", label: isUz ? "Shaxsiy / Salomatlik" : "Personal / Fitness", color: "#8B5CF6" },
           ].map((cat) => (
             <button
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === cat.id
                   ? "bg-[#142019] text-[#10B981] border border-[#10B981]/40 font-semibold"
                   : "bg-[#142019]/60 text-[#98A69D] hover:text-[#F3F7F4] border border-[#25352C]"
@@ -369,7 +375,7 @@ export function CalendarExperience({
         </div>
 
         <div className="text-[11px] font-mono text-[#98A69D]">
-          {filteredEvents.length} scheduled event{filteredEvents.length === 1 ? "" : "s"}
+          {filteredEvents.length} {isUz ? "ta rejalashtirilgan tadbir" : `scheduled event${filteredEvents.length === 1 ? "" : "s"}`}
         </div>
       </div>
 
@@ -746,11 +752,11 @@ export function CalendarExperience({
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-[#10B981]" />
                 <h3 className="text-sm font-bold text-[#F3F7F4]">
-                  Reminders & Alerts
+                  {dict.calendar.reminders}
                 </h3>
               </div>
               <span className="text-xs font-mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded-full border border-[#10B981]/30">
-                {reminders.filter((r) => !r.isCompleted).length} Active
+                {reminders.filter((r) => !r.isCompleted).length} {isUz ? "faol" : "Active"}
               </span>
             </div>
 
@@ -760,7 +766,7 @@ export function CalendarExperience({
                 type="text"
                 value={newReminderTitle}
                 onChange={(e) => setNewReminderTitle(e.target.value)}
-                placeholder="Remind me to..."
+                placeholder={isUz ? "Eslatib tur..." : "Remind me to..."}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               />
               <div className="flex gap-2">
@@ -773,9 +779,9 @@ export function CalendarExperience({
                 <button
                   type="submit"
                   disabled={!newReminderTitle.trim()}
-                  className="px-3 py-1 rounded-xl bg-[#10B981] text-[#080D0B] text-xs font-semibold hover:bg-[#059669] transition-colors disabled:opacity-40"
+                  className="px-3 py-1 rounded-xl bg-[#10B981] text-[#080D0B] text-xs font-semibold hover:bg-[#059669] transition-colors disabled:opacity-40 cursor-pointer"
                 >
-                  + Add
+                  + {dict.common.add}
                 </button>
               </div>
             </form>

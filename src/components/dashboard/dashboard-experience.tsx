@@ -20,6 +20,7 @@ import { MonthlyOverviewView } from "./views/monthly-overview-view";
 import { CustomDashboardView } from "./views/custom-dashboard-view";
 import { LayoutCustomizerDialog } from "./layout-customizer-dialog";
 import { QuickCreateDialog } from "../layout/quick-create-dialog";
+import { useTranslation } from "@/stores/language-store";
 import {
   TaskSummary,
   HabitSummary,
@@ -61,6 +62,7 @@ export function DashboardExperience({
   const transactions = isHydrated ? storeTransactions : initialTransactions;
   const notes = isHydrated ? storeNotes : initialNotes;
   const { currentView, startFocusSession } = useDashboardStore();
+  const { dict, isUz } = useTranslation();
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [quickCreateType, setQuickCreateType] = useState<string>("task");
@@ -86,7 +88,7 @@ export function DashboardExperience({
       <div className="flex items-center justify-between gap-4 flex-wrap pb-1">
         <DashboardViewSwitcher />
         <span className="text-xs font-mono text-[#98A69D] hidden sm:inline">
-          View Mode: <span className="text-[#10B981] font-bold uppercase">{currentView}</span>
+          {isUz ? "Ko‘rinish rejimi: " : "View Mode: "}<span className="text-[#10B981] font-bold uppercase">{currentView}</span>
         </span>
       </div>
 

@@ -9,16 +9,18 @@ import {
   Sliders,
 } from "lucide-react";
 import { DashboardViewType, useDashboardStore } from "@/stores/dashboard-store";
+import { useTranslation } from "@/stores/language-store";
 
 export function DashboardViewSwitcher() {
   const { currentView, setView } = useDashboardStore();
+  const { dict } = useTranslation();
 
   const views: { id: DashboardViewType; label: string; icon: React.ElementType }[] = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "activity", label: "My Activity", icon: Activity },
-    { id: "weekly", label: "Weekly View", icon: CalendarRange },
-    { id: "monthly", label: "Monthly View", icon: CalendarDays },
-    { id: "custom", label: "Custom Layout", icon: Sliders },
+    { id: "overview", label: dict.dashboard.views.overview, icon: LayoutDashboard },
+    { id: "activity", label: dict.dashboard.views.activity, icon: Activity },
+    { id: "weekly", label: dict.dashboard.views.weekly, icon: CalendarRange },
+    { id: "monthly", label: dict.dashboard.views.monthly, icon: CalendarDays },
+    { id: "custom", label: dict.dashboard.views.custom, icon: Sliders },
   ];
 
   return (

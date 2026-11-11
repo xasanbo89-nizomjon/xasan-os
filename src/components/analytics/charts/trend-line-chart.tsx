@@ -12,13 +12,14 @@ import {
   Legend,
 } from "recharts";
 import { TimeTrendPoint } from "@/types";
+import { useTranslation } from "@/stores/language-store";
 
 interface TrendLineChartProps {
   data: TimeTrendPoint[];
   period: string;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, isUz }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-[#101915] border border-[#25352C] rounded-xl p-3 shadow-2xl text-xs space-y-1">
@@ -32,7 +33,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               {entry.name}:
             </span>
             <span className="font-mono font-semibold text-[#F3F7F4]">
-              {entry.value} {entry.dataKey === "studyHours" || entry.dataKey === "targetHours" ? "hrs" : ""}
+              {entry.value} {entry.dataKey === "studyHours" || entry.dataKey === "targetHours" ? (isUz ? "soat" : "hrs") : ""}
             </span>
           </div>
         ))}
@@ -43,6 +44,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function TrendLineChart({ data, period }: TrendLineChartProps) {
+  const { isUz } = useTranslation();
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +77,7 @@ export function TrendLineChart({ data, period }: TrendLineChartProps) {
             tickLine={false}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip isUz={isUz} />} />
           <Legend
             wrapperStyle={{ fontSize: "11px", paddingTop: "10px", fontFamily: "monospace" }}
           />
@@ -82,7 +85,7 @@ export function TrendLineChart({ data, period }: TrendLineChartProps) {
           <Area
             type="monotone"
             dataKey="studyHours"
-            name="Actual Study Hours"
+            name={isUz ? "Haqiqiy O‘qish Soatlari" : "Actual Study Hours"}
             stroke="#10B981"
             strokeWidth={2.5}
             fillOpacity={1}
@@ -91,7 +94,7 @@ export function TrendLineChart({ data, period }: TrendLineChartProps) {
           <Area
             type="monotone"
             dataKey="targetHours"
-            name="Target Hours"
+            name={isUz ? "Rejadagi Soatlar" : "Target Hours"}
             stroke="#98A69D"
             strokeWidth={1.5}
             strokeDasharray="4 4"
@@ -100,7 +103,7 @@ export function TrendLineChart({ data, period }: TrendLineChartProps) {
           <Area
             type="monotone"
             dataKey="completedTasks"
-            name="Tasks Completed"
+            name={isUz ? "Bajarilgan Vazifalar" : "Tasks Completed"}
             stroke="#3B82F6"
             strokeWidth={2}
             fillOpacity={1}

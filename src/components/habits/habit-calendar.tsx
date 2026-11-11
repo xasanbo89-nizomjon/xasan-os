@@ -3,20 +3,24 @@
 import React, { useState } from "react";
 import { HabitSummary } from "@/types";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Sparkles } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface HabitCalendarProps {
   habits: HabitSummary[];
 }
 
 export function HabitCalendar({ habits }: HabitCalendarProps) {
+  const { isUz } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date(2026, 10, 1)); // Nov 2026
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
+  const monthName = currentDate.toLocaleString(isUz ? "uz-UZ" : "en-US", { month: "long" });
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Monday = 0
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = isUz
+    ? ["Dush", "Sesh", "Chor", "Pay", "Jum", "Shan", "Yak"]
+    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   // Collect all log dates across active habits
   const activeHabitsCount = habits.filter((h) => !h.archived).length || 1;
@@ -52,10 +56,12 @@ export function HabitCalendar({ habits }: HabitCalendarProps) {
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#F3F7F4]">
-              Discipline Heatmap & Habit Matrix
+              {isUz ? "Intizom xaritasi va Odatlar matritsasi" : "Discipline Heatmap & Habit Matrix"}
             </h3>
             <p className="text-xs text-[#98A69D]">
-              Visual day-by-day ritual consistency and streak execution
+              {isUz
+                ? "Kunlik odatlar davomiyligi va ketma-ketlik monitoringi"
+                : "Visual day-by-day ritual consistency and streak execution"}
             </p>
           </div>
         </div>
@@ -64,17 +70,17 @@ export function HabitCalendar({ habits }: HabitCalendarProps) {
           <button
             type="button"
             onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
-            className="p-1.5 rounded-lg bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] transition-colors"
+            className="p-1.5 rounded-lg bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-xs font-mono font-bold text-[#F3F7F4] px-2">
+          <span className="text-xs font-mono font-bold text-[#F3F7F4] px-2 capitalize">
             {monthName} {year}
           </span>
           <button
             type="button"
             onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
-            className="p-1.5 rounded-lg bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] transition-colors"
+            className="p-1.5 rounded-lg bg-[#142019] border border-[#25352C] text-[#98A69D] hover:text-[#F3F7F4] transition-colors cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -116,7 +122,7 @@ export function HabitCalendar({ habits }: HabitCalendarProps) {
                 <span>{dayNum}</span>
                 {isToday && (
                   <span className="text-[8px] px-1 rounded bg-[#080D0B] text-[#10B981] font-bold">
-                    NOW
+                    {isUz ? "BUGUN" : "NOW"}
                   </span>
                 )}
               </div>
@@ -133,14 +139,14 @@ export function HabitCalendar({ habits }: HabitCalendarProps) {
 
       {/* Legend */}
       <div className="flex items-center justify-between pt-2 border-t border-[#25352C] text-[11px] font-mono text-[#98A69D]">
-        <span>Less Consistent</span>
+        <span>{isUz ? "Kamroq faol" : "Less Consistent"}</span>
         <div className="flex items-center gap-1.5">
           <div className="w-3.5 h-3.5 rounded bg-[#101915] border border-[#25352C]" />
           <div className="w-3.5 h-3.5 rounded bg-[#10B981]/25 border border-[#10B981]/40" />
           <div className="w-3.5 h-3.5 rounded bg-[#10B981]/60 border border-[#10B981]/70" />
           <div className="w-3.5 h-3.5 rounded bg-[#10B981]" />
         </div>
-        <span>100% Ritual Execution</span>
+        <span>{isUz ? "100% Bajarildi" : "100% Ritual Execution"}</span>
       </div>
     </div>
   );

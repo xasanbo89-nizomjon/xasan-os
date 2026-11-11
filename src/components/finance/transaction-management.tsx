@@ -23,40 +23,61 @@ import {
 import { TransactionSummary, TransactionType } from "@/types";
 import { useFinanceStore } from "@/stores/finance-store";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useTranslation } from "@/stores/language-store";
 
 interface TransactionManagementProps {
   initialTransactions: TransactionSummary[];
   onTransactionUpdated?: () => void;
 }
 
-const CATEGORIES = [
-  "Food",
-  "Transport",
-  "Education",
-  "Technology",
-  "Entertainment",
-  "Shopping",
-  "Health",
-  "Other",
-];
-
-const PAYMENT_METHODS = [
-  "Uzcard / Humo",
-  "Visa / Mastercard",
-  "Bank Wire",
-  "Cash",
-  "Crypto",
-];
-
 export function TransactionManagement({
   initialTransactions,
   onTransactionUpdated,
 }: TransactionManagementProps) {
+  const { isUz } = useTranslation();
   const storeTransactions = useFinanceStore((s) => s.transactions);
   const addTransaction = useFinanceStore((s) => s.addTransaction);
   const updateTransaction = useFinanceStore((s) => s.updateTransaction);
   const deleteTransaction = useFinanceStore((s) => s.deleteTransaction);
   const isHydrated = useFinanceStore((s) => s.isHydrated);
+
+  const categories = isUz
+    ? [
+        "Oziq-ovqat",
+        "Transport",
+        "Ta’lim",
+        "Texnologiya",
+        "Hordiq",
+        "Xaridlar",
+        "Salomatlik",
+        "Boshqa",
+      ]
+    : [
+        "Food",
+        "Transport",
+        "Education",
+        "Technology",
+        "Entertainment",
+        "Shopping",
+        "Health",
+        "Other",
+      ];
+
+  const paymentMethods = isUz
+    ? [
+        "Uzcard / Humo",
+        "Visa / Mastercard",
+        "Bank o‘tkazmasi",
+        "Naqd pul",
+        "Kripto",
+      ]
+    : [
+        "Uzcard / Humo",
+        "Visa / Mastercard",
+        "Bank Wire",
+        "Cash",
+        "Crypto",
+      ];
 
   const transactions = isHydrated ? storeTransactions : initialTransactions;
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -85,8 +106,8 @@ export function TransactionManagement({
     title: "",
     amount: "",
     type: TransactionType.EXPENSE,
-    category: "Technology",
-    account: "Main Checking",
+    category: isUz ? "Texnologiya" : "Technology",
+    account: isUz ? "Asosiy hisob" : "Main Checking",
     currency: "USD",
     paymentMethod: "Visa / Mastercard",
     date: new Date().toISOString().split("T")[0],
@@ -118,13 +139,13 @@ export function TransactionManagement({
       title: "",
       amount: "",
       type: TransactionType.EXPENSE,
-      category: "Food",
-      account: "Personal Card",
+      category: isUz ? "Oziq-ovqat" : "Food",
+      account: isUz ? "Shaxsiy karta" : "Personal Card",
       currency: "USD",
       paymentMethod: "Uzcard / Humo",
       date: new Date().toISOString().split("T")[0],
       notes: "",
-      tags: "Daily",
+      tags: isUz ? "Kunlik" : "Daily",
     });
     setIsModalOpen(true);
   };
@@ -187,13 +208,32 @@ export function TransactionManagement({
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this financial record permanently?")) {
+    const confirmMsg = isUz
+      ? "Ushbu moliyaviy yozuvni butunlay o‘chirmoqchimisiz?"
+      : "Delete this financial record permanently?";
+    if (confirm(confirmMsg)) {
       deleteTransaction(id);
       if (editingTransaction?.id === id) {
         setIsModalOpen(false);
         setEditingTransaction(null);
       }
       onTransactionUpdated?.();
+    }
+  };
+
+  const getTypeLabel = (t: string) => {
+    if (!isUz) return t;
+    switch (t) {
+      case "ALL":
+        return "Barchasi";
+      case "INCOME":
+        return "Daromad";
+      case "EXPENSE":
+        return "Xarajat";
+      case "TRANSFER":
+        return "O‘tkazma";
+      default:
+        return t;
     }
   };
 
@@ -208,7 +248,11 @@ export function TransactionManagement({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title, notes, account..."
+            placeholder={
+              isUz
+                ? "Nomi, izoh yoki hisob bo‘yicha qidirish..."
+                : "Search by title, notes, account..."
+            }
             className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#101915] border border-[#25352C] text-xs text-[#F3F7F4] placeholder-[#98A69D] focus:outline-none focus:border-[#10B981]"
           />
         </div>
@@ -227,7 +271,7 @@ export function TransactionManagement({
                     : "text-[#98A69D] hover:text-[#F3F7F4]"
                 }`}
               >
-                {t}
+                {getTypeLabel(t)}
               </button>
             ))}
           </div>
@@ -238,8 +282,8 @@ export function TransactionManagement({
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-[#101915] border border-[#25352C] text-xs font-semibold text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
           >
-            <option value="ALL">All Categories</option>
-            {CATEGORIES.map((c) => (
+            <option value="ALL">{isUz ? "Barcha kategoriyalar" : "All Categories"}</option>
+            {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -253,7 +297,7 @@ export function TransactionManagement({
           className="w-full md:w-auto px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-lg shadow-[#10B981]/20 font-bold"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Transaction</span>
+          <span>{isUz ? "Tranzaksiya qo‘shish" : "Add Transaction"}</span>
         </button>
       </div>
 
@@ -261,10 +305,14 @@ export function TransactionManagement({
       <div className="glass-card rounded-2xl border border-[#25352C] overflow-hidden">
         <div className="p-4 border-b border-[#25352C] bg-[#101915] flex items-center justify-between">
           <span className="text-xs font-mono font-semibold text-[#F3F7F4] uppercase">
-            Recorded Ledger Transactions ({filteredTransactions.length})
+            {isUz
+              ? `QAYD ETILGAN TRANZAKSIYALAR JURNALI (${filteredTransactions.length})`
+              : `RECORDED LEDGER TRANSACTIONS (${filteredTransactions.length})`}
           </span>
           <span className="text-[11px] font-mono text-[#98A69D]">
-            Strict user-verified double-entry records
+            {isUz
+              ? "Foydalanuvchi tomonidan tasdiqlangan aniq moliyaviy yozuvlar"
+              : "Strict user-verified double-entry records"}
           </span>
         </div>
 
@@ -272,13 +320,13 @@ export function TransactionManagement({
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-[#25352C] bg-[#142019]/60 text-[#98A69D] font-mono text-[11px]">
-                <th className="py-3 px-4">Transaction Details</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Account / Method</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4 text-right">Amount</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{isUz ? "Tranzaksiya tafsilotlari" : "Transaction Details"}</th>
+                <th className="py-3 px-4">{isUz ? "Turi" : "Type"}</th>
+                <th className="py-3 px-4">{isUz ? "Kategoriya" : "Category"}</th>
+                <th className="py-3 px-4">{isUz ? "Hisob / Usul" : "Account / Method"}</th>
+                <th className="py-3 px-4">{isUz ? "Sana" : "Date"}</th>
+                <th className="py-3 px-4 text-right">{isUz ? "Summa" : "Amount"}</th>
+                <th className="py-3 px-4 text-right">{isUz ? "Amallar" : "Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#25352C]">
@@ -326,7 +374,7 @@ export function TransactionManagement({
                           : "bg-blue-500/15 text-blue-400 border border-blue-500/30"
                       }`}
                     >
-                      {tx.type}
+                      {getTypeLabel(tx.type)}
                     </span>
                   </td>
 
@@ -365,14 +413,14 @@ export function TransactionManagement({
                       <button
                         onClick={() => handleOpenEdit(tx)}
                         className="p-1.5 rounded-lg bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-[#10B981] transition-colors"
-                        title="Edit"
+                        title={isUz ? "Tahrirlash" : "Edit"}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(tx.id)}
                         className="p-1.5 rounded-lg bg-[#101915] border border-[#25352C] text-[#98A69D] hover:text-red-400 transition-colors"
-                        title="Delete"
+                        title={isUz ? "O‘chirish" : "Delete"}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -387,8 +435,14 @@ export function TransactionManagement({
         {filteredTransactions.length === 0 && (
           <div className="p-8 text-center text-xs text-[#98A69D] space-y-2">
             <DollarSign className="w-8 h-8 mx-auto text-[#98A69D]" />
-            <p className="font-semibold text-[#F3F7F4]">No transactions match criteria</p>
-            <p>Try resetting filters or click &quot;Add Transaction&quot; to log a record.</p>
+            <p className="font-semibold text-[#F3F7F4]">
+              {isUz ? "Mezonlarga mos tranzaksiyalar topilmadi" : "No transactions match criteria"}
+            </p>
+            <p>
+              {isUz
+                ? "Filtrlarni qayta o‘rnating yoki yangi yozuv kiritish uchun \"Tranzaksiya qo‘shish\" tugmasini bosing."
+                : "Try resetting filters or click \"Add Transaction\" to log a record."}
+            </p>
           </div>
         )}
       </div>
@@ -401,7 +455,9 @@ export function TransactionManagement({
               <div className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-[#10B981]" />
                 <h3 className="text-sm font-semibold text-[#F3F7F4]">
-                  {editingTransaction ? "Edit Transaction Record" : "Log New Transaction"}
+                  {editingTransaction
+                    ? (isUz ? "Tranzaksiyani tahrirlash" : "Edit Transaction Record")
+                    : (isUz ? "Yangi tranzaksiya kiritish" : "Log New Transaction")}
                 </h3>
               </div>
               <button
@@ -416,22 +472,22 @@ export function TransactionManagement({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Transaction Type *
+                    {isUz ? "Tranzaksiya turi *" : "Transaction Type *"}
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as TransactionType })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    <option value={TransactionType.EXPENSE}>Expense (-)</option>
-                    <option value={TransactionType.INCOME}>Income (+)</option>
-                    <option value={TransactionType.TRANSFER}>Transfer</option>
+                    <option value={TransactionType.EXPENSE}>{isUz ? "Xarajat (-)" : "Expense (-)"}</option>
+                    <option value={TransactionType.INCOME}>{isUz ? "Daromad (+)" : "Income (+)"}</option>
+                    <option value={TransactionType.TRANSFER}>{isUz ? "O‘tkazma" : "Transfer"}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Amount (USD) *
+                    {isUz ? "Summa ($) *" : "Amount (USD) *"}
                   </label>
                   <input
                     type="number"
@@ -448,14 +504,14 @@ export function TransactionManagement({
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Title / Vendor / Source *
+                  {isUz ? "Nomi / Sotuvchi / Manba *" : "Title / Vendor / Source *"}
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. AWS Cloud GPU Compute, Client Architecture Fee"
+                  placeholder={isUz ? "Masalan: Server ijarasi, Mijoz loyihasi gonorari" : "e.g. AWS Cloud GPU Compute, Client Architecture Fee"}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -463,14 +519,14 @@ export function TransactionManagement({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Category *
+                    {isUz ? "Kategoriya *" : "Category *"}
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    {CATEGORIES.map((c) => (
+                    {categories.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>
@@ -480,14 +536,14 @@ export function TransactionManagement({
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Payment Method
+                    {isUz ? "To‘lov usuli" : "Payment Method"}
                   </label>
                   <select
                     value={formData.paymentMethod}
                     onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   >
-                    {PAYMENT_METHODS.map((m) => (
+                    {paymentMethods.map((m) => (
                       <option key={m} value={m}>
                         {m}
                       </option>
@@ -499,20 +555,20 @@ export function TransactionManagement({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Account / Ledger Name
+                    {isUz ? "Hisob / Karta nomi" : "Account / Ledger Name"}
                   </label>
                   <input
                     type="text"
                     value={formData.account}
                     onChange={(e) => setFormData({ ...formData, account: e.target.value })}
-                    placeholder="e.g. Main Checking, Corporate Card"
+                    placeholder={isUz ? "Masalan: Asosiy hisob, Korporativ karta" : "e.g. Main Checking, Corporate Card"}
                     className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
 
                 <div>
                   <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                    Transaction Date
+                    {isUz ? "Tranzaksiya sanasi" : "Transaction Date"}
                   </label>
                   <input
                     type="date"
@@ -526,13 +582,13 @@ export function TransactionManagement({
 
               <div>
                 <label className="text-[11px] font-mono text-[#98A69D] block mb-1">
-                  Notes & Details (Optional)
+                  {isUz ? "Izohlar va Tafsilotlar (ixtiyoriy)" : "Notes & Details (Optional)"}
                 </label>
                 <textarea
                   rows={2}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Invoice number, tax receipt notes, client project ID..."
+                  placeholder={isUz ? "Hisob-faktura raqami, chek eslatmasi, mijoz ID raqami..." : "Invoice number, tax receipt notes, client project ID..."}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
@@ -543,13 +599,15 @@ export function TransactionManagement({
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-semibold text-[#98A69D] hover:text-[#F3F7F4]"
                 >
-                  Cancel
+                  {isUz ? "Bekor qilish" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all font-bold"
                 >
-                  {editingTransaction ? "Update Record" : "Save Record"}
+                  {editingTransaction
+                    ? (isUz ? "Yangilash" : "Update Record")
+                    : (isUz ? "Saqlash" : "Save Record")}
                 </button>
               </div>
             </form>

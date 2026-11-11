@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { X, Plus, Flame, Clock, Sparkles } from "lucide-react";
+import { useTranslation } from "@/stores/language-store";
 
 interface CreateHabitModalProps {
   isOpen: boolean;
@@ -24,12 +25,13 @@ export function CreateHabitModal({
   onClose,
   onCreateHabit,
 }: CreateHabitModalProps) {
+  const { dict, isUz } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [frequency, setFrequency] = useState("DAILY");
   const [targetDaysPerWeek, setTargetDaysPerWeek] = useState(7);
   const [targetCount, setTargetCount] = useState(1);
-  const [unit, setUnit] = useState("times");
+  const [unit, setUnit] = useState(isUz ? "marta" : "times");
   const [category, setCategory] = useState("Productivity");
   const [color, setColor] = useState("#10B981");
   const [reminderTime, setReminderTime] = useState("08:00");
@@ -38,13 +40,13 @@ export function CreateHabitModal({
   if (!isOpen) return null;
 
   const categories = [
-    "Education",
-    "Health",
-    "Fitness",
-    "Reading",
-    "Personal Development",
-    "Productivity",
-    "Other",
+    { id: "Education", labelUz: "Ta'lim / O‘qish", labelEn: "Education" },
+    { id: "Health", labelUz: "Salomatlik", labelEn: "Health" },
+    { id: "Fitness", labelUz: "Sport / Mashg‘ulot", labelEn: "Fitness" },
+    { id: "Reading", labelUz: "Mutolaa / Kitob", labelEn: "Reading" },
+    { id: "Personal Development", labelUz: "Shaxsiy rivojlanish", labelEn: "Personal Development" },
+    { id: "Productivity", labelUz: "Unumdorlik va Kod", labelEn: "Productivity" },
+    { id: "Other", labelUz: "Boshqa", labelEn: "Other" },
   ];
 
   const colors = [
@@ -81,7 +83,7 @@ export function CreateHabitModal({
       setFrequency("DAILY");
       setTargetDaysPerWeek(7);
       setTargetCount(1);
-      setUnit("times");
+      setUnit(isUz ? "marta" : "times");
       setCategory("Productivity");
       setColor("#10B981");
       setReminderTime("08:00");
@@ -101,10 +103,12 @@ export function CreateHabitModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-[#F3F7F4]">
-                Create Discipline Protocol
+                {isUz ? "Yangi intizom odatini yaratish" : "Create Discipline Protocol"}
               </h3>
               <p className="text-xs text-[#98A69D]">
-                Define a high-leverage daily ritual or weekly discipline habit
+                {isUz
+                  ? "Kunlik muhim odat yoki haftalik intizom tartibini belgilang"
+                  : "Define a high-leverage daily ritual or weekly discipline habit"}
               </p>
             </div>
           </div>
@@ -119,27 +123,27 @@ export function CreateHabitModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Habit Name <span className="text-[#EF4444]">*</span>
+              {isUz ? "Odat nomi" : "Habit Name"} <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Deep Architecture & Coding"
+              placeholder={isUz ? "Masalan: Deep Work va Dasturlash" : "e.g. Deep Architecture & Coding"}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3.5 py-2 text-sm text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
             />
           </div>
 
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-              Description / Standard of Excellence
+              {isUz ? "Tavsif / Mukammallik standarti" : "Description / Standard of Excellence"}
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Minimum 2 hours uninterrupted deep work session with zero distractions..."
+              placeholder={isUz ? "Kamida 2 soat to‘liq chalg‘imasdan chuqur ishlash..." : "Minimum 2 hours uninterrupted deep work session with zero distractions..."}
               className="w-full bg-[#142019] border border-[#25352C] rounded-xl p-3 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] resize-none"
             />
           </div>
@@ -147,7 +151,7 @@ export function CreateHabitModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Category
+                {isUz ? "Kategoriya" : "Category"}
               </label>
               <select
                 value={category}
@@ -155,8 +159,8 @@ export function CreateHabitModal({
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               >
                 {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                  <option key={c.id} value={c.id}>
+                    {isUz ? c.labelUz : c.labelEn}
                   </option>
                 ))}
               </select>
@@ -164,15 +168,15 @@ export function CreateHabitModal({
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Cadence / Frequency
+                {isUz ? "Chastota / Takroriylik" : "Cadence / Frequency"}
               </label>
               <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-2 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981] font-mono"
               >
-                <option value="DAILY">Daily</option>
-                <option value="WEEKLY">Weekly</option>
+                <option value="DAILY">{isUz ? "Har kuni" : "Daily"}</option>
+                <option value="WEEKLY">{isUz ? "Haftalik" : "Weekly"}</option>
               </select>
             </div>
           </div>
@@ -181,7 +185,7 @@ export function CreateHabitModal({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Target Value
+                {isUz ? "Maqsadli miqdor" : "Target Value"}
               </label>
               <input
                 type="number"
@@ -194,20 +198,20 @@ export function CreateHabitModal({
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1">
-                Unit
+                {isUz ? "O‘lchov birligi" : "Unit"}
               </label>
               <input
                 type="text"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="minutes, times, pages"
+                placeholder={isUz ? "daqiqa, marta, sahifa" : "minutes, times, pages"}
                 className="w-full bg-[#142019] border border-[#25352C] rounded-xl px-3 py-1.5 text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
             <div>
               <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[#10B981]" /> Reminder
+                <Clock className="w-3 h-3 text-[#10B981]" /> {isUz ? "Eslatma vaqti" : "Reminder"}
               </label>
               <input
                 type="time"
@@ -221,7 +225,7 @@ export function CreateHabitModal({
           {/* Color palette selector */}
           <div>
             <label className="text-[11px] font-mono text-[#98A69D] uppercase block mb-1.5">
-              Accent Color
+              {isUz ? "Ajratib ko‘rsatish rangi" : "Accent Color"}
             </label>
             <div className="flex items-center gap-3">
               {colors.map((c) => (
@@ -242,17 +246,19 @@ export function CreateHabitModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors"
+              className="px-4 py-2 rounded-xl bg-[#142019] hover:bg-[#142019]/80 text-[#98A69D] border border-[#25352C] text-xs font-medium transition-colors cursor-pointer"
             >
-              Cancel
+              {dict.common.cancel || (isUz ? "Bekor qilish" : "Cancel")}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !name.trim()}
-              className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20"
+              className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#080D0B] font-bold text-xs transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-[#10B981]/20 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              {isSubmitting ? "Creating..." : "Establish Protocol"}
+              {isSubmitting
+                ? (isUz ? "Yaratilmoqda..." : "Creating...")
+                : (isUz ? "Odatni yaratish" : "Establish Protocol")}
             </button>
           </div>
         </form>
