@@ -247,6 +247,95 @@ export interface KnowledgeNoteSummary {
   updatedAt: Date | string;
 }
 
+export interface IeltsPracticeRecordSummary {
+  id: string;
+  userId: string;
+  section: "LISTENING" | "READING" | "WRITING" | "SPEAKING" | string;
+  title: string;
+  taskType?: string | null;
+  prompt?: string | null;
+  submission?: string | null;
+  bandScore?: number | null;
+  durationMinutes?: number | null;
+  wordCount?: number | null;
+  feedback?: string | null;
+  audioUrl?: string | null;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface ExamResultSummary {
+  id: string;
+  userId: string;
+  examType: string;
+  title: string;
+  listeningScore: number;
+  readingScore: number;
+  writingScore: number;
+  speakingScore: number;
+  overallBand: number;
+  date: Date | string;
+  notes?: string | null;
+  createdAt: Date | string;
+}
+
+export interface ArabicPracticeLogSummary {
+  id: string;
+  userId: string;
+  skill: "LISTENING" | "READING" | "WRITING" | "SPEAKING" | "GRAMMAR" | string;
+  topic: string;
+  cefrLevel: string;
+  grammarFocus?: string | null;
+  notes?: string | null;
+  durationMinutes: number;
+  date: Date | string;
+  createdAt: Date | string;
+}
+
+export interface VocabularyCardSummary {
+  id: string;
+  userId: string;
+  word: string;
+  translation: string;
+  language: "ENGLISH" | "ARABIC" | string;
+  difficulty: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | string;
+  topic: string;
+  phonetic?: string | null;
+  exampleSentence?: string | null;
+  exampleTranslation?: string | null;
+  status: "NEW" | "LEARNING" | "REVIEWING" | "MASTERED" | string;
+  repetition: number;
+  interval: number;
+  easeFactor: number;
+  nextReviewDate: Date | string;
+  lastReviewedAt?: Date | string | null;
+  reviewCount: number;
+  correctCount: number;
+  incorrectCount: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface StudySessionSummary {
+  id: string;
+  userId: string;
+  subject: string;
+  durationMinutes: number;
+  notes?: string | null;
+  completedAt: Date | string;
+}
+
+export interface StudyCenterMetrics {
+  targetBand: number;
+  estimatedBand: number;
+  arabicCefrLevel: string;
+  totalStudyHours: number;
+  cardsMastered: number;
+  cardsReviewDue: number;
+  mockTestsCompleted: number;
+  averageMockScore: number;
+}
+
 export interface DashboardMetrics {
   tasks: {
     pending: number;

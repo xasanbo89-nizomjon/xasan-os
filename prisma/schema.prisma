@@ -53,20 +53,25 @@ model User {
   updatedAt         DateTime  @updatedAt
 
   // Data isolation relations
-  tasks         Task[]
-  habits        Habit[]
-  habitLogs     HabitLog[]
-  wellnessLogs  WellnessLog[]
-  projects      Project[]
-  transactions  Transaction[]
-  notes         KnowledgeNote[]
-  goals         Goal[]
-  visionItems   VisionItem[]
+  tasks          Task[]
+  habits         Habit[]
+  habitLogs      HabitLog[]
+  wellnessLogs   WellnessLog[]
+  projects       Project[]
+  transactions   Transaction[]
+  notes          KnowledgeNote[]
+  goals          Goal[]
+  visionItems    VisionItem[]
   journalEntries JournalEntry[]
-  sessions      Session[]
-  events        CalendarEvent[]
-  reminders     Reminder[]
-  focusSessions FocusSession[]
+  sessions       Session[]
+  events         CalendarEvent[]
+  reminders      Reminder[]
+  focusSessions  FocusSession[]
+  ieltsRecords   IeltsPracticeRecord[]
+  examResults    ExamResult[]
+  arabicLogs     ArabicPracticeLog[]
+  vocabCards     VocabularyCard[]
+  studySessions  StudySession[]
 
   @@map("users")
 }
@@ -407,4 +412,111 @@ model JournalEntry {
   @@index([userId, date])
   @@index([userId, isArchived])
   @@map("journal_entries")
+}
+
+model IeltsPracticeRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  section         String   // "LISTENING", "READING", "WRITING", "SPEAKING"
+  title           String
+  taskType        String?  // "TASK_1", "TASK_2", "PART_1", "PART_2", "PART_3", "READING_PASSAGE", "SECTION_4"
+  prompt          String?  @db.Text
+  submission      String?  @db.Text
+  bandScore       Float?   @default(8.0)
+  durationMinutes Int?     @default(40)
+  wordCount       Int?
+  feedback        String?  @db.Text
+  audioUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, section])
+  @@map("ielts_practice_records")
+}
+
+model ExamResult {
+  id             String   @id @default(uuid())
+  userId         String
+  examType       String   @default("IELTS_ACADEMIC") // "IELTS_ACADEMIC", "IELTS_GENERAL", "ARABIC_CEFR"
+  title          String
+  listeningScore Float    @default(8.5)
+  readingScore   Float    @default(8.5)
+  writingScore   Float    @default(8.0)
+  speakingScore  Float    @default(8.5)
+  overallBand    Float    @default(8.5)
+  date           DateTime @default(now())
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, examType])
+  @@index([userId, date])
+  @@map("exam_results")
+}
+
+model ArabicPracticeLog {
+  id              String   @id @default(uuid())
+  userId          String
+  skill           String   // "LISTENING", "READING", "WRITING", "SPEAKING", "GRAMMAR"
+  topic           String
+  cefrLevel       String   @default("B2") // "A1", "A2", "B1", "B2", "C1"
+  grammarFocus    String?  // e.g. "I'rab (الإعراب)", "Bab Fa'ala", "Jumla Ismiyya"
+  notes           String?  @db.Text
+  durationMinutes Int      @default(30)
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, skill])
+  @@map("arabic_practice_logs")
+}
+
+model VocabularyCard {
+  id                 String    @id @default(uuid())
+  userId             String
+  word               String    // e.g. "Equivocal", "استراتيجية"
+  translation        String    // Uzbek / English meaning e.g. "Noaniq, ikkilamchi", "Strategiya"
+  language           String    @default("ENGLISH") // "ENGLISH", "ARABIC"
+  difficulty         String    @default("C1") // "A1", "A2", "B1", "B2", "C1", "C2"
+  topic              String    @default("Academic") // "Academic", "Architecture", "Science", "Nahw"
+  phonetic           String?   // Pronunciation or harakat
+  exampleSentence    String?   @db.Text
+  exampleTranslation String?   @db.Text
+  status             String    @default("NEW") // "NEW", "LEARNING", "REVIEWING", "MASTERED"
+  // Spaced Repetition (SM-2 Algorithm parameters)
+  repetition         Int       @default(0)
+  interval           Int       @default(1) // in days
+  easeFactor         Float     @default(2.5)
+  nextReviewDate     DateTime  @default(now())
+  lastReviewedAt     DateTime?
+  reviewCount        Int       @default(0)
+  correctCount       Int       @default(0)
+  incorrectCount     Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, language])
+  @@index([userId, status])
+  @@index([userId, nextReviewDate])
+  @@map("vocabulary_cards")
+}
+
+model StudySession {
+  id              String   @id @default(uuid())
+  userId          String
+  subject         String   @default("IELTS_READING") // "IELTS_READING", "IELTS_WRITING", "IELTS_SPEAKING", "IELTS_LISTENING", "ARABIC_GRAMMAR", "ARABIC_VOCAB", "SOFTWARE_ARCH"
+  durationMinutes Int      @default(45)
+  notes           String?  @db.Text
+  completedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+  @@map("study_sessions")
 }
