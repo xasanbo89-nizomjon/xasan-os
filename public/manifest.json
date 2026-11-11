@@ -1,0 +1,64 @@
+{
+  "name": "XASAN OS Ultimate",
+  "short_name": "XasanOS",
+  "description": "Next-generation sovereign personal operating system for software architecture, IELTS preparation, venture execution, and financial discipline.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080D0B",
+  "theme_color": "#080D0B",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Focus Mode",
+      "short_name": "Focus",
+      "description": "Enter distraction-free Pomodoro focus mode",
+      "url": "/focus",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Task Manager",
+      "short_name": "Tasks",
+      "description": "View and manage active tasks & Kanban board",
+      "url": "/tasks",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Day",
+      "short_name": "My Day",
+      "description": "Today's personalized focus schedule",
+      "url": "/my-day",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "XASAN AI",
+      "short_name": "Copilot",
+      "description": "Autonomous cognitive copilot and reasoning engine",
+      "url": "/xasan-ai",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "developer", "education", "finance"],
+  "prefer_related_applications": false
+}

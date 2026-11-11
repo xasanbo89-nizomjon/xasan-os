@@ -2,6 +2,7 @@ import React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ModuleHeader } from "@/components/layout/module-header";
 import { Settings, Database, Palette, Key, Shield, HardDrive, Check } from "lucide-react";
+import { MultiPlatformControl } from "@/components/settings/multi-platform-control";
 
 export default function SettingsPage() {
   const themeTokens = [
@@ -145,6 +146,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Phase 12: Multi-Platform, Offline Sync & Disaster Recovery */}
+        <MultiPlatformControl />
       </div>
     </AppShell>
   );

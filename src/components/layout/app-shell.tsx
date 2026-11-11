@@ -8,6 +8,7 @@ import { QuickCreateDialog } from "./quick-create-dialog";
 import { FloatingActionButton } from "./floating-action-button";
 import { FocusSessionModal } from "../dashboard/focus-session-modal";
 import { GlobalSearchDialog } from "./global-search-dialog";
+import { PwaManager } from "./pwa-manager";
 import { getGlobalSearchDataAction } from "@/server/actions/os";
 import { TaskSummary, ProjectSummary, KnowledgeNoteSummary, TransactionSummary } from "@/types";
 import { cn } from "@/lib/utils";
@@ -110,6 +111,9 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Floating Focus Session Timer */}
       <FocusSessionModal />
+
+      {/* Progressive Web App & Offline Sync Telemetry Manager */}
+      <PwaManager />
     </div>
   );
 }

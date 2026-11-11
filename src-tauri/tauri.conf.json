@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
+  "productName": "XASAN OS Ultimate",
+  "version": "1.0.0",
+  "identifier": "com.xasan.os.ultimate",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../out"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "XASAN OS Ultimate",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "theme": "Dark",
+        "decorations": true,
+        "transparent": false,
+        "backgroundColor": "#080D0B",
+        "shadow": true
+      }
+    ],
+    "trayIcon": {
+      "iconPath": "../public/icon-192.svg",
+      "iconAsTemplate": false,
+      "tooltip": "XASAN OS Ultimate - Sovereign Copilot & Telemetry"
+    },
+    "security": {
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:;"
+    }
+  },
+  "plugins": {
+    "notification": {
+      "all": true
+    },
+    "shell": {
+      "open": true
+    }
+  }
+}

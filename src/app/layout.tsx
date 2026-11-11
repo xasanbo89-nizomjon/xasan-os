@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,12 +12,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#080D0B",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   title: "XASAN OS Ultimate | Personal Operating System",
   description:
     "Next-generation personal operating system for productivity, developer workflows, life tracking, and AI-assisted execution.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "XasanOS",
+  },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon-192.svg",
+    apple: "/icon-192.svg",
   },
 };
 
