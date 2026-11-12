@@ -25,10 +25,10 @@ export function LanguageSwitcher({
   if (!isHydrated) {
     return (
       <div
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#98A69D] ${className}`}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#98A69D] ${className}`}
       >
-        <Globe className="w-3.5 h-3.5 text-[#10B981]" />
-        <span>O‘Z</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+        <span className="font-bold text-[#F3F7F4]">Uz</span>
       </div>
     );
   }
@@ -77,14 +77,12 @@ export function LanguageSwitcher({
       onClick={handleToggle}
       title={isUz ? "Switch to English" : "O‘zbek tiliga o‘tish"}
       aria-label="Switch Language"
-      className={`group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] border border-[#25352C] hover:border-[#10B981]/40 text-xs font-mono transition-all cursor-pointer shadow-inner ${className}`}
+      className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#142019] hover:bg-[#101915] border border-[#25352C] hover:border-[#10B981]/50 text-xs font-mono transition-all cursor-pointer shadow-inner ${className}`}
     >
-      <Globe className="w-3.5 h-3.5 text-[#10B981] group-hover:rotate-45 transition-transform duration-300" />
-      <div className="flex items-center gap-1 font-bold text-[11px]">
-        <span className={isUz ? "text-[#10B981]" : "text-[#98A69D]"}>O‘Z</span>
-        <span className="text-[#25352C] font-normal">/</span>
-        <span className={!isUz ? "text-[#10B981]" : "text-[#98A69D]"}>EN</span>
-      </div>
+      <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+      <span className="font-bold text-[#F3F7F4] group-hover:text-[#10B981] transition-colors">
+        {isUz ? "Uz" : "En"}
+      </span>
     </button>
   );
 }

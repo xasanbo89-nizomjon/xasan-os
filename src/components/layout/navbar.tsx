@@ -85,7 +85,7 @@ export function Navbar({
       </div>
 
       {/* Middle Area: Global Search / Command Bar Trigger */}
-      <div className="hidden md:flex flex-1 max-w-md mx-6">
+      <div className="hidden md:flex flex-1 max-w-sm lg:max-w-md mx-4">
         <button
           onClick={onOpenSearch || onOpenCommandPalette}
           className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] text-xs hover:border-[#10B981]/50 hover:text-[#F3F7F4] transition-all duration-150 group cursor-pointer shadow-inner"
@@ -93,26 +93,28 @@ export function Navbar({
           <div className="flex items-center gap-2.5">
             <Search className="w-4 h-4 text-[#98A69D] group-hover:text-[#10B981] transition-colors" />
             <span className="font-normal truncate">
-              {dict.navbar.search_prompt}
+              Qidiruv (Ctrl + K)
             </span>
           </div>
-          <div className="flex items-center gap-1 font-mono text-[11px] bg-[#101915] px-2 py-0.5 rounded border border-[#25352C] group-hover:border-[#10B981]/30">
-            <span className="text-[10px]">⌘</span>
-            <span>K</span>
+          <div className="flex items-center gap-1 font-mono text-[10px] bg-[#101915] px-2 py-0.5 rounded border border-[#25352C] group-hover:border-[#10B981]/30 text-[#98A69D]">
+            <span>Ctrl + K</span>
           </div>
         </button>
       </div>
 
-      {/* Right Area: Status clock, Language, Quick Create, Notifications, Quick Lock & Profile */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Language Switcher */}
-        <LanguageSwitcher />
+      {/* Date, Day, Time Display from image_12.png */}
+      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#F3F7F4] select-none">
+        <span className="text-[#98A69D]">16-iyun, 2025</span>
+        <span className="text-[#25352C]">•</span>
+        <span className="text-[#10B981] font-semibold">Dushanba</span>
+        <span className="text-[#25352C]">•</span>
+        <span className="text-[#F3F7F4] font-bold">14:35</span>
+      </div>
 
-        {/* Live System Time */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#98A69D]">
-          <Clock className="w-3.5 h-3.5 text-[#10B981]" />
-          <span>{time || "22:12:00"}</span>
-        </div>
+      {/* Right Area: Language, Quick Create, Notifications, Quick Lock & Profile */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Language Switcher (Uz pill) */}
+        <LanguageSwitcher />
 
         {/* Quick-Create Action Button */}
         <div className="relative">
@@ -143,7 +145,7 @@ export function Navbar({
           <Search className="w-4 h-4" />
         </button>
 
-        {/* Notifications Popover Trigger */}
+        {/* Notifications Popover Trigger with exact badge count '3' */}
         <div className="relative">
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -151,8 +153,9 @@ export function Navbar({
             className="relative p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981]" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] text-[#080D0B] text-[10px] font-black flex items-center justify-center font-mono shadow-sm">
+              3
+            </span>
           </button>
 
           {/* Notifications Dropdown */}
@@ -207,8 +210,9 @@ export function Navbar({
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
             className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 transition-colors group cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#3B82F6] flex items-center justify-center text-xs font-bold text-[#080D0B] shadow-sm">
+            <div className="relative w-7 h-7 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#3B82F6] flex items-center justify-center text-xs font-bold text-[#080D0B] shadow-sm">
               XM
+              <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#10B981] ring-2 ring-[#101915]" />
             </div>
             <span className="hidden sm:inline text-xs font-medium text-[#F3F7F4] group-hover:text-[#10B981] transition-colors">
               Xasan

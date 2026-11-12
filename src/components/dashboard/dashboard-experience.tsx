@@ -13,6 +13,7 @@ import {
 } from "@/stores/local-storage-sync";
 import { WelcomeWidget } from "./widgets/welcome-widget";
 import { DashboardViewSwitcher } from "./dashboard-view-switcher";
+import { OverviewReplica } from "./overview-replica";
 import { OverviewWidgetGrid } from "./views/overview-widget-grid";
 import { ActivityView } from "./views/activity-view";
 import { WeeklyOverviewView } from "./views/weekly-overview-view";
@@ -74,63 +75,55 @@ export function DashboardExperience({
 
   return (
     <div className="space-y-6">
-      {/* 1. Welcome Section & Daily Progress */}
-      <WelcomeWidget
-        completedTasksCount={metrics.tasks.completed}
-        totalTasksCount={metrics.tasks.pending + metrics.tasks.completed}
-        completedHabitsCount={metrics.habits.completedToday}
-        totalHabitsCount={metrics.habits.active}
-        onOpenQuickCreate={() => handleOpenQuickCreate("task")}
-        onOpenCustomizer={() => setCustomizerOpen(true)}
-      />
-
-      {/* 2. Dashboard View Switcher */}
-      <div className="flex items-center justify-between gap-4 flex-wrap pb-1">
-        <DashboardViewSwitcher />
-        <span className="text-xs font-mono text-[#98A69D] hidden sm:inline">
-          {isUz ? "Ko‘rinish rejimi: " : "View Mode: "}<span className="text-[#10B981] font-bold uppercase">{currentView}</span>
-        </span>
-      </div>
-
-      {/* 3. Dynamic View Content */}
-      {currentView === "overview" && (
-        <OverviewWidgetGrid
-          tasks={tasks}
-          habits={habits}
-          projects={projects}
-          transactions={transactions}
-          financeMetrics={{
-            balance: metrics.finance.balance,
-            income: metrics.finance.incomeThisMonth,
-            expenses: metrics.finance.expensesThisMonth,
-          }}
-          onOpenQuickCreate={() => handleOpenQuickCreate("task")}
+      {currentView === "overview" ? (
+        <OverviewReplica
+          onOpenQuickCreate={handleOpenQuickCreate}
           onStartFocus={() => startFocusSession(50)}
         />
-      )}
+      ) : (
+        <>
+          {/* Welcome Section & Daily Progress */}
+          <WelcomeWidget
+            completedTasksCount={metrics.tasks.completed}
+            totalTasksCount={metrics.tasks.pending + metrics.tasks.completed}
+            completedHabitsCount={metrics.habits.completedToday}
+            totalHabitsCount={metrics.habits.active}
+            onOpenQuickCreate={() => handleOpenQuickCreate("task")}
+            onOpenCustomizer={() => setCustomizerOpen(true)}
+          />
 
-      {currentView === "activity" && (
-        <ActivityView
-          tasks={tasks}
-          habits={habits}
-          transactions={transactions}
-          notes={notes}
-        />
-      )}
+          {/* Dashboard View Switcher */}
+          <div className="flex items-center justify-between gap-4 flex-wrap pb-1">
+            <DashboardViewSwitcher />
+            <span className="text-xs font-mono text-[#98A69D] hidden sm:inline">
+              {isUz ? "Ko‘rinish rejimi: " : "View Mode: "}<span className="text-[#10B981] font-bold uppercase">{currentView}</span>
+            </span>
+          </div>
 
-      {currentView === "weekly" && (
-        <WeeklyOverviewView habits={habits} tasks={tasks} />
-      )}
+          {currentView === "activity" && (
+            <ActivityView
+              tasks={tasks}
+              habits={habits}
+              transactions={transactions}
+              notes={notes}
+            />
+          )}
 
-      {currentView === "monthly" && (
-        <MonthlyOverviewView
-          balance={metrics.finance.balance}
-          income={metrics.finance.incomeThisMonth}
-          expenses={metrics.finance.expensesThisMonth}
-        />
-      )}
+          {currentView === "weekly" && (
+            <WeeklyOverviewView habits={habits} tasks={tasks} />
+          )}
 
-      {currentView === "custom" && <CustomDashboardView />}
+          {currentView === "monthly" && (
+            <MonthlyOverviewView
+              balance={metrics.finance.balance}
+              income={metrics.finance.incomeThisMonth}
+              expenses={metrics.finance.expensesThisMonth}
+            />
+          )}
+
+          {currentView === "custom" && <CustomDashboardView />}
+        </>
+      )}
 
       {/* Layout Customizer Dialog */}
       <LayoutCustomizerDialog
