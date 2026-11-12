@@ -117,8 +117,6 @@ export const useTasksStore = create<TasksState>()(
             const nextStatus =
               t.status === TaskStatus.COMPLETED
                 ? TaskStatus.PENDING
-                : t.status === TaskStatus.PENDING
-                ? TaskStatus.IN_PROGRESS
                 : TaskStatus.COMPLETED;
             finalStatus = nextStatus;
             return {
@@ -205,6 +203,16 @@ export const useTasksStore = create<TasksState>()(
     }),
     {
       name: "xasan_tasks_storage",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || !Array.isArray(persistedState.tasks) || version < 2) {
+          return {
+            ...persistedState,
+            tasks: FALLBACK_TASKS,
+          };
+        }
+        return persistedState;
+      },
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

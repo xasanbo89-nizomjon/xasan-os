@@ -390,6 +390,16 @@ export const useDeveloperStore = create<DeveloperState>()(
     }),
     {
       name: "xasan_developer_storage",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || !Array.isArray(persistedState.projects) || version < 2) {
+          return {
+            ...persistedState,
+            projects: FALLBACK_PROJECTS,
+          };
+        }
+        return persistedState;
+      },
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

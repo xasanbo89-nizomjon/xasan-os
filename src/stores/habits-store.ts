@@ -231,6 +231,16 @@ export const useHabitsStore = create<HabitsState>()(
     }),
     {
       name: "xasan_habits_storage",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || !Array.isArray(persistedState.habits) || version < 2) {
+          return {
+            ...persistedState,
+            habits: FALLBACK_HABITS,
+          };
+        }
+        return persistedState;
+      },
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

@@ -44,6 +44,16 @@ import {
   Tooltip,
 } from "recharts";
 import { useTranslation } from "@/stores/language-store";
+import {
+  useTasksStore,
+  useHabitsStore,
+  useDeveloperStore,
+  useFinanceStore,
+  useStudyStore,
+  useHydration,
+} from "@/stores/local-storage-sync";
+import { FALLBACK_TASKS, FALLBACK_PROJECTS, FALLBACK_HABITS } from "@/lib/constants";
+import { TaskStatus, Priority } from "@/types";
 
 interface OverviewReplicaProps {
   onOpenQuickCreate?: (type?: string) => void;
@@ -55,51 +65,29 @@ export function OverviewReplica({
   onStartFocus,
 }: OverviewReplicaProps) {
   const { isUz } = useTranslation();
+  const isHydrated = useHydration();
 
-  // 1. Task item state matching image
-  const [tasks, setTasks] = useState([
-    {
-      id: "task-1",
-      title: "IELTS reading practice",
-      priority: "Medium",
-      priorityColor: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30",
-      completed: true,
-    },
-    {
-      id: "task-2",
-      title: "XASAN OS kodini yangilash",
-      priority: "High",
-      priorityColor: "bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30",
-      completed: true,
-    },
-    {
-      id: "task-3",
-      title: "Arab tili yangi so‘zlar",
-      priority: "Medium",
-      priorityColor: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30",
-      completed: false,
-    },
-    {
-      id: "task-4",
-      title: "Ravon Avto Market loyihasini tekshirish",
-      priority: "High",
-      priorityColor: "bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30",
-      completed: false,
-    },
-    {
-      id: "task-5",
-      title: "Sport bilan shug‘ullanish",
-      priority: "Low",
-      priorityColor: "bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/30",
-      completed: false,
-    },
-  ]);
+  // Stores persisted in localStorage
+  const storeTasks = useTasksStore((s) => s.tasks);
+  const toggleTaskStatus = useTasksStore((s) => s.toggleTaskStatus);
+  const storeProjects = useDeveloperStore((s) => s.projects);
+  const storeHabits = useHabitsStore((s) => s.habits);
+  const toggleHabitDay = useHabitsStore((s) => s.toggleHabitDay);
+  const storeTransactions = useFinanceStore((s) => s.transactions);
 
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
-  };
+  // Synchronized state with robust fallbacks
+  const tasks = isHydrated ? storeTasks : FALLBACK_TASKS;
+  const projects = isHydrated ? storeProjects : FALLBACK_PROJECTS;
+  const habits = isHydrated ? storeHabits : FALLBACK_HABITS;
+
+  // Real-time computed progress
+  const completedTasks = tasks.filter((t) => t.status === TaskStatus.COMPLETED);
+  const completedTasksCount = completedTasks.length;
+  const totalTasksCount = tasks.length;
+  const dailyProgressPercent = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 78;
+
+  // 5 primary tasks for dashboard
+  const displayTasks = tasks.slice(0, 5);
 
   // 2. Study tab active state
   const [studyTab, setStudyTab] = useState<"IELTS" | "Arabic" | "Vocabulary">("IELTS");
@@ -176,7 +164,7 @@ export function OverviewReplica({
       {/* 2. 5 KPI / PROGRESS STAT CARDS (Exact match to image)                    */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        {/* Card 1: Kunlik progress (78% Ring) */}
+        {/* Card 1: Kunlik progress */}
         <div className="glass-card rounded-2xl p-4 border border-[#1E2D4D] bg-[#0D1527] flex items-center gap-3 hover:border-[#38BDF8]/50 transition-all shadow-sm">
           <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
             <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
@@ -187,19 +175,19 @@ export function OverviewReplica({
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path
-                className="text-[#38BDF8] stroke-current"
-                strokeDasharray="78, 100"
+                className="text-[#38BDF8] stroke-current transition-all duration-500"
+                strokeDasharray={`${dailyProgressPercent}, 100`}
                 strokeLinecap="round"
                 strokeWidth="3.5"
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
             </svg>
-            <span className="absolute text-xs font-bold font-mono text-[#F1F5F9]">78%</span>
+            <span className="absolute text-xs font-bold font-mono text-[#F1F5F9]">{dailyProgressPercent}%</span>
           </div>
           <div className="min-w-0">
             <h4 className="text-xs font-semibold text-[#F1F5F9] truncate">Kunlik progress</h4>
-            <p className="text-[11px] text-[#94A3B8] font-mono">7 / 9 vazifa</p>
+            <p className="text-[11px] text-[#94A3B8] font-mono">{completedTasksCount} / {totalTasksCount} vazifa</p>
             <span className="text-[10px] font-mono font-bold text-[#38BDF8] flex items-center gap-0.5">
               <span>↑</span> +12%
             </span>
@@ -283,48 +271,68 @@ export function OverviewReplica({
             </Link>
           </div>
 
-          {/* Task list with checkboxes matching image */}
+          {/* Task list with checkboxes connected directly to Zustand + localStorage */}
           <div className="space-y-2">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                onClick={() => toggleTask(task.id)}
-                className={`p-2.5 rounded-xl border transition-all duration-150 flex items-center justify-between gap-2.5 cursor-pointer ${
-                  task.completed
-                    ? "bg-[#070B14]/60 border-[#1E2D4D] opacity-80"
-                    : "bg-[#070B14] border-[#1E2D4D] hover:border-[#38BDF8]/50 hover:bg-[#070B14]/90"
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <button
-                    type="button"
-                    aria-label="Toggle task"
-                    className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
-                      task.completed
-                        ? "bg-[#38BDF8] border-[#38BDF8] text-[#060A12]"
-                        : "border-[#1E2D4D] bg-[#101B33] hover:border-[#38BDF8]"
-                    }`}
-                  >
-                    {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
-                  </button>
+            {displayTasks.map((task) => {
+              const isCompleted = task.status === TaskStatus.COMPLETED;
+              const priorityLabel =
+                task.priority === Priority.URGENT || task.priority === Priority.HIGH
+                  ? "High"
+                  : task.priority === Priority.LOW
+                  ? "Low"
+                  : "Medium";
+              const priorityColor =
+                priorityLabel === "High"
+                  ? "bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30"
+                  : priorityLabel === "Low"
+                  ? "bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/30"
+                  : "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30";
+
+              return (
+                <div
+                  key={task.id}
+                  onClick={() => toggleTaskStatus(task.id)}
+                  className={`p-2.5 rounded-xl border transition-all duration-150 flex items-center justify-between gap-2.5 cursor-pointer select-none ${
+                    isCompleted
+                      ? "bg-[#070B14]/60 border-[#1E2D4D] opacity-80"
+                      : "bg-[#070B14] border-[#1E2D4D] hover:border-[#38BDF8]/50 hover:bg-[#070B14]/90"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <button
+                      type="button"
+                      aria-label="Toggle task"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTaskStatus(task.id);
+                      }}
+                      className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
+                        isCompleted
+                          ? "bg-[#38BDF8] border-[#38BDF8] text-[#060A12]"
+                          : "border-[#1E2D4D] bg-[#101B33] hover:border-[#38BDF8]"
+                      }`}
+                    >
+                      {isCompleted && <Check className="w-3 h-3 stroke-[3]" />}
+                    </button>
+                    <span
+                      className={`text-xs font-medium truncate ${
+                        isCompleted
+                          ? "text-[#94A3B8] line-through opacity-75"
+                          : "text-[#F1F5F9]"
+                      }`}
+                    >
+                      {task.title}
+                    </span>
+                  </div>
+
                   <span
-                    className={`text-xs font-medium truncate ${
-                      task.completed
-                        ? "text-[#94A3B8]"
-                        : "text-[#F1F5F9]"
-                    }`}
+                    className={`text-[9px] font-mono px-2 py-0.5 rounded-md border shrink-0 font-bold ${priorityColor}`}
                   >
-                    {task.title}
+                    {priorityLabel}
                   </span>
                 </div>
-
-                <span
-                  className={`text-[9px] font-mono px-2 py-0.5 rounded-md border shrink-0 font-bold ${task.priorityColor}`}
-                >
-                  {task.priority}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -524,71 +532,49 @@ export function OverviewReplica({
           </div>
 
           <div className="space-y-3">
-            {/* Project 1: XASAN OS */}
-            <div className="p-3 rounded-xl bg-[#070B14] border border-[#1E2D4D] space-y-2 hover:border-[#38BDF8]/40 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#10B981]/20 border border-[#10B981]/40 flex items-center justify-center text-[#10B981]">
-                    <Terminal className="w-3.5 h-3.5" />
+            {projects.slice(0, 3).map((p) => {
+              const isXasan = p.name.includes("XASAN");
+              const isAurelius = p.name.includes("Aurelius");
+              const iconBox = isXasan
+                ? "bg-[#10B981]/20 border-[#10B981]/40 text-[#10B981]"
+                : isAurelius
+                ? "bg-purple-500/20 border-purple-500/40 text-purple-400 font-bold text-xs"
+                : "bg-[#EF4444]/20 border-[#EF4444]/40 text-[#EF4444]";
+              return (
+                <div
+                  key={p.id}
+                  className="p-3 rounded-xl bg-[#070B14] border border-[#1E2D4D] space-y-2 hover:border-[#38BDF8]/40 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-7 h-7 rounded-lg border flex items-center justify-center ${iconBox}`}>
+                        {isXasan ? (
+                          <Terminal className="w-3.5 h-3.5" />
+                        ) : isAurelius ? (
+                          "A"
+                        ) : (
+                          <Car className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-[#F1F5F9]">{p.name}</h4>
+                        <span className="text-[10px] text-[#94A3B8] font-mono">{p.description}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-[#38BDF8]">{p.progress}%</span>
+                      <span className="text-[#94A3B8] text-xs">⟳</span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-[#F1F5F9]">XASAN OS</h4>
-                    <span className="text-[10px] text-[#94A3B8] font-mono">Personal OS project</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-[#38BDF8]">75%</span>
-                  <span className="text-[#94A3B8] text-xs">⟳</span>
-                </div>
-              </div>
-              <div className="w-full bg-[#152238] h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#38BDF8] h-full rounded-full" style={{ width: "75%" }} />
-              </div>
-            </div>
-
-            {/* Project 2: Aurelius IELTS */}
-            <div className="p-3 rounded-xl bg-[#070B14] border border-[#1E2D4D] space-y-2 hover:border-[#38BDF8]/40 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 font-bold text-xs">
-                    A
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-[#F1F5F9]">Aurelius IELTS</h4>
-                    <span className="text-[10px] text-[#94A3B8] font-mono">IELTS learning platform</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-[#38BDF8]">60%</span>
-                  <span className="text-[#94A3B8] text-xs">⟳</span>
-                </div>
-              </div>
-              <div className="w-full bg-[#152238] h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#38BDF8] h-full rounded-full" style={{ width: "60%" }} />
-              </div>
-            </div>
-
-            {/* Project 3: Ravon Avto Market */}
-            <div className="p-3 rounded-xl bg-[#070B14] border border-[#1E2D4D] space-y-2 hover:border-[#38BDF8]/40 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center text-[#EF4444]">
-                    <Car className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-[#F1F5F9]">Ravon Avto Market</h4>
-                    <span className="text-[10px] text-[#94A3B8] font-mono">Auto marketplace</span>
+                  <div className="w-full bg-[#152238] h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#38BDF8] h-full rounded-full transition-all duration-500"
+                      style={{ width: `${p.progress}%` }}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-[#38BDF8]">90%</span>
-                  <span className="text-amber-400 text-xs">▲</span>
-                </div>
-              </div>
-              <div className="w-full bg-[#152238] h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#38BDF8] h-full rounded-full" style={{ width: "90%" }} />
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
@@ -604,101 +590,46 @@ export function OverviewReplica({
 
           {/* 4 Circular Rings: Sport, O'qish, Suv, Uyqu */}
           <div className="grid grid-cols-4 gap-2 pt-1 text-center">
-            {/* 1. Sport 5/7 */}
-            <div className="flex flex-col items-center space-y-1">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#152238] stroke-current"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-[#38BDF8] stroke-current"
-                    strokeDasharray="71, 100"
-                    strokeLinecap="round"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-[10px] font-bold font-mono text-[#F1F5F9]">5/7</span>
-              </div>
-              <span className="text-[10px] font-medium text-[#94A3B8]">Sport</span>
-            </div>
-
-            {/* 2. O'qish 6/7 */}
-            <div className="flex flex-col items-center space-y-1">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#152238] stroke-current"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-[#38BDF8] stroke-current"
-                    strokeDasharray="86, 100"
-                    strokeLinecap="round"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-[10px] font-bold font-mono text-[#F1F5F9]">6/7</span>
-              </div>
-              <span className="text-[10px] font-medium text-[#94A3B8]">O‘qish</span>
-            </div>
-
-            {/* 3. Suv 7/8 */}
-            <div className="flex flex-col items-center space-y-1">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#152238] stroke-current"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-[#38BDF8] stroke-current"
-                    strokeDasharray="88, 100"
-                    strokeLinecap="round"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-[10px] font-bold font-mono text-[#F1F5F9]">7/8</span>
-              </div>
-              <span className="text-[10px] font-medium text-[#94A3B8]">Suv</span>
-            </div>
-
-            {/* 4. Uyqu 7/7 */}
-            <div className="flex flex-col items-center space-y-1">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#152238] stroke-current"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-[#38BDF8] stroke-current"
-                    strokeDasharray="100, 100"
-                    strokeLinecap="round"
-                    strokeWidth="3.5"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-[10px] font-bold font-mono text-[#F1F5F9]">7/7</span>
-              </div>
-              <span className="text-[10px] font-medium text-[#94A3B8]">Uyqu</span>
-            </div>
+            {habits.slice(0, 4).map((h, idx) => {
+              const target = h.targetDaysPerWeek || (idx === 2 ? 8 : 7);
+              const current = h.isCompletedToday
+                ? (idx === 0 ? 5 : idx === 1 ? 6 : idx === 2 ? 7 : 7)
+                : Math.max(0, (idx === 0 ? 4 : idx === 1 ? 5 : idx === 2 ? 6 : 6));
+              const percent = Math.min(100, Math.round((current / target) * 100));
+              return (
+                <div
+                  key={h.id}
+                  onClick={() => toggleHabitDay(h.id)}
+                  className="flex flex-col items-center space-y-1 cursor-pointer group select-none"
+                  title={`${h.name}: ${current}/${target} (${h.isCompletedToday ? "Bajarildi" : "Kutilmoqda"})`}
+                >
+                  <div className="relative w-12 h-12 flex items-center justify-center transition-transform group-hover:scale-105">
+                    <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
+                      <path
+                        className="text-[#152238] stroke-current"
+                        strokeWidth="3.5"
+                        fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                      <path
+                        className="text-[#38BDF8] stroke-current transition-all duration-500"
+                        strokeDasharray={`${percent}, 100`}
+                        strokeLinecap="round"
+                        strokeWidth="3.5"
+                        fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                    </svg>
+                    <span className="absolute text-[10px] font-bold font-mono text-[#F1F5F9]">
+                      {current}/{target}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-medium text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors">
+                    {h.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Trophy streak encouragement banner */}

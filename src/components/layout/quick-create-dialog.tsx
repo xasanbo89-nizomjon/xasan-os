@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   CheckSquare,
@@ -10,12 +10,14 @@ import {
   BookOpen,
   Check,
   AlertCircle,
+  Bell,
 } from "lucide-react";
 import { useTasksStore } from "@/stores/tasks-store";
 import { useHabitsStore } from "@/stores/habits-store";
 import { useDeveloperStore } from "@/stores/developer-store";
 import { useFinanceStore } from "@/stores/finance-store";
 import { useKnowledgeStore } from "@/stores/knowledge-store";
+import { useCalendarStore } from "@/stores/calendar-store";
 import { Priority, TransactionType } from "@/types";
 import { useTranslation } from "@/stores/language-store";
 
@@ -25,7 +27,7 @@ interface QuickCreateDialogProps {
   initialType?: string;
 }
 
-type ActionCategory = "task" | "habit" | "project" | "transaction" | "note";
+type ActionCategory = "task" | "reminder" | "habit" | "project" | "transaction" | "note";
 
 export function QuickCreateDialog({
   open,
@@ -40,11 +42,26 @@ export function QuickCreateDialog({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Synchronize activeTab when initialType changes upon opening
+  useEffect(() => {
+    if (open && initialType) {
+      if (initialType === "reminder") {
+        setActiveTab("reminder");
+      } else if (["task", "habit", "project", "transaction", "note"].includes(initialType)) {
+        setActiveTab(initialType as ActionCategory);
+      }
+    }
+  }, [open, initialType]);
+
   // Form states
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskPriority, setTaskPriority] = useState<Priority>("NORMAL");
   const [taskDueDate, setTaskDueDate] = useState("");
+
+  const [reminderTitle, setReminderTitle] = useState("");
+  const [reminderDateTime, setReminderDateTime] = useState("");
+  const [reminderCategory, setReminderCategory] = useState("General");
 
   const [habitName, setHabitName] = useState("");
   const [habitDescription, setHabitDescription] = useState("");
@@ -83,6 +100,16 @@ export function QuickCreateDialog({
         setTaskTitle("");
         setTaskDescription("");
         setSuccessMessage(dict.toast.task_created);
+      } else if (activeTab === "reminder") {
+        if (!reminderTitle.trim()) throw new Error(isUz ? "Eslatma matnini kiriting" : "Reminder title is required");
+        useCalendarStore.getState().addReminder({
+          title: reminderTitle,
+          dueDateTime: reminderDateTime || new Date().toISOString(),
+          category: reminderCategory,
+        });
+        setReminderTitle("");
+        setReminderDateTime("");
+        setSuccessMessage(isUz ? "Eslatma muvaffaqiyatli saqlandi!" : "Reminder saved!");
       } else if (activeTab === "habit") {
         if (!habitName.trim()) throw new Error(isUz ? "Odat nomini kiriting" : "Habit name is required");
         useHabitsStore.getState().addHabit({
@@ -142,6 +169,7 @@ export function QuickCreateDialog({
 
   const tabs = [
     { id: "task", label: dict.quick_create.task, icon: CheckSquare },
+    { id: "reminder", label: isUz ? "Eslatma" : "Reminder", icon: Bell },
     { id: "habit", label: dict.quick_create.habit, icon: Sparkles },
     { id: "project", label: dict.quick_create.project, icon: Layers },
     { id: "transaction", label: dict.quick_create.transaction, icon: CircleDollarSign },
@@ -152,29 +180,29 @@ export function QuickCreateDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#080D0B]/80 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-[#070B14]/80 backdrop-blur-md transition-opacity"
         onClick={() => onOpenChange(false)}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg bg-[#101915] border border-[#25352C] rounded-2xl shadow-2xl overflow-hidden z-10 emerald-glow">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#25352C]">
+      <div className="relative w-full max-w-lg bg-[#0D1527] border border-[#1E2D4D] rounded-2xl shadow-2xl overflow-hidden z-10 shadow-[#0284C7]/10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E2D4D]">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
-            <h2 className="text-base font-semibold text-[#F3F7F4]">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse" />
+            <h2 className="text-base font-semibold text-[#F1F5F9]">
               {dict.quick_create.dialog_title}
             </h2>
           </div>
           <button
             onClick={() => onOpenChange(false)}
-            className="text-[#98A69D] hover:text-[#F3F7F4] p-1 rounded-lg hover:bg-[#142019] transition-colors"
+            className="text-[#94A3B8] hover:text-[#F1F5F9] p-1 rounded-lg hover:bg-[#070B14] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Selector */}
-        <div className="flex border-b border-[#25352C] bg-[#080D0B]/60 p-1.5 gap-1 overflow-x-auto">
+        <div className="flex border-b border-[#1E2D4D] bg-[#070B14]/60 p-1.5 gap-1 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -183,18 +211,18 @@ export function QuickCreateDialog({
                 key={tab.id}
                 type="button"
                 onClick={() => {
-                  setActiveTab(tab.id);
+                  setActiveTab(tab.id as ActionCategory);
                   setErrorMessage(null);
                   setSuccessMessage(null);
                 }}
-                className={`flex-1 min-w-[75px] py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`flex-1 min-w-[70px] py-1.5 px-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   isActive
-                    ? "bg-[#142019] text-[#10B981] border border-[#25352C] shadow-sm"
-                    : "text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019]/50"
+                    ? "bg-[#0D1527] text-[#38BDF8] border border-[#1E2D4D] shadow-sm font-bold"
+                    : "text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#070B14]"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{tab.label}</span>
               </button>
             );
           })}
@@ -203,7 +231,7 @@ export function QuickCreateDialog({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {successMessage && (
-            <div className="p-3 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981] text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] text-xs flex items-center gap-2">
               <Check className="w-4 h-4 shrink-0" />
               <span>{successMessage}</span>
             </div>
@@ -219,21 +247,21 @@ export function QuickCreateDialog({
           {activeTab === "task" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Vazifa sarlavhasi *" : "Task Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={isUz ? "Masalan: Whisper modelini sozlash" : "e.g. Deploy Whisper speech model endpoint"}
+                  placeholder={isUz ? "Masalan: IELTS reading practice" : "e.g. Deploy Whisper speech model endpoint"}
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {dict.common.description}
                 </label>
                 <textarea
@@ -241,19 +269,19 @@ export function QuickCreateDialog({
                   placeholder={dict.quick_create.description_placeholder}
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {isUz ? "Muhimlik" : "Priority"}
                   </label>
                   <select
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value as Priority)}
-                    className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
                   >
                     <option value="LOW">{dict.priorities.low}</option>
                     <option value="NORMAL">{dict.priorities.normal}</option>
@@ -262,15 +290,62 @@ export function QuickCreateDialog({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {isUz ? "Muddati" : "Due Date"}
                   </label>
                   <input
                     type="date"
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
                   />
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === "reminder" && (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
+                  {isUz ? "Eslatma matni *" : "Reminder Title *"}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={isUz ? "Masalan: Muhim uchrashuv yoki imtihon..." : "e.g. IELTS mock test at 14:00"}
+                  value={reminderTitle}
+                  onChange={(e) => setReminderTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
+                    {isUz ? "Vaqti" : "Date & Time"}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={reminderDateTime}
+                    onChange={(e) => setReminderDateTime(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
+                    {isUz ? "Kategoriya" : "Category"}
+                  </label>
+                  <select
+                    value={reminderCategory}
+                    onChange={(e) => setReminderCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
+                  >
+                    <option value="General">{isUz ? "Umumiy" : "General"}</option>
+                    <option value="Dev">Dev / IT</option>
+                    <option value="Study">{isUz ? "O‘qish" : "Study"}</option>
+                    <option value="Health">{isUz ? "Salomatlik" : "Health"}</option>
+                  </select>
                 </div>
               </div>
             </>
@@ -279,27 +354,27 @@ export function QuickCreateDialog({
           {activeTab === "habit" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Odat nomi *" : "Habit Name *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={isUz ? "Masalan: IELTS Academic Reading 45 daq" : "e.g. IELTS Academic Reading 45m"}
+                  placeholder={isUz ? "Masalan: Kitob o'qish 30 daqiqa" : "e.g. IELTS Academic Reading 45m"}
                   value={habitName}
                   onChange={(e) => setHabitName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {dict.common.category}
                   </label>
                   <select
                     value={habitCategory}
                     onChange={(e) => setHabitCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
                   >
                     <option value="DISCIPLINE">{isUz ? "Intizom" : "DISCIPLINE"}</option>
                     <option value="CODE">{isUz ? "Dasturlash" : "CODE"}</option>
@@ -308,14 +383,14 @@ export function QuickCreateDialog({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {isUz ? "Davriylik" : "Target"}
                   </label>
                   <input
                     type="text"
                     disabled
                     value={isUz ? "Har kuni (Haftada 7 kun)" : "Daily (7 days/week)"}
-                    className="w-full px-3 py-2 bg-[#142019]/50 border border-[#25352C] rounded-xl text-xs text-[#98A69D]"
+                    className="w-full px-3 py-2 bg-[#070B14]/50 border border-[#1E2D4D] rounded-xl text-xs text-[#94A3B8]"
                   />
                 </div>
               </div>
@@ -325,7 +400,7 @@ export function QuickCreateDialog({
           {activeTab === "project" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Loyiha nomi *" : "Project Name *"}
                 </label>
                 <input
@@ -334,11 +409,11 @@ export function QuickCreateDialog({
                   placeholder={isUz ? "Masalan: Aurelius IELTS, LinguaHub, Ravon Avto" : "e.g. Aurelius IELTS, LinguaHub, Ravon Avto"}
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Texnologiyalar (vergul bilan)" : "Tech Stack (comma-separated)"}
                 </label>
                 <input
@@ -346,7 +421,7 @@ export function QuickCreateDialog({
                   placeholder="e.g. Next.js 16, TypeScript, Tailwind"
                   value={projectTechStack}
                   onChange={(e) => setProjectTechStack(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
             </>
@@ -355,21 +430,21 @@ export function QuickCreateDialog({
           {activeTab === "transaction" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Tranzaksiya nomi *" : "Transaction Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={isUz ? "Masalan: AWS Cloud GPU hisobi" : "e.g. AWS Cloud GPU instances"}
+                  placeholder={isUz ? "Masalan: Server hosting to'lovi" : "e.g. AWS Cloud GPU instances"}
                   value={txTitle}
                   onChange={(e) => setTxTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {dict.common.amount} ($) *
                   </label>
                   <input
@@ -379,17 +454,17 @@ export function QuickCreateDialog({
                     placeholder="250.00"
                     value={txAmount}
                     onChange={(e) => setTxAmount(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                     {dict.common.type}
                   </label>
                   <select
                     value={txType}
                     onChange={(e) => setTxType(e.target.value as TransactionType)}
-                    className="w-full px-3 py-2 bg-[#142019] border border-[#25352C] rounded-xl text-xs text-[#F3F7F4] focus:outline-none focus:border-[#10B981]"
+                    className="w-full px-3 py-2 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-xs text-[#F1F5F9] focus:outline-none focus:border-[#38BDF8]"
                   >
                     <option value="EXPENSE">{isUz ? "Xarajat (Expense)" : "EXPENSE"}</option>
                     <option value="INCOME">{isUz ? "Daromad (Income)" : "INCOME"}</option>
@@ -403,20 +478,20 @@ export function QuickCreateDialog({
           {activeTab === "note" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Qayd sarlavhasi *" : "Note Title *"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={isUz ? "Masalan: Event-Driven Kafka arxitekturasi" : "e.g. System Design: Event-Driven Kafka architecture"}
+                  placeholder={isUz ? "Masalan: Yangi g'oya yoki reja" : "e.g. System Design: Event-Driven Kafka architecture"}
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#98A69D] mb-1.5">
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">
                   {isUz ? "Mazmuni (Markdown / Qaydlar)" : "Content (Markdown / Notes)"}
                 </label>
                 <textarea
@@ -424,24 +499,24 @@ export function QuickCreateDialog({
                   placeholder={isUz ? "Asosiy tushunchalar, arxitektura diagrammalari..." : "Key concepts, architecture notes, equations..."}
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#142019] border border-[#25352C] rounded-xl text-sm text-[#F3F7F4] placeholder-[#98A69D]/60 focus:outline-none focus:border-[#10B981] transition-colors resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#070B14] border border-[#1E2D4D] rounded-xl text-sm text-[#F1F5F9] placeholder-[#94A3B8]/60 focus:outline-none focus:border-[#38BDF8] transition-colors resize-none"
                 />
               </div>
             </>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#25352C]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1E2D4D]">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#070B14] transition-colors cursor-pointer"
             >
               {dict.quick_create.cancel_button}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981] text-[#080D0B] hover:bg-[#059669] transition-all shadow-md shadow-[#10B981]/20 disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#38BDF8] text-[#060A12] hover:bg-[#60A5FA] transition-all shadow-md shadow-[#0284C7]/20 disabled:opacity-50 cursor-pointer font-bold"
             >
               {isSubmitting ? (isUz ? "Yaratilmoqda..." : "Creating...") : dict.quick_create.submit_button}
             </button>
