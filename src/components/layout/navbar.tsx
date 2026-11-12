@@ -70,90 +70,66 @@ export function Navbar({
   };
 
   return (
-    <header className="h-16 bg-[#101915]/80 backdrop-blur-xl border-b border-[#25352C] sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
-      {/* Left Area: Mobile hamburger + Breadcrumb */}
-      <div className="flex items-center gap-3">
+    <header className="h-16 bg-[#0D1527]/85 backdrop-blur-xl border-b border-[#1E2D4D] sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+      {/* Left Area: Mobile hamburger + Search pill */}
+      <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
           onClick={onToggleMobileSidebar}
           aria-label="Open navigation menu"
-          className="lg:hidden p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] transition-colors border border-[#25352C]"
+          className="lg:hidden p-2 rounded-xl text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#101B33] transition-colors border border-[#1E2D4D]"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <Breadcrumbs />
-      </div>
-
-      {/* Middle Area: Global Search / Command Bar Trigger */}
-      <div className="hidden md:flex flex-1 max-w-sm lg:max-w-md mx-4">
+        {/* Global Search Pill matching image */}
         <button
           onClick={onOpenSearch || onOpenCommandPalette}
-          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#142019] border border-[#25352C] text-[#98A69D] text-xs hover:border-[#10B981]/50 hover:text-[#F3F7F4] transition-all duration-150 group cursor-pointer shadow-inner"
+          className="w-full flex items-center justify-between px-4 py-2 rounded-full bg-[#070B14] border border-[#1E2D4D] text-[#94A3B8] text-xs hover:border-[#38BDF8]/50 hover:text-[#F1F5F9] transition-all duration-150 group cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2.5">
-            <Search className="w-4 h-4 text-[#98A69D] group-hover:text-[#10B981] transition-colors" />
+            <Search className="w-4 h-4 text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors" />
             <span className="font-normal truncate">
-              Qidiruv (Ctrl + K)
+              Qidiruv... (Ctrl + K)
             </span>
           </div>
-          <div className="flex items-center gap-1 font-mono text-[10px] bg-[#101915] px-2 py-0.5 rounded border border-[#25352C] group-hover:border-[#10B981]/30 text-[#98A69D]">
+          <div className="flex items-center gap-1 font-mono text-[10px] bg-[#0D1527] px-2 py-0.5 rounded-full border border-[#1E2D4D] group-hover:border-[#38BDF8]/30 text-[#94A3B8]">
             <span>Ctrl + K</span>
           </div>
         </button>
       </div>
 
-      {/* Date, Day, Time Display from image_12.png */}
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142019] border border-[#25352C] text-xs font-mono text-[#F3F7F4] select-none">
-        <span className="text-[#98A69D]">16-iyun, 2025</span>
-        <span className="text-[#25352C]">•</span>
-        <span className="text-[#10B981] font-semibold">Dushanba</span>
-        <span className="text-[#25352C]">•</span>
-        <span className="text-[#F3F7F4] font-bold">14:35</span>
-      </div>
+      {/* Right Area: Theme toggle, Language, Notifications & Profile */}
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
+        {/* Theme mode toggle indicator */}
+        <button
+          type="button"
+          title="Mavzu rejimi"
+          className="p-2 rounded-xl text-[#94A3B8] hover:text-[#38BDF8] hover:bg-[#101B33] border border-[#1E2D4D] transition-colors cursor-pointer"
+        >
+          <span className="text-xs">☀️ 🌙</span>
+        </button>
 
-      {/* Right Area: Language, Quick Create, Notifications, Quick Lock & Profile */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Language Switcher (Uz pill) */}
+        {/* Language Switcher (UZ dropdown) */}
         <LanguageSwitcher />
-
-        {/* Quick-Create Action Button */}
-        <div className="relative">
-          <button
-            onClick={() => onOpenQuickCreate()}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#10B981] text-[#080D0B] font-semibold text-xs hover:bg-[#059669] transition-all shadow-md shadow-[#10B981]/20 active:scale-95 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">{dict.navbar.create_button}</span>
-          </button>
-        </div>
 
         {/* Quick Lock Button */}
         <button
           onClick={handleLockApp}
           title={dict.navbar.lock_app_title}
-          className="p-2 rounded-xl text-[#98A69D] hover:text-[#10B981] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-[#94A3B8] hover:text-[#38BDF8] hover:bg-[#101B33] border border-[#1E2D4D] transition-colors cursor-pointer hidden sm:flex"
         >
           <Lock className="w-4 h-4" />
         </button>
 
-        {/* Search button on small screens */}
-        <button
-          onClick={onOpenSearch || onOpenCommandPalette}
-          aria-label={dict.common.search}
-          className="md:hidden p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C]"
-        >
-          <Search className="w-4 h-4" />
-        </button>
-
-        {/* Notifications Popover Trigger with exact badge count '3' */}
+        {/* Notifications Popover Trigger with exact RED badge '3' */}
         <div className="relative">
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             aria-label={dict.navbar.notifications_title}
-            className="relative p-2 rounded-xl text-[#98A69D] hover:text-[#F3F7F4] hover:bg-[#142019] border border-[#25352C] transition-colors cursor-pointer"
+            className="relative p-2 rounded-xl text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#101B33] border border-[#1E2D4D] transition-colors cursor-pointer"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] text-[#080D0B] text-[10px] font-black flex items-center justify-center font-mono shadow-sm">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[10px] font-black flex items-center justify-center font-mono shadow-sm">
               3
             </span>
           </button>
@@ -208,16 +184,12 @@ export function Navbar({
         <div className="relative">
           <button
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-xl bg-[#142019] border border-[#25352C] hover:border-[#10B981]/50 transition-colors group cursor-pointer"
+            className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-[#38BDF8]/40 transition-all cursor-pointer"
           >
-            <div className="relative w-7 h-7 rounded-lg bg-gradient-to-tr from-[#10B981] to-[#3B82F6] flex items-center justify-center text-xs font-bold text-[#080D0B] shadow-sm">
+            <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#2563EB] flex items-center justify-center text-xs font-bold text-white shadow-md border border-[#38BDF8]/40">
               XM
-              <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#10B981] ring-2 ring-[#101915]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#0D1527]" />
             </div>
-            <span className="hidden sm:inline text-xs font-medium text-[#F3F7F4] group-hover:text-[#10B981] transition-colors">
-              Xasan
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-[#98A69D]" />
           </button>
 
           {/* Profile Dropdown Menu */}
@@ -227,15 +199,15 @@ export function Navbar({
                 className="fixed inset-0 z-30"
                 onClick={() => setProfileMenuOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-56 glass-dropdown rounded-2xl shadow-2xl z-40 p-2 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-2 border-b border-[#25352C] mb-1">
-                  <div className="text-xs font-bold text-[#F3F7F4]">
+              <div className="absolute right-0 mt-2 w-56 glass-dropdown rounded-2xl shadow-2xl z-40 p-2 animate-in fade-in zoom-in-95 duration-150 border border-[#1E2D4D] bg-[#0D1527]">
+                <div className="px-3 py-2 border-b border-[#1E2D4D] mb-1">
+                  <div className="text-xs font-bold text-[#F1F5F9]">
                     Xasan Mukhammadiev
                   </div>
-                  <div className="text-[10px] text-[#98A69D] truncate">
+                  <div className="text-[10px] text-[#94A3B8] truncate">
                     xasan@os.local
                   </div>
-                  <div className="text-[9px] font-mono text-[#10B981] mt-0.5">
+                  <div className="text-[9px] font-mono text-[#38BDF8] mt-0.5">
                     {dict.navbar.profile_menu.owner}
                   </div>
                 </div>
@@ -244,30 +216,30 @@ export function Navbar({
                   <Link
                     href="/profile"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F1F5F9] hover:bg-[#101B33] hover:text-[#38BDF8] transition-colors"
                   >
-                    <User className="w-4 h-4 text-[#98A69D]" />
+                    <User className="w-4 h-4 text-[#94A3B8]" />
                     <span>{dict.navbar.profile_menu.profile}</span>
                   </Link>
 
                   <Link
                     href="/settings"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#F1F5F9] hover:bg-[#101B33] hover:text-[#38BDF8] transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-[#98A69D]" />
+                    <Settings className="w-4 h-4 text-[#94A3B8]" />
                     <span>{dict.navbar.profile_menu.settings}</span>
                   </Link>
 
                   <button
                     onClick={handleLockApp}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#F3F7F4] hover:bg-[#142019] hover:text-[#10B981] transition-colors text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#F1F5F9] hover:bg-[#101B33] hover:text-[#38BDF8] transition-colors text-left cursor-pointer"
                   >
-                    <Lock className="w-4 h-4 text-[#10B981]" />
+                    <Lock className="w-4 h-4 text-[#38BDF8]" />
                     <span>{dict.navbar.profile_menu.lock}</span>
                   </button>
 
-                  <div className="border-t border-[#25352C] my-1" />
+                  <div className="border-t border-[#1E2D4D] my-1" />
 
                   <button
                     onClick={handleLogout}
