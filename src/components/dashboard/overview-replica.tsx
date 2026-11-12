@@ -146,8 +146,12 @@ export function OverviewReplica({
               <Target className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1 text-2xl font-bold font-mono text-[#F3F7F4]">
-            <span>7/9</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xl font-bold font-mono text-[#F3F7F4]">7/9</span>
+            <span className="text-[11px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded border border-[#10B981]/30 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" />
+              +12%
+            </span>
           </div>
           {/* Mini progress bar */}
           <div className="w-full bg-[#101915] h-1.5 rounded-full overflow-hidden border border-[#25352C]">
@@ -163,11 +167,14 @@ export function OverviewReplica({
               <GraduationCap className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            120h
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xl font-bold font-mono text-[#F3F7F4]">120h</span>
+            <span className="text-[11px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded border border-[#10B981]/30 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" />
+              +8%
+            </span>
           </div>
-          <p className="text-[11px] text-[#10B981] font-mono flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
+          <p className="text-[11px] text-[#98A69D] font-mono flex items-center gap-1">
             <span>IELTS & Arab tili</span>
           </p>
         </div>
@@ -180,8 +187,12 @@ export function OverviewReplica({
               <CheckSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            24
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xl font-bold font-mono text-[#F3F7F4]">24</span>
+            <span className="text-[11px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded border border-[#10B981]/30 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" />
+              +20%
+            </span>
           </div>
           <p className="text-[11px] text-[#98A69D] font-mono">
             Ushbu haftada
@@ -193,11 +204,15 @@ export function OverviewReplica({
           <div className="flex items-center justify-between text-[#98A69D]">
             <span className="text-xs font-medium truncate">Oylik maqsad</span>
             <div className="w-7 h-7 rounded-lg bg-[#101915] border border-[#25352C] flex items-center justify-center text-[#10B981]">
-              <TrendingUp className="w-3.5 h-3.5" />
+              <Target className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-[#10B981]">
-            67%
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xl font-bold font-mono text-[#10B981]">67%</span>
+            <span className="text-[11px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded border border-[#10B981]/30 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" />
+              +5%
+            </span>
           </div>
           <div className="w-full bg-[#101915] h-1.5 rounded-full overflow-hidden border border-[#25352C]">
             <div className="bg-[#10B981] h-full rounded-full transition-all duration-500" style={{ width: "67%" }} />
@@ -212,8 +227,12 @@ export function OverviewReplica({
               <Wallet className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-[#F3F7F4]">
-            $3,250
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xl font-bold font-mono text-[#F3F7F4]">$3,250</span>
+            <span className="text-[11px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded border border-[#10B981]/30 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" />
+              +12%
+            </span>
           </div>
           <p className="text-[11px] text-[#10B981] font-mono">
             +18% keshflo
@@ -430,6 +449,55 @@ export function OverviewReplica({
               </div>
             </div>
 
+            {/* Band Progress Visual Trend Line */}
+            <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C] space-y-2">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[#98A69D] font-medium flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#10B981]" />
+                  Ball o‘sish trend chizig‘i
+                </span>
+                <span className="font-mono font-bold text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">
+                  +1.0 Band
+                </span>
+              </div>
+              <div className="h-14 w-full relative">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 280 45" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="bandTrendGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Shaded Area */}
+                  <path
+                    d="M 0 38 Q 70 30 140 22 T 280 6 L 280 45 L 0 45 Z"
+                    fill="url(#bandTrendGrad)"
+                  />
+                  {/* Glowing Stroke */}
+                  <path
+                    d="M 0 38 Q 70 30 140 22 T 280 6"
+                    fill="none"
+                    stroke="#10B981"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                  {/* Points */}
+                  <circle cx="0" cy="38" r="3" fill="#101915" stroke="#10B981" strokeWidth="2" />
+                  <circle cx="70" cy="30" r="3" fill="#101915" stroke="#10B981" strokeWidth="2" />
+                  <circle cx="140" cy="22" r="3" fill="#101915" stroke="#10B981" strokeWidth="2" />
+                  <circle cx="210" cy="14" r="3" fill="#101915" stroke="#10B981" strokeWidth="2" />
+                  <circle cx="280" cy="6" r="4" fill="#10B981" stroke="#F3F7F4" strokeWidth="2" />
+                </svg>
+              </div>
+              <div className="flex justify-between text-[9px] font-mono text-[#98A69D] px-0.5">
+                <span>Yan 6.5</span>
+                <span>Fev 6.8</span>
+                <span>Mar 7.0</span>
+                <span>May 7.2</span>
+                <span className="text-[#10B981] font-bold">Iyun 7.5</span>
+              </div>
+            </div>
+
             {/* 4 Skill Score Cards */}
             <div className="grid grid-cols-2 gap-3">
               {/* Listening */}
@@ -514,8 +582,13 @@ export function OverviewReplica({
             {/* Exact 3 Financial Metrics */}
             <div className="grid grid-cols-3 gap-2.5 text-center">
               <div className="p-3 rounded-xl bg-[#101915] border border-[#25352C]">
-                <div className="text-base sm:text-lg font-bold font-mono text-[#F3F7F4]">
-                  $892
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-base sm:text-lg font-bold font-mono text-[#F3F7F4]">
+                    $892
+                  </span>
+                  <span className="text-[10px] font-mono font-semibold text-[#10B981] bg-[#10B981]/15 px-1 py-0.2 rounded border border-[#10B981]/30">
+                    +12%
+                  </span>
                 </div>
                 <span className="text-[10px] text-[#98A69D] font-medium mt-0.5 block leading-tight">
                   Jami xarajatlar

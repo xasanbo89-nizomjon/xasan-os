@@ -52,7 +52,17 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#080D0B] text-[#F3F7F4] flex">
+    <div className="min-h-screen bg-[#080D0B] text-[#F3F7F4] flex relative overflow-x-hidden aurora-bg">
+      {/* Ethereal Emerald Aurora Background Effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Top-center primary aurora glow */}
+        <div className="absolute -top-[20%] left-[15%] w-[850px] h-[550px] bg-gradient-to-br from-[#10B981]/15 via-[#059669]/8 to-transparent rounded-full blur-[140px] animate-aurora pointer-events-none" />
+        {/* Secondary right aurora glow */}
+        <div className="absolute top-[30%] -right-[15%] w-[650px] h-[650px] bg-gradient-to-bl from-[#10B981]/10 via-[#047857]/5 to-transparent rounded-full blur-[150px] animate-aurora [animation-delay:4s] pointer-events-none" />
+        {/* Subtle bottom-left aurora glow */}
+        <div className="absolute -bottom-[15%] -left-[10%] w-[600px] h-[500px] bg-gradient-to-tr from-[#10B981]/10 via-[#059669]/4 to-transparent rounded-full blur-[130px] animate-aurora [animation-delay:8s] pointer-events-none" />
+      </div>
+
       {/* Collapsible Sidebar */}
       <Sidebar
         collapsed={collapsed}
@@ -64,7 +74,7 @@ export function AppShell({ children }: AppShellProps) {
       {/* Main Content Layout */}
       <div
         className={cn(
-          "flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300 ease-in-out",
+          "flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300 ease-in-out relative z-10",
           collapsed ? "lg:pl-20" : "lg:pl-64"
         )}
       >
